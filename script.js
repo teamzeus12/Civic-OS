@@ -2968,7 +2968,7 @@ async function handleAnalyze(event) {
 
   const steps = [
     "Reading your description",
-    draft.photo ? "Inspecting the evidence image" : "Checking the reported details",
+    draft.hasPhoto ? "Inspecting the evidence image" : "Checking the reported details",
     "Assessing severity, public impact and risk",
     "Verifying the responsible department",
     "Checking for related reports"
@@ -8224,124 +8224,6 @@ function openCreateActivity() {
 }
 
 /* =========================================================
-   CRITICAL INTERACTION FALLBACKS
-   These bindings are intentionally independent of the larger
-   event-binding pipeline so core navigation, issues and
-   community actions remain usable if an optional listener fails.
-   ========================================================= */
-
-function installCriticalInteractionFallbacks() {
-
-  if (document.documentElement.dataset.civicCoreFallback === "1") {
-    return;
-  }
-
-  document.documentElement.dataset.civicCoreFallback = "1";
-
-  document.addEventListener("click", (event) => {
-
-    const goto = event.target.closest("[data-goto]");
-    if (goto) {
-      const target = goto.dataset.goto;
-      if (target) {
-        showScreen(target);
-      }
-      return;
-    }
-
-    const issue = event.target.closest("[data-issue]");
-    if (issue && issue.dataset.issue) {
-      openIssue(issue.dataset.issue);
-      return;
-    }
-
-    const action = event.target.closest("[data-civic-action]");
-    if (action && action.dataset.civicAction) {
-      openCivicAction(action.dataset.civicAction);
-      return;
-    }
-
-    const create = event.target.closest("#createActionBtn");
-    if (create) {
-      openCreateActivity();
-    }
-  }, false);
-
-  const activityForm = document.getElementById("createActivityForm");
-
-  if (activityForm) {
-    activityForm.addEventListener("submit", (event) => {
-
-      if (activityForm.dataset.civicHandled === "1") {
-        return;
-      }
-
-      activityForm.dataset.civicHandled = "1";
-
-      const get = (id) =>
-        document.getElementById(id)?.value?.trim() || "";
-
-      const title = get("activityTitle");
-      const type = document.getElementById("activityType")?.value || "";
-      const participants = get("activityParticipants");
-      const location = get("activityLocation");
-      const date = get("activityDate");
-      const time = get("activityTime");
-      const description = get("activityDescription");
-      const support = get("activitySupport");
-
-      if (!title || !type || !participants || !location ||
-          !date || !time || !description) {
-        event.preventDefault();
-        activityForm.dataset.civicHandled = "0";
-        toast("Please complete all required fields.");
-        return;
-      }
-
-      event.preventDefault();
-
-      if (!Array.isArray(window.civicUserActivities)) {
-        window.civicUserActivities = [];
-      }
-
-      const activity = {
-        id: "activity-" + Date.now(),
-        title,
-        type,
-        participants: Number(participants) || 0,
-        location,
-        date,
-        time,
-        description,
-        support: support || "No additional support requested.",
-        image: "",
-        organizer: "Community Member",
-        icon: type === "Clean-up"
-          ? "sparkles"
-          : type === "Tree planting"
-            ? "trees"
-            : type === "Flood preparedness"
-              ? "waves"
-              : type === "Community support"
-                ? "users"
-                : "megaphone"
-      };
-
-      window.civicUserActivities.push(activity);
-      civicActionData[activity.id] = activity;
-
-      activityForm.reset();
-      activityForm.dataset.civicHandled = "0";
-
-      toast("Activity created successfully!");
-      renderCivicActions();
-      showScreen("actionsScreen");
-    }, false);
-  }
-}
-
-
-/* =========================================================
    13. INIT
    ========================================================= */
 
@@ -8442,13 +8324,6 @@ function init() {
   } catch (error) {
     console.error("Civic OS event binding error:", error);
   }
-
-  try {
-    installCriticalInteractionFallbacks();
-  } catch (error) {
-    console.error("Civic OS critical interaction fallback error:", error);
-  }
-
   try {
     showScreen(screenFromHash(), { push: false });
   } catch (error) {
