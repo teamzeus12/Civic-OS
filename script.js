@@ -257,882 +257,6 @@ const STOPWORDS = new Set([
 ]);
 
 
-
-
-/* =========================================================
-   CIVIC INTELLIGENCE DATA LAYER
-   Structured civic knowledge for AI triage, routing,
-   location intelligence and Government Portal analytics.
-   ========================================================= */
-
-const CIVIC_DEPARTMENTS = {
-  agriculture: {
-    id: "agriculture",
-    officialName: "Department of Agriculture",
-    responsibilityAreas: ["crops", "crop disease", "crop damage", "farmland"],
-    problemTypes: ["agriculture", "crop", "pest", "farm"],
-    visualSignals: ["crop damage", "wilting", "pest damage"],
-    responseTypes: ["inspection", "advisory", "field response"],
-    escalationConditions: ["major crop loss", "disaster-related crop damage"]
-  },
-  horticulture_soil: {
-    id: "horticulture_soil",
-    officialName: "Department of Horticulture & Soil Conservation",
-    responsibilityAreas: ["horticulture", "soil erosion", "soil conservation"],
-    problemTypes: ["horticulture", "soil", "erosion"],
-    visualSignals: ["erosion", "exposed soil", "land degradation"],
-    responseTypes: ["inspection", "soil conservation", "technical support"],
-    escalationConditions: ["severe erosion", "landslide risk"]
-  },
-  pwd: {
-    id: "pwd",
-    officialName: "Public Works Department (PWD)",
-    responsibilityAreas: ["major roads", "bridges", "government infrastructure", "road maintenance"],
-    problemTypes: ["road", "pothole", "bridge", "infrastructure"],
-    visualSignals: ["pothole", "crack", "road damage", "collapsed road", "bridge damage"],
-    responseTypes: ["inspection", "temporary safety measure", "repair", "maintenance"],
-    escalationConditions: ["bridge unsafe", "road collapse", "immediate traffic danger"]
-  },
-  mahud: {
-    id: "mahud",
-    officialName: "Municipal Administration, Housing & Urban Development (MAHUD)",
-    responsibilityAreas: ["urban local government", "urban roads", "garbage", "public sanitation", "urban drainage"],
-    problemTypes: ["garbage", "waste", "sanitation", "urban", "drainage"],
-    visualSignals: ["overflowing bins", "garbage pile", "blocked drain", "urban flooding"],
-    responseTypes: ["municipal inspection", "cleaning", "drainage response"],
-    escalationConditions: ["public health hazard", "severe urban flooding"]
-  },
-  phed: {
-    id: "phed",
-    officialName: "Public Health Engineering Department (PHED)",
-    responsibilityAreas: ["drinking water", "water supply", "pipelines"],
-    problemTypes: ["water supply", "pipeline", "drinking water"],
-    visualSignals: ["broken pipe", "water leak", "contaminated water"],
-    responseTypes: ["inspection", "pipeline repair", "water supply restoration"],
-    escalationConditions: ["contaminated drinking water", "major supply failure"]
-  },
-  water_resources: {
-    id: "water_resources",
-    officialName: "Water Resources / Irrigation & Flood Control",
-    responsibilityAreas: ["flood control", "rivers", "major drainage", "water management"],
-    problemTypes: ["flood", "river", "water management"],
-    visualSignals: ["floodwater", "river overflow", "embankment damage"],
-    responseTypes: ["inspection", "flood control", "water management"],
-    escalationConditions: ["major flooding", "embankment failure", "life safety risk"]
-  },
-  minor_irrigation: {
-    id: "minor_irrigation",
-    officialName: "Minor Irrigation Department",
-    responsibilityAreas: ["minor irrigation", "farm irrigation infrastructure"],
-    problemTypes: ["irrigation", "farm water"],
-    visualSignals: ["irrigation channel damage", "broken irrigation structure"],
-    responseTypes: ["inspection", "irrigation repair"],
-    escalationConditions: ["major agricultural water disruption"]
-  },
-  food_civil_public_distribution: {
-    id: "food_civil_public_distribution",
-    officialName: "Food, Civil Supplies & Consumer Affairs",
-    responsibilityAreas: ["public distribution", "essential commodities"],
-    problemTypes: ["ration", "food distribution", "public distribution"],
-    visualSignals: ["ration outlet issue", "distribution queue"],
-    responseTypes: ["service investigation", "distribution response"],
-    escalationConditions: ["essential commodity disruption"]
-  },
-  health: {
-    id: "health",
-    officialName: "Department of Health",
-    responsibilityAreas: ["public health", "health facilities", "health hazards"],
-    problemTypes: ["health", "hospital", "clinic", "sanitation hazard"],
-    visualSignals: ["unsafe facility", "health hazard"],
-    responseTypes: ["health inspection", "public health response"],
-    escalationConditions: ["public health emergency"]
-  },
-  environment_forest: {
-    id: "environment_forest",
-    officialName: "Forest & Environment Department",
-    responsibilityAreas: ["forests", "environment", "pollution", "wildlife"],
-    problemTypes: ["environment", "forest", "pollution", "wildlife"],
-    visualSignals: ["tree loss", "pollution", "dumping", "forest damage"],
-    responseTypes: ["environmental inspection", "enforcement", "restoration"],
-    escalationConditions: ["protected-area impact", "serious pollution"]
-  },
-  home_fire: {
-    id: "home_fire",
-    officialName: "Home Department / Fire Services",
-    responsibilityAreas: ["fire", "immediate safety", "emergency response"],
-    problemTypes: ["fire", "emergency", "immediate danger"],
-    visualSignals: ["fire", "smoke", "sparking", "dangerous structure"],
-    responseTypes: ["emergency response", "scene safety"],
-    escalationConditions: ["fire", "immediate threat to life"]
-  },
-  relief_disaster: {
-    id: "relief_disaster",
-    officialName: "Relief & Disaster Management",
-    responsibilityAreas: ["disasters", "flood emergencies", "disaster response"],
-    problemTypes: ["disaster", "flood emergency", "major damage"],
-    visualSignals: ["flooding", "collapsed infrastructure", "disaster damage"],
-    responseTypes: ["emergency coordination", "relief", "damage assessment"],
-    escalationConditions: ["life safety risk", "major disaster"]
-  },
-  power: {
-    id: "power",
-    officialName: "Power Department",
-    responsibilityAreas: ["electricity", "street lighting", "electrical infrastructure"],
-    problemTypes: ["electric", "power", "streetlight", "electrical"],
-    visualSignals: ["broken pole", "exposed wire", "sparking", "failed streetlight"],
-    responseTypes: ["electrical inspection", "repair", "isolation"],
-    escalationConditions: ["live wire", "sparking", "electrocution risk"]
-  },
-  education: {
-    id: "education",
-    officialName: "School Education Department",
-    responsibilityAreas: ["government schools", "school facilities", "education infrastructure"],
-    problemTypes: ["school", "education"],
-    visualSignals: ["damaged classroom", "unsafe school building"],
-    responseTypes: ["school inspection", "facility repair"],
-    escalationConditions: ["unsafe school building"]
-  },
-  transport: {
-    id: "transport",
-    officialName: "Transport Department",
-    responsibilityAreas: ["transport services", "road-user coordination", "traffic-related transport issues"],
-    problemTypes: ["transport", "traffic"],
-    visualSignals: ["traffic obstruction"],
-    responseTypes: ["transport coordination", "traffic management"],
-    escalationConditions: ["major transport disruption"]
-  },
-  police: {
-    id: "police",
-    officialName: "Police Department",
-    responsibilityAreas: ["public safety", "enforcement", "traffic safety"],
-    problemTypes: ["public safety", "enforcement"],
-    visualSignals: ["unsafe obstruction", "security incident"],
-    responseTypes: ["safety response", "enforcement"],
-    escalationConditions: ["immediate public safety threat"]
-  },
-  fisheries: {
-    id: "fisheries",
-    officialName: "Fisheries Department",
-    responsibilityAreas: ["fisheries", "fishery infrastructure", "waterbody fisheries"],
-    problemTypes: ["fisheries", "fishery"],
-    visualSignals: ["fishery infrastructure damage"],
-    responseTypes: ["inspection", "fishery support"],
-    escalationConditions: ["major fishery loss"]
-  },
-  animal_husbandry: {
-    id: "animal_husbandry",
-    officialName: "Veterinary & Animal Husbandry Department",
-    responsibilityAreas: ["livestock", "animal health"],
-    problemTypes: ["animal", "livestock", "veterinary"],
-    visualSignals: ["animal health issue", "livestock facility damage"],
-    responseTypes: ["veterinary inspection", "animal health response"],
-    escalationConditions: ["suspected animal disease outbreak"]
-  },
-  community_rural: {
-    id: "community_rural",
-    officialName: "Rural Development & Panchayati Raj",
-    responsibilityAreas: ["rural development", "rural public infrastructure", "Panchayati Raj"],
-    problemTypes: ["rural", "village infrastructure"],
-    visualSignals: ["rural road damage", "village infrastructure damage"],
-    responseTypes: ["rural engineering inspection", "repair coordination"],
-    escalationConditions: ["rural access disruption"]
-  },
-  tourism: {
-    id: "tourism",
-    officialName: "Tourism Department",
-    responsibilityAreas: ["tourist infrastructure", "tourism sites"],
-    problemTypes: ["tourism", "tourist site"],
-    visualSignals: ["damaged tourist facility"],
-    responseTypes: ["site inspection", "maintenance coordination"],
-    escalationConditions: ["unsafe tourist site"]
-  }
-};
-
-
-/* =========================================================
-   UNIVERSAL MANIPUR CIVIC KNOWLEDGE
-   The model may classify broadly; this layer keeps routing
-   grounded in known government functions and never relies
-   on a category label alone.
-   ========================================================= */
-
-Object.assign(CIVIC_DEPARTMENTS, {
-  youth_sports: {
-    id: "youth_sports",
-    officialName: "Youth Affairs & Sports Department",
-    responsibilityAreas: ["sports", "youth", "sports facilities", "playgrounds", "sports equipment"],
-    problemTypes: ["sports", "youth", "playground", "stadium"],
-    visualSignals: ["damaged sports equipment", "unsafe playground", "damaged sports facility"],
-    responseTypes: ["facility inspection", "equipment assessment", "maintenance coordination"],
-    escalationConditions: ["unsafe sports facility", "major facility failure"]
-  },
-  social_welfare: {
-    id: "social_welfare",
-    officialName: "Social Welfare Department",
-    responsibilityAreas: ["social welfare", "child welfare", "senior citizen services", "disability support"],
-    problemTypes: ["social welfare", "child welfare", "elderly", "disability"],
-    visualSignals: ["damaged welfare facility", "accessibility barrier"],
-    responseTypes: ["service investigation", "welfare support", "facility inspection"],
-    escalationConditions: ["immediate vulnerable-person risk"]
-  },
-  labour_employment: {
-    id: "labour_employment",
-    officialName: "Labour & Employment Department",
-    responsibilityAreas: ["labour", "employment", "worker welfare", "workplace issues"],
-    problemTypes: ["labour", "employment", "worker", "workplace"],
-    visualSignals: ["unsafe workplace condition"],
-    responseTypes: ["inspection", "worker-service response"],
-    escalationConditions: ["serious workplace safety concern"]
-  },
-  tribal_hills: {
-    id: "tribal_hills",
-    officialName: "Tribal Affairs & Hills Department",
-    responsibilityAreas: ["tribal affairs", "hill-area development", "tribal welfare"],
-    problemTypes: ["tribal", "hill area", "tribal welfare"],
-    visualSignals: ["hill infrastructure damage", "remote-area access issue"],
-    responseTypes: ["field assessment", "development coordination"],
-    escalationConditions: ["critical access or essential-service disruption"]
-  },
-  industries_commerce: {
-    id: "industries_commerce",
-    officialName: "Commerce & Industries Department",
-    responsibilityAreas: ["industries", "commerce", "industrial development"],
-    problemTypes: ["industry", "industrial", "commerce", "market infrastructure"],
-    visualSignals: ["industrial facility issue", "market infrastructure damage"],
-    responseTypes: ["inspection", "industry-service coordination"],
-    escalationConditions: ["major industrial disruption"]
-  },
-  skill_employment: {
-    id: "skill_employment",
-    officialName: "Skill, Labour & Employment Services",
-    responsibilityAreas: ["skill development", "vocational training", "employment services"],
-    problemTypes: ["skill training", "vocational", "job service"],
-    visualSignals: ["training facility issue"],
-    responseTypes: ["service investigation", "facility assessment"],
-    escalationConditions: ["major training-service disruption"]
-  },
-  information_technology: {
-    id: "information_technology",
-    officialName: "Information Technology Department",
-    responsibilityAreas: ["government IT", "digital services", "e-governance infrastructure"],
-    problemTypes: ["government website", "digital service", "IT", "e-governance"],
-    visualSignals: ["digital service failure"],
-    responseTypes: ["technical investigation", "service restoration"],
-    escalationConditions: ["critical public digital-service outage"]
-  },
-  science_technology: {
-    id: "science_technology",
-    officialName: "Science & Technology Department",
-    responsibilityAreas: ["science and technology services", "technology infrastructure"],
-    problemTypes: ["science", "technology", "technical service"],
-    visualSignals: ["technology equipment failure"],
-    responseTypes: ["technical assessment", "service coordination"],
-    escalationConditions: ["critical technology-service failure"]
-  },
-  art_culture: {
-    id: "art_culture",
-    officialName: "Art & Culture Department",
-    responsibilityAreas: ["cultural heritage", "arts", "cultural facilities"],
-    problemTypes: ["heritage", "culture", "museum", "art", "cultural site"],
-    visualSignals: ["heritage damage", "cultural facility damage"],
-    responseTypes: ["site inspection", "conservation coordination"],
-    escalationConditions: ["significant heritage damage"]
-  },
-  relief_rehabilitation: {
-    id: "relief_rehabilitation",
-    officialName: "Relief & Rehabilitation Services",
-    responsibilityAreas: ["relief", "rehabilitation", "displaced persons", "emergency assistance"],
-    problemTypes: ["relief", "rehabilitation", "displacement", "emergency assistance"],
-    visualSignals: ["disaster displacement", "damaged shelter"],
-    responseTypes: ["field assessment", "relief coordination", "rehabilitation support"],
-    escalationConditions: ["immediate shelter or safety need"]
-  },
-  consumer_affairs: {
-    id: "consumer_affairs",
-    officialName: "Consumer Affairs",
-    responsibilityAreas: ["consumer protection", "consumer complaints", "essential commodity issues"],
-    problemTypes: ["consumer", "overcharging", "consumer complaint"],
-    visualSignals: ["consumer-service issue"],
-    responseTypes: ["complaint investigation", "service inspection"],
-    escalationConditions: ["widespread essential-commodity issue"]
-  },
-  sericulture: {
-    id: "sericulture",
-    officialName: "Sericulture Department",
-    responsibilityAreas: ["sericulture", "silk production", "silkworm farming"],
-    problemTypes: ["sericulture", "silkworm", "silk"],
-    visualSignals: ["sericulture facility issue", "silkworm crop damage"],
-    responseTypes: ["field inspection", "technical advisory"],
-    escalationConditions: ["major production loss"]
-  },
-  panchayat_rural: {
-    id: "panchayat_rural",
-    officialName: "Panchayati Raj / Rural Development",
-    responsibilityAreas: ["village governance", "rural civic services", "panchayats"],
-    problemTypes: ["panchayat", "village service", "rural civic issue"],
-    visualSignals: ["village public facility damage"],
-    responseTypes: ["local verification", "rural service coordination"],
-    escalationConditions: ["essential rural service disruption"]
-  }
-});
-
-Object.assign(CIVIC_ROUTING_RULES, {
-  sports: { primary: "youth_sports", supporting: ["education", "pwd"] },
-  youth: { primary: "youth_sports", supporting: ["education", "social_welfare"] },
-  social_welfare: { primary: "social_welfare", supporting: ["health", "community_rural"] },
-  labour: { primary: "labour_employment", supporting: ["police", "health"] },
-  employment: { primary: "labour_employment", supporting: ["skill_employment"] },
-  skill: { primary: "skill_employment", supporting: ["labour_employment", "education"] },
-  tribal: { primary: "tribal_hills", supporting: ["community_rural", "pwd"] },
-  industry: { primary: "industries_commerce", supporting: ["environment_forest", "power"] },
-  it: { primary: "information_technology", supporting: ["science_technology"] },
-  technology: { primary: "science_technology", supporting: ["information_technology"] },
-  culture: { primary: "art_culture", supporting: ["tourism", "environment_forest"] },
-  heritage: { primary: "art_culture", supporting: ["tourism", "environment_forest"] },
-  relief: { primary: "relief_rehabilitation", supporting: ["relief_disaster", "social_welfare"] },
-  consumer: { primary: "consumer_affairs", supporting: ["food_civil_public_distribution"] },
-  sericulture: { primary: "sericulture", supporting: ["agriculture", "horticulture_soil"] },
-  panchayat: { primary: "panchayat_rural", supporting: ["community_rural"] }
-});
-
-Object.assign(CIVIC_CATEGORY_DEPARTMENT_MAP, {
-  sports: "youth_sports",
-  youth: "youth_sports",
-  social_welfare: "social_welfare",
-  labour: "labour_employment",
-  employment: "labour_employment",
-  skill: "skill_employment",
-  tribal: "tribal_hills",
-  industry: "industries_commerce",
-  it: "information_technology",
-  technology: "science_technology",
-  culture: "art_culture",
-  heritage: "art_culture",
-  relief: "relief_rehabilitation",
-  consumer: "consumer_affairs",
-  sericulture: "sericulture",
-  panchayat: "panchayat_rural"
-});
-
-/* =========================================================
-   CIVIC AI CONTRACT
-   Real multimodal AI can plug into this gateway without
-   changing the People Portal's report schema.
-   ========================================================= */
-
-const CIVIC_AI_ENDPOINT =
-  window.CIVIC_AI_ENDPOINT || "";
-
-const CIVIC_AI_SCHEMA = {
-  detectedProblem: "string",
-  domain: "string",
-  category: "string",
-  severity: "number 0-100",
-  priority: "number 0-100",
-  confidence: "number 0-100",
-  publicImpact: "string",
-  imageFindings: ["string"],
-  consequences: ["string"],
-  damageAssessment: "string",
-  reasoning: "string",
-  recommendedAction: ["string"],
-  estimatedResponseWindow: "string",
-  primaryDepartmentId: "string",
-  supportingDepartmentIds: ["string"],
-  routingReason: "string",
-  verificationRequired: "boolean",
-  verificationReason: "string"
-};
-
-function civicAiFileToDataUrl(file) {
-  if (!file) return Promise.resolve(null);
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(reader.error || new Error("Could not read evidence file"));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function civicAiImageToDataUrl(file) {
-  if (!file) return null;
-
-  /*
-   * iPhone photos can be very large. Keep the original file for the
-   * citizen's evidence preview, but send a compact analysis copy to
-   * the AI gateway so multimodal requests remain reliable on mobile.
-   */
-  const raw = await civicAiFileToDataUrl(file);
-  if (!raw || !raw.startsWith("data:image/")) return raw;
-
-  try {
-    const image = new Image();
-    image.src = raw;
-
-    await new Promise((resolve, reject) => {
-      image.onload = resolve;
-      image.onerror = () => reject(new Error("Could not decode evidence image"));
-    });
-
-    const maxDimension = 1600;
-    const scale = Math.min(
-      1,
-      maxDimension / Math.max(image.naturalWidth || 1, image.naturalHeight || 1)
-    );
-
-    const width = Math.max(1, Math.round((image.naturalWidth || 1) * scale));
-    const height = Math.max(1, Math.round((image.naturalHeight || 1) * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext("2d", { alpha: false });
-    if (!context) return raw;
-
-    context.drawImage(image, 0, 0, width, height);
-
-    const compressed = canvas.toDataURL("image/jpeg", 0.82);
-
-    return compressed.length < raw.length ? compressed : raw;
-  } catch {
-    return raw;
-  }
-}
-
-async function buildCivicAIPayload(draft) {
-  const evidenceImage = await civicAiImageToDataUrl(
-    state.draftPhotoFile
-  );
-
-  return {
-    version: "civic-os-ai-v1",
-    task: "multimodal_civic_triage",
-    report: {
-      categoryHint: draft.categoryKey || "auto",
-      description: draft.description,
-      location: normalizeCivicLocation(
-        draft.location,
-        draft.coordinates || {}
-      )
-    },
-    evidence: {
-      image: evidenceImage
-    },
-    knowledge: Object.values(CIVIC_DEPARTMENTS).map((department) => ({
-      id: department.id,
-      officialName: department.officialName,
-      responsibilityAreas: department.responsibilityAreas,
-      problemTypes: department.problemTypes,
-      visualSignals: department.visualSignals,
-      escalationConditions: department.escalationConditions
-    })),
-    requiredOutput: CIVIC_AI_SCHEMA,
-    safetyRule:
-      "Do not invent visual evidence, department responsibility, severity, priority, or resolution time. If evidence is insufficient, mark verificationRequired true."
-  };
-}
-
-function normalizeCivicAIResult(raw, draft) {
-  if (!raw || typeof raw !== "object") return null;
-
-  const source =
-    raw.assessment &&
-    typeof raw.assessment === "object"
-      ? raw.assessment
-      : raw;
-
-  const clamp = (value) => {
-    const n = Number(value);
-    return Number.isFinite(n)
-      ? Math.max(0, Math.min(100, Math.round(n)))
-      : null;
-  };
-
-  const visualFindings = Array.isArray(source.imageFindings)
-    ? source.imageFindings.filter(Boolean).map(String).slice(0, 12)
-    : [];
-
-  const routing = buildDepartmentRouting({
-    description:
-      String(draft.description || "") +
-      " " +
-      String(source.detectedProblem || "") +
-      " " +
-      String(source.domain || ""),
-    categoryKey:
-      source.category || draft.categoryKey || "other",
-    location:
-      draft.location,
-    visualFindings
-  });
-
-  const modelCandidateId =
-    CIVIC_DEPARTMENTS[source.primaryDepartmentId]
-      ? source.primaryDepartmentId
-      : "";
-
-  const modelCandidate =
-    routing.rankedDepartments.find(
-      (department) => department.id === modelCandidateId
-    );
-
-  /*
-   * Ground departmental routing instead of blindly trusting a model label.
-   * A model-selected department must exist in the civic knowledge layer and
-   * have meaningful evidence support. When an explicit responsibility rule
-   * exists, that rule remains authoritative for the primary department.
-   */
-  const explicitRule =
-    CIVIC_ROUTING_RULES[source.category] ||
-    CIVIC_ROUTING_RULES[draft.categoryKey];
-
-  const modelIsGrounded =
-    Boolean(modelCandidate) &&
-    Number(modelCandidate.score) >= 0.40;
-
-  const modelAgreesWithRule =
-    !explicitRule ||
-    explicitRule.primary === modelCandidateId;
-
-  const modelPrimary =
-    modelIsGrounded && modelAgreesWithRule
-      ? modelCandidateId
-      : routing.primaryDepartmentId;
-
-  const modelSupporting = Array.isArray(source.supportingDepartmentIds)
-    ? source.supportingDepartmentIds.filter(
-        (id) =>
-          id !== modelPrimary &&
-          CIVIC_DEPARTMENTS[id] &&
-          (!explicitRule ||
-            explicitRule.supporting.includes(id))
-      )
-    : [];
-
-  const supportingIds = [
-    ...new Set([
-      ...modelSupporting,
-      ...(routing.supportingDepartments || []).map(
-        (department) => department.id
-      )
-    ])
-  ].filter((id) => id !== modelPrimary);
-
-  const priorityScore = clamp(source.priority);
-
-  return {
-    source: "multimodal-ai",
-    detectedProblem:
-      String(source.detectedProblem || "Civic issue").trim(),
-    categoryKey:
-      CIVIC_CATEGORY_DEPARTMENT_MAP[source.category]
-        ? source.category
-        : draft.categoryKey || "other",
-    severity: clamp(source.severity),
-    priorityScore,
-    priority:
-      priorityScore === null
-        ? "Medium"
-        : priorityScore >= 75
-          ? "High"
-          : priorityScore >= 45
-            ? "Medium"
-            : "Low",
-    confidence: clamp(source.confidence),
-    publicImpact:
-      String(source.publicImpact || "Needs assessment").trim(),
-    imageFindings: visualFindings,
-    consequences: Array.isArray(source.consequences)
-      ? source.consequences.filter(Boolean).map(String).slice(0, 8)
-      : [],
-    damageAssessment:
-      String(source.damageAssessment || "Needs field verification").trim(),
-    reasoning:
-      String(source.reasoning || "AI reasoning unavailable").trim(),
-    recommendation:
-      Array.isArray(source.recommendedAction)
-        ? source.recommendedAction.filter(Boolean).map(String).slice(0, 8).join(" ")
-        : String(source.recommendedAction || "Field verification required").trim(),
-    estimatedResponseWindow:
-      String(
-        source.estimatedResponseWindow ||
-        "Subject to department verification"
-      ).trim(),
-    routing: {
-      ...routing,
-      primaryDepartment:
-        CIVIC_DEPARTMENTS[modelPrimary] || routing.primaryDepartment,
-      primaryDepartmentId: modelPrimary,
-      supportingDepartments: supportingIds
-        .map((id) => CIVIC_DEPARTMENTS[id])
-        .filter(Boolean),
-      routingReason:
-        String(
-          source.routingReason ||
-          routing.routingReason ||
-          "Routing grounded in civic responsibility rules."
-        ).trim()
-    },
-    verificationRequired:
-      Boolean(
-        source.verificationRequired ||
-        !source.confidence ||
-        Number(source.confidence) < 70
-      ),
-    verificationReason:
-      String(
-        source.verificationReason ||
-        "Field verification remains required before final departmental action."
-      ).trim()
-  };
-}
-
-async function requestCivicAI(draft) {
-  if (!CIVIC_AI_ENDPOINT) return null;
-
-  const payload = await buildCivicAIPayload(draft);
-
-  const response = await fetch(CIVIC_AI_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      "Civic AI gateway returned HTTP " + response.status
-    );
-  }
-
-  const result = await response.json();
-  return normalizeCivicAIResult(result, draft);
-}
-
-const CIVIC_ROUTING_RULES = {
-  roads: { primary: "pwd", supporting: ["transport", "relief_disaster"] },
-  garbage: { primary: "mahud", supporting: ["health", "environment_forest"] },
-  water: { primary: "phed", supporting: ["mahud", "health"] },
-  streetlights: { primary: "power", supporting: ["mahud"] },
-  electric: { primary: "power", supporting: ["home_fire", "mahud"] },
-  education: { primary: "education", supporting: ["pwd"] },
-  health: { primary: "health", supporting: ["mahud", "environment_forest"] },
-  environment: { primary: "environment_forest", supporting: ["mahud", "police"] },
-  agriculture: { primary: "agriculture", supporting: ["horticulture_soil", "relief_disaster"] },
-  horticulture: { primary: "horticulture_soil", supporting: ["agriculture", "water_resources"] },
-  irrigation: { primary: "minor_irrigation", supporting: ["agriculture", "water_resources"] },
-  food_distribution: { primary: "food_civil_public_distribution", supporting: [] },
-  fisheries: { primary: "fisheries", supporting: ["environment_forest"] },
-  animal: { primary: "animal_husbandry", supporting: [] },
-  rural: { primary: "community_rural", supporting: ["pwd"] },
-  tourism: { primary: "tourism", supporting: ["pwd", "environment_forest"] },
-  flood: { primary: "water_resources", supporting: ["relief_disaster", "mahud", "pwd"] }
-};
-
-const CIVIC_CATEGORY_DEPARTMENT_MAP = {
-  roads: "pwd",
-  garbage: "mahud",
-  water: "phed",
-  streetlights: "power",
-  electric: "power",
-  education: "education",
-  health: "health",
-  environment: "environment_forest",
-  agriculture: "agriculture",
-  horticulture: "horticulture_soil",
-  irrigation: "minor_irrigation",
-  flood: "water_resources",
-  fisheries: "fisheries",
-  animal: "animal_husbandry",
-  rural: "community_rural",
-  tourism: "tourism"
-};
-
-function normalizeCivicLocation(location, coordinates = {}) {
-  const raw = String(location || "").trim();
-  const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
-  const district = parts.length > 1 ? parts[parts.length - 1] : "";
-  const locality = parts.length > 1 ? parts.slice(0, -1).join(", ") : raw;
-  const latitude = Number.isFinite(Number(coordinates.latitude)) ? Number(coordinates.latitude) : null;
-  const longitude = Number.isFinite(Number(coordinates.longitude)) ? Number(coordinates.longitude) : null;
-  const placeName = raw || "Location pending";
-  const mapUrl = latitude !== null && longitude !== null
-    ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${placeName}, Manipur`)}`;
-
-  return {
-    placeName,
-    locality,
-    district,
-    state: "Manipur",
-    latitude,
-    longitude,
-    road: "",
-    landmark: "",
-    mapUrl,
-    searchText: `${placeName} ${locality} ${district} Manipur`.toLowerCase()
-  };
-}
-
-function scoreCivicDepartments({ description = "", categoryKey = "other", location = "", visualFindings = [] }) {
-  const text = `${description} ${location} ${visualFindings.join(" ")}`.toLowerCase();
-  const scores = new Map();
-
-  const addScore = (id, amount) => {
-    scores.set(id, Math.min(0.99, (scores.get(id) || 0) + amount));
-  };
-
-  const rule = CIVIC_ROUTING_RULES[categoryKey];
-  if (rule) {
-    addScore(rule.primary, 0.58);
-    rule.supporting.forEach((id, index) => addScore(id, Math.max(0.18, 0.32 - index * 0.04)));
-  }
-
-  const mapped = CIVIC_CATEGORY_DEPARTMENT_MAP[categoryKey];
-  if (mapped) addScore(mapped, 0.22);
-
-  for (const [id, department] of Object.entries(CIVIC_DEPARTMENTS)) {
-    const hits = [
-      ...department.problemTypes,
-      ...department.responsibilityAreas,
-      ...department.visualSignals
-    ].filter((term) => text.includes(term.toLowerCase()));
-    if (hits.length) addScore(id, Math.min(0.24, hits.length * 0.06));
-  }
-
-  return [...scores.entries()]
-    .map(([id, score]) => ({ ...CIVIC_DEPARTMENTS[id], score: Number(score.toFixed(2)) }))
-    .sort((a, b) => b.score - a.score);
-}
-
-function buildDepartmentRouting({ description = "", categoryKey = "other", location = "", visualFindings = [], emergency = false }) {
-  const ranked = scoreCivicDepartments({ description, categoryKey, location, visualFindings });
-  const rule = CIVIC_ROUTING_RULES[categoryKey];
-  let primary = ranked[0] || CIVIC_DEPARTMENTS.pwd;
-
-  if (rule?.primary && CIVIC_DEPARTMENTS[rule.primary]) {
-    primary = ranked.find((item) => item.id === rule.primary) || {
-      ...CIVIC_DEPARTMENTS[rule.primary],
-      score: 0.72
-    };
-  }
-
-  let supportingIds = rule?.supporting || [];
-  if (emergency) supportingIds = [...new Set(["home_fire", "relief_disaster", ...supportingIds])];
-
-  const supportingDepartments = supportingIds
-    .filter((id) => id !== primary.id && CIVIC_DEPARTMENTS[id])
-    .map((id) => {
-      const rankedItem = ranked.find((item) => item.id === id);
-      return rankedItem || { ...CIVIC_DEPARTMENTS[id], score: 0.35 };
-    });
-
-  const topSignals = ranked.slice(0, 3).map((item) => `${item.officialName} (${Math.round(item.score * 100)}%)`);
-  const routingReason = emergency
-    ? "Emergency indicators elevate safety/disaster response while the infrastructure owner remains responsible for the underlying issue."
-    : `Routing considers the reported problem, location context, detected evidence and Manipur departmental responsibilities. Top candidates: ${topSignals.join(", ")}.`;
-
-  return {
-    primaryDepartment: primary.officialName,
-    primaryDepartmentId: primary.id,
-    primaryScore: primary.score,
-    supportingDepartments,
-    routingReason,
-    rankedDepartments: ranked
-  };
-}
-
-function civicPriorityScore(priority, description = "") {
-  const base = { High: 82, Medium: 55, Low: 28 }[priority] ?? 50;
-  const text = description.toLowerCase();
-  const impact = matchTerms(text, [...HIGH_PRIORITY_SIGNALS, ...IMPACT_SIGNALS]).length;
-  return Math.min(99, base + Math.min(15, impact * 3));
-}
-
-function createCivicReportData(seed, analysis) {
-  const location = normalizeCivicLocation(seed.location, seed.coordinates || {});
-  const visualFindings = analysis.imageFindings || analysis.signals || [];
-  const emergency = matchTerms(
-    `${seed.description || ""} ${visualFindings.join(" ")}`,
-    ["fire", "live wire", "sparking", "collapse", "dangerous", "emergency", "life threatening"]
-  ).length > 0;
-
-  const routing = buildDepartmentRouting({
-    description: seed.description,
-    categoryKey: analysis.categoryKey,
-    location: location.placeName,
-    visualFindings,
-    emergency
-  });
-
-  const priorityScore = civicPriorityScore(analysis.priority, seed.description);
-  const severity = Math.min(99, Math.max(10, priorityScore - (analysis.priority === "Low" ? 2 : 0)));
-  const evidenceConfidence = seed.photo ? 0.68 : 0.35;
-  const civicId = seed.id?.startsWith("CIV-") ? seed.id : `CIV-2026-${String(seed.id || Date.now()).slice(-5)}`;
-  const reportedAt = seed.reportedAt ?? NOW - (seed.hoursAgo || 0) * HOUR;
-
-  return {
-    identity: { civicId, createdAt: reportedAt, source: seed.source || "people_portal" },
-    problem: {
-      title: seed.title,
-      category: analysis.categoryKey,
-      description: seed.description,
-      affectedPeople: seed.affectedPeople || 0
-    },
-    evidence: {
-      images: seed.photo ? [seed.photo] : [],
-      videos: seed.videos || [],
-      evidenceNotes: seed.evidenceNotes || ""
-    },
-    location,
-    ai: {
-      detectedProblem: analysis.categoryLabel,
-      category: analysis.categoryKey,
-      severity,
-      priority: priorityScore,
-      confidence: analysis.confidence,
-      evidenceConfidence,
-      imageFindings: visualFindings,
-      consequences: analysis.consequences || [],
-      damageAssessment: analysis.damageAssessment || `${analysis.priority} impact indicated from the submitted description and available evidence.`,
-      reasoning: analysis.summary,
-      recommendedAction: analysis.recommendation,
-      estimatedResponseWindow: analysis.responseTime
-    },
-    routing,
-    lifecycle: {
-      status: seed.status || "Reported",
-      history: [],
-      assignedDepartment: routing.primaryDepartment,
-      resolvedAt: null
-    },
-    community: {
-      supporters: seed.supporters ?? 1,
-      duplicateOf: analysis.duplicate?.id || null,
-      relatedReports: analysis.duplicate ? [analysis.duplicate.id] : []
-    }
-  };
-}
-
-function searchIssuesByPlace(query) {
-  const q = String(query || "").trim().toLowerCase();
-  if (!q) return issues;
-  return issues.filter((issue) => {
-    const location = issue.locationData || normalizeCivicLocation(issue.location);
-    return location.searchText.includes(q) ||
-      String(issue.location || "").toLowerCase().includes(q) ||
-      String(issue.area || "").toLowerCase().includes(q);
-  });
-}
-
-function getCivicReport(id) {
-  return getIssue(id)?.report || null;
-}
-
-
 /* =========================================================
    2. DEMO AI ENGINE
    ========================================================= */
@@ -1166,13 +290,9 @@ function analyzeReport({
   categoryKey,
   description,
   location,
-  hasPhoto,
-  imageFindings = [],
-  coordinates = {}
+  hasPhoto
 }) {
-  const text = String(description || "").toLowerCase();
-  const evidenceText = imageFindings.join(" ").toLowerCase();
-  const combined = `${text} ${evidenceText}`;
+  const text = description.toLowerCase();
   const detected = detectCategory(text);
 
   let key =
@@ -1186,7 +306,10 @@ function analyzeReport({
 
   const chosenHits =
     categoryKey && CATEGORIES[categoryKey]
-      ? matchTerms(text, CATEGORIES[categoryKey].keywords).length
+      ? matchTerms(
+          text,
+          CATEGORIES[categoryKey].keywords
+        ).length
       : 0;
 
   const suggestion =
@@ -1198,128 +321,109 @@ function analyzeReport({
       ? detected.key
       : null;
 
-  if (!CATEGORIES[key]) key = "other";
+  if (!CATEGORIES[key]) {
+    key = "other";
+  }
 
   const cat = CATEGORIES[key];
-  const highHits = matchTerms(combined, HIGH_PRIORITY_SIGNALS);
-  const impactHits = matchTerms(combined, IMPACT_SIGNALS);
-  const lowHits = matchTerms(combined, LOW_SIGNALS);
 
-  const emergencyHits = matchTerms(combined, [
-    "fire", "live wire", "sparking", "collapse",
-    "life threatening", "electrocution", "emergency"
-  ]);
+  const highHits = matchTerms(
+    text,
+    HIGH_PRIORITY_SIGNALS
+  );
 
-  const damageSignals = matchTerms(combined, [
-    "pothole", "crack", "broken", "collapsed", "damaged",
-    "eroded", "leak", "overflow", "flooded", "blocked",
-    "exposed", "missing", "destroyed", "deep"
-  ]);
+  const impactHits = matchTerms(
+    text,
+    IMPACT_SIGNALS
+  );
+
+  const lowHits = matchTerms(
+    text,
+    LOW_SIGNALS
+  );
 
   let priority = "Medium";
-  if (emergencyHits.length || highHits.length || impactHits.length >= 2) {
+
+  if (
+    highHits.length ||
+    impactHits.length >= 2
+  ) {
     priority = "High";
-  } else if (lowHits.length && !impactHits.length && !damageSignals.length) {
+  } else if (
+    lowHits.length &&
+    !impactHits.length
+  ) {
     priority = "Low";
   }
 
-  const baseConfidence =
+  const confidence = Math.min(
+    97,
     62 +
-    Math.min(Math.max(detected.hits, chosenHits), 3) * 7 +
-    (categoryKey && categoryKey !== "other" ? 7 : 0) +
-    (hasPhoto ? 8 : 0) +
-    Math.min(highHits.length + impactHits.length + damageSignals.length, 4) * 3;
-
-  const confidence = Math.min(98, baseConfidence);
-
-  const priorityScore = Math.min(
-    99,
-    Math.max(
-      15,
-      (priority === "High" ? 78 : priority === "Medium" ? 52 : 27) +
-      Math.min(15, emergencyHits.length * 8 + highHits.length * 4 + impactHits.length * 2 + damageSignals.length * 2)
-    )
+      Math.min(
+        Math.max(
+          detected.hits,
+          chosenHits
+        ),
+        3
+      ) *
+        8 +
+      (categoryKey &&
+      categoryKey !== "other"
+        ? 8
+        : 0) +
+      (hasPhoto ? 6 : 0) +
+      Math.min(
+        highHits.length +
+          impactHits.length,
+        3
+      ) *
+        3
   );
 
-  const severity = Math.min(
-    99,
-    Math.max(
-      10,
-      35 +
-      damageSignals.length * 7 +
-      highHits.length * 8 +
-      emergencyHits.length * 12 +
-      Math.min(15, impactHits.length * 4)
-    )
-  );
+  let riskNote = "";
 
-  const consequences = [];
-  if (key === "roads") consequences.push("Further pavement deterioration", "Traffic disruption", "Increased accident risk");
-  if (key === "water") consequences.push("Public access disruption", "Slip or sanitation risk", "Further infrastructure damage");
-  if (key === "garbage") consequences.push("Public-health and sanitation risk", "Blocked pedestrian access", "Pest attraction");
-  if (key === "streetlights") consequences.push("Reduced night visibility", "Public-safety risk");
-  if (key === "electric") consequences.push("Electrical safety risk", "Potential service disruption");
-  if (key === "education") consequences.push("Student and staff safety risk", "Reduced access to school facilities");
-  if (emergencyHits.length) consequences.unshift("Immediate human-safety risk");
-  if (!consequences.length) consequences.push("Service disruption", "Possible escalation if left unresolved");
-
-  const imageSignals = imageFindings.length
-    ? imageFindings
-    : (hasPhoto ? ["Image evidence attached — multimodal verification pending"] : []);
-
-  const detectedProblem = cat.aiLabel;
-  const damageAssessment = damageSignals.length
-    ? `Detected damage indicators: ${damageSignals.join(", ")}. Severity requires field verification.`
-    : "No specific structural damage can be verified from text alone.";
-
-  const riskNote = emergencyHits.length
-    ? " Emergency indicators require immediate safety escalation."
-    : highHits.length
-      ? ` Risk indicators detected: ${highHits.join(", ")}.`
-      : impactHits.length >= 2
-        ? ` Public-impact indicators detected: ${impactHits.join(", ")}.`
-        : "";
+  if (highHits.length) {
+    riskNote =
+      ` The report mentions risk factors (${highHits.join(
+        ", "
+      )}), so it is flagged for urgent attention.`;
+  } else if (impactHits.length >= 2) {
+    riskNote =
+      ` Impact factors (${impactHits.join(
+        ", "
+      )}) raise its urgency.`;
+  }
 
   const summary =
-    `AI identified a ${detectedProblem.toLowerCase()} problem at ${location}. ` +
+    `A citizen reports a ${cat.aiLabel.toLowerCase()} problem at ${location}. ` +
     `${firstSentence(description)}${riskNote}`;
 
-  const recommendation = priority === "High"
-    ? `Priority dispatch: ${cat.action} Inspect the affected area, make it safe if necessary, and address the underlying cause.`
-    : cat.action;
-
-  const routing = buildDepartmentRouting({
-    description,
-    categoryKey: key,
-    location,
-    visualFindings: imageFindings,
-    emergency: emergencyHits.length > 0
-  });
+  const recommendation =
+    priority === "High"
+      ? `Priority dispatch: ${cat.action} Secure the area until the work is complete.`
+      : cat.action;
 
   return {
     categoryKey: key,
     categoryLabel: cat.aiLabel,
-    detectedProblem,
-    department: routing.primaryDepartment,
+    department: cat.department,
     priority,
-    priorityScore,
-    severity,
     confidence,
-    evidenceConfidence: hasPhoto ? 0.78 : 0.45,
     summary,
     recommendation,
     responseTime: RESPONSE_TIME[priority],
-    signals: [...new Set([...highHits, ...impactHits, ...damageSignals])],
-    imageFindings: imageSignals,
-    consequences: [...new Set(consequences)],
-    damageAssessment,
-    routing,
-    coordinates,
+    signals: [
+      ...highHits,
+      ...impactHits
+    ],
     skills: cat.skills,
     autoDetected,
     suggestion,
-    emergency: emergencyHits.length > 0,
-    duplicate: findPossibleDuplicate(key, location, description)
+    duplicate: findPossibleDuplicate(
+      key,
+      location,
+      description
+    ),
   };
 }
 
@@ -1398,7 +502,7 @@ const SEED_ISSUES = [
     supporters: 23,
     area: "Ward 4",
     location:
-      "Khurai, Imphal East",
+      "Oakridge Primary School, Main Road",
     description:
       "A large, deep pothole has formed right at the school entrance. Cars swerve to avoid it and it is dangerous for children crossing in the morning."
   },
@@ -1414,7 +518,7 @@ const SEED_ISSUES = [
     supporters: 41,
     area: "Ward 2",
     location:
-      "Paona Bazaar, Imphal West",
+      "Market Street, Block C",
     description:
       "Garbage has not been collected for seven days. Bins are overflowing onto the footpath and the smell is spreading to nearby shops."
   },
@@ -1430,7 +534,7 @@ const SEED_ISSUES = [
     supporters: 12,
     area: "Ward 3",
     location:
-      "Lamphelpat, Imphal West",
+      "Lake View Road, near Pine Apartments",
     description:
       "One streetlight was flickering and then stopped working. The stretch was dark after 8pm."
   },
@@ -1446,7 +550,7 @@ const SEED_ISSUES = [
     supporters: 17,
     area: "Ward 1",
     location:
-      "Porompat, Imphal East",
+      "Station Road, near the bus depot",
     description:
       "A water pipe under the footpath has been leaking for two days. Clean water is being wasted and the path is slippery."
   },
@@ -1462,7 +566,7 @@ const SEED_ISSUES = [
     supporters: 58,
     area: "Ward 5",
     location:
-      "Singjamei, Imphal West",
+      "Riverside Colony, Lane 5",
     description:
       "The open drain overflows every time it rains and sewage water floods the lane. Residents cannot walk through safely."
   },
@@ -1478,7 +582,7 @@ const SEED_ISSUES = [
     supporters: 34,
     area: "Ward 3",
     location:
-      "Thangmeiband, Imphal West",
+      "Central Park, west gate",
     description:
       "The cover of the streetlight pole is missing and exposed wires are hanging at hand height. This is unsafe for children playing nearby."
   },
@@ -1494,7 +598,7 @@ const SEED_ISSUES = [
     supporters: 9,
     area: "Ward 2",
     location:
-      "Nagaram, Imphal East",
+      "Behind Green Avenue Apartments",
     description:
       "Construction waste and household trash are being dumped in the empty plot at night. The pile keeps growing."
   },
@@ -1510,7 +614,7 @@ const SEED_ISSUES = [
     supporters: 27,
     area: "Ward 5",
     location:
-      "Khurai Konsam Leikai, Imphal East",
+      "Riverside Colony playground",
     description:
       "Stagnant water has collected around the playground and there are a lot of mosquitoes. Several families reported dengue symptoms."
   },
@@ -1526,7 +630,7 @@ const SEED_ISSUES = [
     supporters: 19,
     area: "Ward 6",
     location:
-      "Yairipok, Thoubal",
+      "Government High School, Hill Road",
     description:
       "Two classrooms have a leaking roof and many desks are broken. Students are sitting on the floor during lessons."
   },
@@ -1542,7 +646,7 @@ const SEED_ISSUES = [
     supporters: 46,
     area: "Ward 6",
     location:
-      "Kakching, Kakching",
+      "Old Mill Road",
     description:
       "Six old trees were cut down along the road over the weekend. Residents are not aware of any approval for this."
   },
@@ -1558,7 +662,7 @@ const SEED_ISSUES = [
     supporters: 64,
     area: "Ward 1",
     location:
-      "Keishampat, Imphal West",
+      "Clock Tower Junction",
     description:
       "The traffic signal at the junction has been off since the storm. There was almost an accident during rush hour."
   },
@@ -1574,7 +678,7 @@ const SEED_ISSUES = [
     supporters: 22,
     area: "Ward 4",
     location:
-      "Tera, Imphal West",
+      "Sector 9 Ring Road",
     description:
       "Long cracks have opened up on the road surface and water collects in them after rain, slowing traffic."
   },
@@ -1590,7 +694,7 @@ const SEED_ISSUES = [
     supporters: 8,
     area: "Ward 1",
     location:
-      "MG Avenue, Imphal West",
+      "City Bus Terminal",
     description:
       "The public bins at the terminal are full by noon and litter spreads across the waiting area."
   },
@@ -1606,83 +710,10 @@ const SEED_ISSUES = [
     supporters: 31,
     area: "Ward 3",
     location:
-      "Chingmeirong, Imphal West",
+      "Canal Walk, between bridges 2 and 3",
     description:
       "Almost all lamps on this walkway are out. It is completely dark at night and many people avoid walking home this way."
-  },
-  {
-    id: "CIV-1028", title: "Floodwater covering the roadside", category: "water",
-    priority: "High", status: "Verified", hoursAgo: 18, supporters: 36,
-    area: "Ward 7", location: "Kanglatongbi Bazaar, Imphal West",
-    description: "Rainwater remains across the roadside and makes it difficult for pedestrians and two-wheelers to pass. Please inspect nearby drains and the road shoulder."
-  },
-  {
-    id: "CIV-1027", title: "Broken hand pump at community ground", category: "water",
-    priority: "Medium", status: "Reported", hoursAgo: 27, supporters: 14,
-    area: "Ward 1", location: "Heingang Community Ground, Imphal East",
-    description: "The public hand pump beside the community ground has not worked for several days. Residents are asking for an inspection and repair."
-  },
-  {
-    id: "CIV-1026", title: "Damaged footbridge railing", category: "roads",
-    priority: "High", status: "In Progress", hoursAgo: 33, supporters: 29,
-    area: "Ward 3", location: "Iroisemba Crossing, Imphal West",
-    description: "A section of the pedestrian bridge railing is loose and the walking surface is uneven. Please secure the area and arrange an inspection."
-  },
-  {
-    id: "CIV-1025", title: "Public school toilet needs repair", category: "education",
-    priority: "Medium", status: "Reported", hoursAgo: 41, supporters: 18,
-    area: "Ward 2", location: "Wangkhei High School Road, Imphal East",
-    description: "The school toilet plumbing is damaged and the facility is difficult to use. The school needs a maintenance inspection and repair."
-  },
-  {
-    id: "CIV-1024", title: "Streetlight out near health centre", category: "streetlights",
-    priority: "Medium", status: "Verified", hoursAgo: 57, supporters: 21,
-    area: "Ward 5", location: "RIMS Main Gate Road, Lamphel, Imphal West",
-    description: "The streetlight near the health centre entrance is not working after dark, leaving the crossing poorly lit for pedestrians."
-  },
-  {
-    id: "CIV-1023", title: "Waste piled beside market entrance", category: "garbage",
-    priority: "Medium", status: "In Progress", hoursAgo: 63, supporters: 32,
-    area: "Ward 4", location: "Kakching Keithel, Kakching",
-    description: "Mixed household and market waste has accumulated beside the entrance. Please arrange collection and check whether bins are sufficient."
-  },
-  {
-    id: "CIV-1022", title: "Road surface broken near bus stop", category: "roads",
-    priority: "High", status: "Reported", hoursAgo: 70, supporters: 25,
-    area: "Ward 2", location: "Thoubal Wangmataba Bus Stop, Thoubal",
-    description: "The road edge near the bus stop is broken and vehicles move into the opposite lane to avoid it. Inspection and temporary safety measures are requested."
-  },
-  {
-    id: "CIV-1021", title: "Drain blocked near residential lane", category: "water",
-    priority: "Medium", status: "Verified", hoursAgo: 82, supporters: 16,
-    area: "Ward 6", location: "Lilong Haoreibi Makha Leikai, Thoubal",
-    description: "Water is not draining properly after rain and is backing up along the lane. Please inspect for a blockage and clear it if appropriate."
-  },
-  {
-    id: "CIV-1020", title: "Damaged public dustbin stand", category: "garbage",
-    priority: "Low", status: "Resolved", hoursAgo: 98, supporters: 7,
-    area: "Ward 1", location: "Moreh Main Market, Tengnoupal",
-    description: "The public bin stand had broken supports and waste was spilling onto the pavement. The report is marked resolved in this demo dataset."
-  },
-  {
-    id: "CIV-1019", title: "Unsafe pothole near health sub-centre", category: "roads",
-    priority: "High", status: "In Progress", hoursAgo: 109, supporters: 38,
-    area: "Ward 2", location: "Bishnupur District Hospital Road, Bishnupur",
-    description: "A deep pothole has formed near the health facility approach. Two-wheelers are swerving around it and the surface needs prompt inspection."
-  },
-  {
-    id: "CIV-1018", title: "Playground drainage needs cleaning", category: "water",
-    priority: "Low", status: "Reported", hoursAgo: 122, supporters: 11,
-    area: "Ward 3", location: "Nambol Multipurpose Ground, Bishnupur",
-    description: "Water is remaining in low areas of the playground after rain. Please check the drainage channels and identify routine maintenance needs."
-  },
-  {
-    id: "CIV-1017", title: "Traffic congestion at market junction", category: "safety",
-    priority: "Medium", status: "Verified", hoursAgo: 136, supporters: 44,
-    area: "Ward 4", location: "Moirang Bazar Junction, Bishnupur",
-    description: "Vehicles and roadside loading frequently block the junction during busy periods. A traffic-flow review and suitable management measures are requested."
   }
-
 ];
 
 let issues = [];
@@ -1856,7 +887,7 @@ const MISSIONS = [
     id: "M5",
     issueId: "CIV-1033",
     title:
-      "Tree census on Kakching, Kakching",
+      "Tree census on Old Mill Road",
     needed: 8,
     joined: 3,
     description:
@@ -1886,7 +917,7 @@ const EXAMPLES = [
   {
     category: "garbage",
     location:
-      "Paona Bazaar, Imphal West",
+      "Market Street, Block C",
     description:
       "Garbage has not been collected for five days and bins are overflowing onto the footpath. The smell is very bad."
   },
@@ -1902,7 +933,7 @@ const EXAMPLES = [
   {
     category: "other",
     location:
-      "Porompat, Imphal East",
+      "Station Road, near the bus depot",
     description:
       "A water pipe has burst and water is flooding the road since this morning."
   }
@@ -1917,7 +948,6 @@ const state = {
   screen: "homeScreen",
 
   draftPhotoUrl: null,
-  draftPhotoFile: null,
 
   draft: null,
 
@@ -1931,7 +961,6 @@ const state = {
     status: "All",
     category: "all",
     priority: "all",
-    district: "all",
     sort: "newest",
     query: ""
   },
@@ -2169,54 +1198,70 @@ function buildUpdates(
 }
 
 function createIssue(seed) {
-  const analysis = analyzeReport({
-    categoryKey: seed.category,
-    description: seed.description,
-    location: seed.location,
-    hasPhoto: Boolean(seed.photo),
-    imageFindings: seed.imageFindings || [],
-    coordinates: seed.coordinates || {}
-  });
+  const analysis =
+    analyzeReport({
+      categoryKey: seed.category,
+      description: seed.description,
+      location: seed.location,
+      hasPhoto: Boolean(seed.photo)
+    });
 
-  const reportedAt = seed.reportedAt ?? NOW - (seed.hoursAgo || 0) * HOUR;
-  const report = createCivicReportData({ ...seed, reportedAt }, analysis);
-  const department = report.routing.primaryDepartment;
+  const reportedAt =
+    seed.reportedAt ??
+    NOW - seed.hoursAgo * HOUR;
 
-  const issue = {
+  const department =
+    CATEGORIES[seed.category]?.department ||
+    "Municipal Helpdesk";
+
+  return {
     id: seed.id,
+
     title: seed.title,
+
     category: seed.category,
+
     description: seed.description,
+
     location: seed.location,
+
     area: seed.area,
-    priority: seed.priority ?? analysis.priority,
-    status: seed.status ?? "Reported",
-    supporters: seed.supporters ?? 1,
-    photo: seed.photo ?? null,
+
+    priority:
+      seed.priority ??
+      analysis.priority,
+
+    status:
+      seed.status ??
+      "Reported",
+
+    supporters:
+      seed.supporters ?? 1,
+
+    photo:
+      seed.photo ?? null,
+
     reportedAt,
+
     department,
-    departmentId: report.routing.primaryDepartmentId,
+
     summary: analysis.summary,
-    recommendation: seed.priority === "High" || analysis.priority === "High"
-      ? analysis.recommendation
-      : CATEGORIES[seed.category]?.action || CATEGORIES.other.action,
-    updates: buildUpdates(seed.status ?? "Reported", reportedAt, department),
-    locationData: report.location,
-    photos: report.evidence.images,
-    ai: report.ai,
-    routing: report.routing,
-    lifecycle: report.lifecycle,
-    community: report.community,
-    report
+
+    recommendation:
+      seed.priority === "High" ||
+      analysis.priority === "High"
+        ? analysis.recommendation
+        : CATEGORIES[
+            seed.category
+          ]?.action ||
+          CATEGORIES.other.action,
+
+    updates: buildUpdates(
+      seed.status ?? "Reported",
+      reportedAt,
+      department
+    )
   };
-
-  issue.lifecycle.history = issue.updates.map((update) => ({
-    status: update.status,
-    timestamp: update.time || update.date || reportedAt,
-    note: update.text || update.message || ""
-  }));
-
-  return issue;
 }
 
 function getIssue(id) {
@@ -2805,10 +1850,7 @@ function getDraft() {
     hasPhoto:
       Boolean(
         state.draftPhotoUrl
-      ),
-
-    coordinates:
-      state.draftCoordinates || {}
+      )
   };
 }
 
@@ -2931,542 +1973,644 @@ function invalidateAnalysis() {
   }
 }
 
-async function handleAnalyze(event) {
+function handleAnalyze(event) {
   event.preventDefault();
 
   if (state.analyzing) return;
 
-  const draft = getDraft();
-  const descEl = $("#description");
-  const locEl = $("#location");
+  const draft =
+    getDraft();
+
+  const descEl =
+    $("#description");
+
+  const locEl =
+    $("#location");
 
   if (!descEl || !locEl) return;
 
-  descEl.removeAttribute("aria-invalid");
-  locEl.removeAttribute("aria-invalid");
+  descEl.removeAttribute(
+    "aria-invalid"
+  );
 
-  if (draft.description.length < 10) {
-    descEl.setAttribute("aria-invalid", "true");
-    showFormError("Please describe the problem in at least a few words.");
+  locEl.removeAttribute(
+    "aria-invalid"
+  );
+
+  if (
+    draft.description.length <
+    10
+  ) {
+    descEl.setAttribute(
+      "aria-invalid",
+      "true"
+    );
+
+    showFormError(
+      "Please describe the problem in at least a few words."
+    );
+
     descEl.focus();
+
     return;
   }
 
-  if (draft.location.length < 3) {
-    locEl.setAttribute("aria-invalid", "true");
-    showFormError("Please add a location so the right team can find it.");
+  if (
+    draft.location.length <
+    3
+  ) {
+    locEl.setAttribute(
+      "aria-invalid",
+      "true"
+    );
+
+    showFormError(
+      "Please add a location so the right team can find it."
+    );
+
     locEl.focus();
+
     return;
   }
 
   showFormError(null);
+
   state.draft = draft;
   state.analyzing = true;
 
-  const analyzeBtn = $("#analyzeBtn");
-  if (analyzeBtn) analyzeBtn.disabled = true;
+  const analyzeBtn =
+    $("#analyzeBtn");
+
+  if (analyzeBtn) {
+    analyzeBtn.disabled = true;
+  }
 
   const steps = [
     "Reading your description",
-    draft.hasPhoto ? "Inspecting the evidence image" : "Checking the reported details",
-    "Assessing severity, public impact and risk",
-    "Verifying the responsible department",
-    "Checking for related reports"
+    "Detecting the issue category",
+    "Assessing priority and risk",
+    "Routing to a department",
+    "Checking for duplicate reports"
   ];
 
-  const panel = $("#aiPanel");
-  if (!panel) {
-    state.analyzing = false;
-    if (analyzeBtn) analyzeBtn.disabled = false;
-    return;
-  }
+  const panel =
+    $("#aiPanel");
+
+  if (!panel) return;
 
   panel.innerHTML = `
     <div class="ai-card is-loading">
+
       <div class="ai-head">
         <span class="ai-title">
           <i data-lucide="brain-circuit"></i>
           Civic AI is analyzing…
         </span>
-        <span class="demo-badge">AI TRIAGE</span>
+
+        <span class="demo-badge">
+          Demo AI
+        </span>
       </div>
+
       <ol class="ai-steps">
-        ${steps.map((step) => `
-          <li class="ai-step">
-            <span class="ai-step-icon">
-              <i data-lucide="loader-circle"></i>
-            </span>
-            ${escapeHtml(step)}
-          </li>
-        `).join("")}
+        ${steps
+          .map(
+            (s) => `
+              <li class="ai-step">
+                <span class="ai-step-icon">
+                  <i data-lucide="loader-circle"></i>
+                </span>
+                ${escapeHtml(s)}
+              </li>
+            `
+          )
+          .join("")}
       </ol>
+
     </div>
   `;
 
   refreshIcons();
-  panel.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const stepEls = $$(".ai-step", panel);
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 
-  // Keep the staged animation, but await it so the real AI request cannot
-  // accidentally overlap with an unfinished UI cycle.
-  for (let index = 0; index < stepEls.length; index++) {
-    stepEls.forEach((el, i) => {
-      el.classList.toggle("done", i <= index);
-      el.classList.toggle("active", i === index);
-    });
+  const stepEls =
+    $$(".ai-step", panel);
 
-    await new Promise((resolve) => setTimeout(resolve, 320));
-  }
+  let index = 0;
 
-  try {
-    const multimodalAnalysis = await requestCivicAI(draft);
+  const tick = () => {
+    stepEls.forEach(
+      (el, i) => {
+        el.classList.toggle(
+          "done",
+          i < index
+        );
 
-    state.analysis = multimodalAnalysis || analyzeReport(draft);
+        el.classList.toggle(
+          "active",
+          i === index
+        );
+      }
+    );
 
-    if (multimodalAnalysis) {
-      state.analysis.aiSource = "live";
+    if (
+      index <
+      stepEls.length
+    ) {
+      index++;
+
+      setTimeout(
+        tick,
+        380
+      );
+
+      return;
     }
-  } catch (error) {
-    console.warn(
-      "Civic AI gateway unavailable; using deterministic civic fallback.",
-      error
-    );
 
-    state.analysis = analyzeReport(draft);
-    state.analysis.aiSource = "fallback";
+    state.analysis =
+      analyzeReport(draft);
 
-    toast(
-      "AI gateway unavailable — using civic fallback",
-      "triangle-alert"
-    );
+    state.analyzing = false;
+
+    if (analyzeBtn) {
+      analyzeBtn.disabled =
+        false;
+    }
+
+    renderAnalysis();
+  };
+
+  tick();
+}
+
+function renderAnalysis() {
+  const a =
+    state.analysis;
+
+  const d =
+    state.draft;
+
+  const panel =
+    $("#aiPanel");
+
+  if (!a || !d || !panel) {
+    return;
   }
 
-  state.analyzing = false;
-  if (analyzeBtn) analyzeBtn.disabled = false;
+  const note =
+    a.autoDetected
+      ? `
+        <div class="ai-note">
+          <i data-lucide="sparkles"></i>
+          <span>
+            Civic AI detected the category
+            <strong>
+              ${escapeHtml(
+                a.categoryLabel
+              )}
+            </strong>
+            from your description.
+          </span>
+        </div>
+      `
+      : a.suggestion
+        ? `
+          <div class="ai-note">
+            <i data-lucide="sparkles"></i>
+            <span>
+              Your description sounds more like
+              <strong>
+                ${escapeHtml(
+                  CATEGORIES[
+                    a.suggestion
+                  ].label
+                )}
+              </strong>.
 
-  renderAnalysis();
-}
-function renderAnalysis() {
-  const a = state.analysis;
-  const d = state.draft;
-  const panel = $("#aiPanel");
-  if (!a || !d || !panel) return;
+              <button
+                type="button"
+                class="link-btn"
+                data-action="use-suggestion"
+                data-key="${escapeHtml(
+                  a.suggestion
+                )}"
+              >
+                Switch category
+              </button>
+            </span>
+          </div>
+        `
+        : "";
 
-  const note = a.autoDetected
-    ? `<div class="ai-note"><i data-lucide="sparkles"></i><span>Civic AI detected <strong>${escapeHtml(a.categoryLabel)}</strong> from the report.</span></div>`
-    : "";
+  const duplicate =
+    a.duplicate
+      ? `
+        <div class="ai-warning">
 
-  const duplicate = a.duplicate ? `
-    <div class="ai-warning">
-      <i data-lucide="copy-check"></i>
-      <div class="ai-warning-body">
-        <span><strong>Possible related report:</strong> ${escapeHtml(a.duplicate.id)} · ${escapeHtml(a.duplicate.title)}</span>
-        <button type="button" class="link-btn" data-action="support-duplicate" data-id="${escapeHtml(a.duplicate.id)}">Support existing report <i data-lucide="arrow-right"></i></button>
-      </div>
-    </div>` : "";
+          <i data-lucide="copy-check"></i>
 
-  const signals = (a.signals || []).length ? `
-    <div class="ai-cell wide">
-      <span class="ai-label">Detected evidence signals</span>
-      <div class="signal-list">
-        ${a.signals.map((signal) => `<span class="pill pill-high">${escapeHtml(signal)}</span>`).join("")}
-      </div>
-    </div>` : "";
+          <div class="ai-warning-body">
 
-  const consequences = (a.consequences || []).map((item) =>
-    `<li>${escapeHtml(item)}</li>`).join("");
+            <span>
+              <strong>
+                Possible duplicate:
+              </strong>
 
-  const supporting = a.routing?.supportingDepartments?.length
-    ? a.routing.supportingDepartments.map((item) =>
-      `<span class="pill">${escapeHtml(item.officialName)}</span>`).join("")
-    : `<span class="ai-muted">None identified</span>`;
+              ${escapeHtml(
+                a.duplicate.id
+              )}
+
+              ·
+
+              ${escapeHtml(
+                a.duplicate.title
+              )}
+
+              (${a.duplicate.supporters}
+              supporters,
+              ${escapeHtml(
+                a.duplicate.status.toLowerCase()
+              )}).
+            </span>
+
+            <span>
+
+              <button
+                type="button"
+                class="link-btn"
+                data-action="support-duplicate"
+                data-id="${escapeHtml(
+                  a.duplicate.id
+                )}"
+              >
+                Support existing report instead
+                <i data-lucide="arrow-right"></i>
+              </button>
+
+            </span>
+
+          </div>
+        </div>
+      `
+      : "";
+
+  const signals =
+    a.signals.length
+      ? `
+        <div class="ai-cell wide">
+
+          <span class="ai-label">
+            Risk signals detected
+          </span>
+
+          <div class="signal-list">
+
+            ${a.signals
+              .map(
+                (s) => `
+                  <span class="pill pill-high">
+                    ${escapeHtml(s)}
+                  </span>
+                `
+              )
+              .join("")}
+
+          </div>
+        </div>
+      `
+      : "";
 
   panel.innerHTML = `
     <div class="ai-card">
+
       <div class="ai-head">
-        <span class="ai-title"><i data-lucide="brain-circuit"></i>Civic AI assessment</span>
-        <span class="demo-badge">AI TRIAGE</span>
+
+        <span class="ai-title">
+          <i data-lucide="brain-circuit"></i>
+          Civic AI analysis
+        </span>
+
+        <span class="demo-badge">
+          Demo AI
+        </span>
+
       </div>
 
       ${note}
 
       <div class="ai-grid">
+
         <div class="ai-cell">
-          <span class="ai-label">Detected problem</span>
-          <span class="ai-value">${escapeHtml(a.detectedProblem || a.categoryLabel)}</span>
+          <span class="ai-label">
+            Issue category
+          </span>
+
+          <span class="ai-value">
+            ${escapeHtml(
+              a.categoryLabel
+            )}
+          </span>
         </div>
 
         <div class="ai-cell">
-          <span class="ai-label">Severity</span>
-          <span class="ai-value is-high">${a.severity}/100</span>
+          <span class="ai-label">
+            Priority
+          </span>
+
+          <span
+            class="ai-value is-${a.priority.toLowerCase()}"
+          >
+            ${escapeHtml(
+              a.priority
+            )}
+          </span>
         </div>
 
         <div class="ai-cell">
-          <span class="ai-label">Priority</span>
-          <span class="ai-value is-${a.priority.toLowerCase()}">${escapeHtml(a.priority)} · ${a.priorityScore}/100</span>
+          <span class="ai-label">
+            Suggested department
+          </span>
+
+          <span class="ai-value">
+            ${escapeHtml(
+              a.department
+            )}
+          </span>
         </div>
 
         <div class="ai-cell">
-          <span class="ai-label">AI confidence</span>
-          <span class="ai-value">${a.confidence}%</span>
+          <span class="ai-label">
+            Location
+          </span>
+
+          <span class="ai-value">
+            ${escapeHtml(
+              d.location
+            )}
+          </span>
+        </div>
+
+        <div class="ai-cell">
+          <span class="ai-label">
+            Target response
+          </span>
+
+          <span class="ai-value">
+            ${escapeHtml(
+              a.responseTime
+            )}
+          </span>
+        </div>
+
+        <div class="ai-cell">
+
+          <span class="ai-label">
+            Confidence
+          </span>
+
+          <div class="confidence">
+
+            <span class="ai-value">
+              ${a.confidence}%
+            </span>
+
+            <span class="confidence-track">
+
+              <span
+                class="confidence-fill"
+                style="display:block;width:${a.confidence}%"
+              ></span>
+
+            </span>
+
+          </div>
+
         </div>
 
         <div class="ai-cell wide">
-          <span class="ai-label">Primary authority</span>
-          <span class="ai-value">${escapeHtml(a.routing?.primaryDepartment || a.department)}</span>
-          <p class="ai-text">${escapeHtml(a.routing?.routingReason || "Routing based on civic responsibility and reported context.")}</p>
-        </div>
 
-        <div class="ai-cell wide">
-          <span class="ai-label">Supporting authorities</span>
-          <div class="signal-list">${supporting}</div>
-        </div>
+          <span class="ai-label">
+            AI summary
+          </span>
 
-        <div class="ai-cell wide">
-          <span class="ai-label">Evidence assessment</span>
-          <p class="ai-text">${escapeHtml(a.damageAssessment || "Evidence requires field verification.")}</p>
-          ${a.imageFindings?.length ? `<div class="signal-list">${a.imageFindings.map((x) => `<span class="pill">${escapeHtml(x)}</span>`).join("")}</div>` : ""}
+          <p class="ai-text">
+            ${escapeHtml(
+              a.summary
+            )}
+          </p>
+
         </div>
 
         ${signals}
 
-        <div class="ai-cell wide">
-          <span class="ai-label">Likely consequences</span>
-          <ul class="ai-list">${consequences}</ul>
-        </div>
-
-        <div class="ai-cell">
-          <span class="ai-label">Response estimate</span>
-          <span class="ai-value">${escapeHtml(a.responseTime)}</span>
-        </div>
-
-        <div class="ai-cell">
-          <span class="ai-label">Location</span>
-          <span class="ai-value">${escapeHtml(d.location || "Location pending")}</span>
-        </div>
-
-        <div class="ai-cell wide">
-          <span class="ai-label">AI reasoning</span>
-          <p class="ai-text">${escapeHtml(a.summary)}</p>
-        </div>
       </div>
 
       <div class="ai-reco">
-        <span class="ai-label"><i data-lucide="sparkles"></i>Recommended response</span>
-        <p class="ai-text">${escapeHtml(a.recommendation)}</p>
+
+        <span class="ai-label">
+          <i data-lucide="sparkles"></i>
+          AI recommendation
+        </span>
+
+        <p class="ai-text">
+          ${escapeHtml(
+            a.recommendation
+          )}
+        </p>
+
       </div>
 
       ${duplicate}
 
       <div class="ai-actions">
-        <button type="button" class="btn btn-primary btn-lg" data-action="submit-report">
-          <i data-lucide="send"></i>Submit report
+
+        <button
+          type="button"
+          class="btn btn-primary btn-lg"
+          data-action="submit-report"
+        >
+          <i data-lucide="send"></i>
+          Submit report
         </button>
-        <button type="button" class="btn btn-ghost btn-lg" data-action="edit-report">Edit details</button>
+
+        <button
+          type="button"
+          class="btn btn-ghost btn-lg"
+          data-action="edit-report"
+        >
+          Edit details
+        </button>
+
       </div>
+
     </div>
   `;
 
   refreshIcons();
+
   updateStepper();
 }
 
+function submitReport() {
+  const a =
+    state.analysis;
 
-/* =========================================================
-   SUPABASE SHARED CIVIC DATA
-   Browser uses only the publishable/anon key. RLS controls access.
-   ========================================================= */
-
-const CIVIC_SUPABASE_URL =
-  "https://uoipyrwdmfjeshxecowi.supabase.co";
-
-const CIVIC_SUPABASE_KEY =
-  "sb_publishable_VeZcW61In2OIaGBSjYQcBg_bJejly-x";
-
-async function civicSupabaseRequest(path, options = {}) {
-  const response = await fetch(
-    `${CIVIC_SUPABASE_URL}/rest/v1/${path}`,
-    {
-      ...options,
-      headers: {
-        apikey: CIVIC_SUPABASE_KEY,
-        Authorization: `Bearer ${CIVIC_SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        ...(options.headers || {})
-      }
-    }
-  );
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(
-      `Civic database request failed (${response.status})${body ? ": " + body.slice(0, 240) : ""}`
-    );
-  }
-
-  if (response.status === 204) return null;
-  return response.json().catch(() => null);
-}
-
-function buildSupabaseReportPayload(issue, analysis, draft) {
-  const report = issue.report || {};
-  const location = issue.locationData || {};
-  return {
-    public_id: issue.id,
-    title: issue.title,
-    category: issue.category,
-    description: issue.description,
-    status: issue.status,
-    priority: issue.priority,
-    priority_score: Number(issue.ai?.priority ?? analysis?.priorityScore ?? 0),
-    severity_score: Number(issue.ai?.severity ?? analysis?.severity ?? 0),
-    public_impact: String(issue.ai?.publicImpact || analysis?.publicImpact || "Needs assessment"),
-    ai_confidence: Number(issue.ai?.confidence ?? analysis?.confidence ?? 0),
-    primary_department_id: issue.departmentId || issue.routing?.primaryDepartmentId || null,
-    routing_reason: String(
-      issue.routing?.routingReason ||
-      analysis?.routing?.routingReason ||
-      "Routing grounded in Civic OS departmental responsibility rules."
-    ),
-    verification_required: Boolean(
-      issue.ai?.verificationRequired ??
-      analysis?.verificationRequired ??
-      true
-    ),
-    location: {
-      placeName: location.placeName || draft?.location || "",
-      locality: location.locality || "",
-      district: location.district || "",
-      state: location.state || "Manipur",
-      road: location.road || "",
-      landmark: location.landmark || "",
-      latitude: location.latitude ?? null,
-      longitude: location.longitude ?? null,
-      mapUrl: location.mapUrl || ""
-    },
-    reported_at: new Date(issue.reportedAt || Date.now()).toISOString()
-  };
-}
-
-async function persistCivicReport(issue, analysis, draft) {
-  const reportRows = await civicSupabaseRequest(
-    "reports?on_conflict=public_id",
-    {
-      method: "POST",
-      headers: {
-        Prefer: "resolution=merge-duplicates,return=representation"
-      },
-      body: JSON.stringify(
-        buildSupabaseReportPayload(issue, analysis, draft)
-      )
-    }
-  );
-
-  const row = Array.isArray(reportRows) ? reportRows[0] : reportRows;
-  if (!row?.id) {
-    throw new Error("Civic database did not return the report id.");
-  }
-
-  const assessment = {
-    report_id: row.id,
-    source: analysis?.aiSource === "live" ? "live" : "fallback",
-    model: analysis?.aiSource === "live" ? "configured Civic AI gateway" : null,
-    problem_summary: String(
-      analysis?.detectedProblem || analysis?.categoryLabel || issue.title
-    ),
-    observed_evidence: analysis?.imageFindings || analysis?.signals || [],
-    inferred_risks: analysis?.consequences || [],
-    consequences: analysis?.consequences || [],
-    recommended_actions: [
-      String(analysis?.recommendation || issue.recommendation || "Field verification required.")
-    ],
-    assessment: {
-      severity: analysis?.severity ?? null,
-      priority: analysis?.priorityScore ?? null,
-      confidence: analysis?.confidence ?? null,
-      damageAssessment: analysis?.damageAssessment || "",
-      reasoning: analysis?.summary || ""
-    }
-  };
-
-  await civicSupabaseRequest("ai_assessments", {
-    method: "POST",
-    headers: {
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify(assessment)
-  });
-
-  const routing = issue.routing || {};
-  const ranked = Array.isArray(routing.rankedDepartments)
-    ? routing.rankedDepartments
-    : [];
-
-  const routingRows = [];
-  const primaryId = routing.primaryDepartmentId || issue.departmentId;
-
-  if (primaryId) {
-    routingRows.push({
-      report_id: row.id,
-      department_id: primaryId,
-      rank: 1,
-      score: Number(routing.primaryScore || 0),
-      role: "primary",
-      reason: routing.routingReason || ""
-    });
-  }
-
-  (routing.supportingDepartments || []).forEach((department, index) => {
-    if (!department?.id || department.id === primaryId) return;
-    routingRows.push({
-      report_id: row.id,
-      department_id: department.id,
-      rank: index + 2,
-      score: Number(department.score || 0),
-      role: "supporting",
-      reason: routing.routingReason || ""
-    });
-  });
-
-  if (routingRows.length) {
-    await civicSupabaseRequest("report_routing", {
-      method: "POST",
-      headers: {
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify(routingRows)
-    });
-  }
-
-  await civicSupabaseRequest("report_status_history", {
-    method: "POST",
-    headers: {
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify({
-      report_id: row.id,
-      from_status: null,
-      to_status: issue.status,
-      note: `Citizen report received and routed to ${issue.department}.`
-    })
-  });
-
-  return row;
-}
-
-async function submitReport() {
-  const a = state.analysis;
-  const d = state.draft;
+  const d =
+    state.draft;
 
   if (!a || !d) return;
 
-  const id = `CIV-${nextIssueNumber++}`;
+  const id =
+    `CIV-${nextIssueNumber++}`;
 
-  const issue = createIssue({
-    id,
-    title: makeTitle(d.description),
-    category: a.categoryKey,
-    description: d.description,
-    location: d.location,
-    area: "Citizen report",
-    priority: a.priority,
-    status: "Reported",
-    supporters: 1,
-    photo: state.draftPhotoUrl,
-    coordinates: d.coordinates || state.draftCoordinates || {},
-    reportedAt: Date.now()
-  });
+  const issue =
+    createIssue({
+      id,
 
-  issue.summary = a.summary;
-  issue.recommendation = a.recommendation;
-  issue.ai = {
-    ...issue.ai,
-    aiSource: a.aiSource || "fallback",
-    verificationRequired: Boolean(a.verificationRequired ?? true),
-    publicImpact: a.publicImpact || issue.ai.publicImpact
-  };
+      title:
+        makeTitle(
+          d.description
+        ),
 
-  const submitButton = document.querySelector(
-    '[data-action="submit-report"]'
-  );
+      category:
+        a.categoryKey,
 
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.innerHTML =
-      '<i data-lucide="loader-circle"></i> Saving report…';
+      description:
+        d.description,
+
+      location:
+        d.location,
+
+      area:
+        "Citizen report",
+
+      priority:
+        a.priority,
+
+      status:
+        "Reported",
+
+      supporters:
+        1,
+
+      photo:
+        state.draftPhotoUrl,
+
+      reportedAt:
+        Date.now()
+    });
+
+  issue.summary =
+    a.summary;
+
+  issue.recommendation =
+    a.recommendation;
+
+  issues.unshift(issue);
+
+  state.supported.add(id);
+
+  const oldPhoto =
+    state.draftPhotoUrl;
+
+  state.draftPhotoUrl =
+    null;
+
+  resetReportForm();
+
+  if (oldPhoto) {
+    try {
+      URL.revokeObjectURL(
+        oldPhoto
+      );
+    } catch {}
+  }
+
+  const reportForm =
+    $("#reportForm");
+
+  if (reportForm) {
+    reportForm.hidden =
+      true;
+  }
+
+  state.analysis =
+    null;
+
+  const panel =
+    $("#aiPanel");
+
+  if (panel) {
+    panel.innerHTML = `
+      <div class="ai-card success-card">
+
+        <span class="success-icon">
+          <i data-lucide="check"></i>
+        </span>
+
+        <p class="kicker">
+          ${escapeHtml(id)}
+          ·
+          ${escapeHtml(
+            issue.department
+          )}
+        </p>
+
+        <h3 class="success-title">
+          Report submitted
+        </h3>
+
+        <p class="success-sub">
+          Your report is now live.
+          ${escapeHtml(
+            issue.department
+          )}
+          has been notified and
+          you will see every status
+          update here.
+        </p>
+
+        <div class="success-actions">
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-issue="${escapeHtml(id)}"
+          >
+            <i data-lucide="activity"></i>
+            Track this issue
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-ghost"
+            data-action="report-another"
+          >
+            Report another
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
     refreshIcons();
   }
 
-  try {
-    const savedRow = await persistCivicReport(issue, a, d);
-    issue.supabaseId = savedRow.id;
-    issue.report.identity.databaseId = savedRow.id;
-    issues.unshift(issue);
-    state.supported.add(id);
+  updateStepper();
 
-    const oldPhoto = state.draftPhotoUrl;
-    state.draftPhotoUrl = null;
-    resetReportForm();
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 
-    if (oldPhoto) {
-      try {
-        URL.revokeObjectURL(oldPhoto);
-      } catch {}
-    }
-
-    const reportForm = $("#reportForm");
-    if (reportForm) reportForm.hidden = true;
-
-    state.analysis = null;
-
-    const panel = $("#aiPanel");
-    if (panel) {
-      panel.innerHTML = `
-        <div class="ai-card success-card">
-          <span class="success-icon">
-            <i data-lucide="check"></i>
-          </span>
-          <p class="kicker">
-            ${escapeHtml(id)} · ${escapeHtml(issue.department)}
-          </p>
-          <h3 class="success-title">Report submitted</h3>
-          <p class="success-sub">
-            Your report is now stored in Civic OS and routed to
-            ${escapeHtml(issue.department)}. You can track its lifecycle here.
-          </p>
-          <div class="success-actions">
-            <button type="button" class="btn btn-primary" data-issue="${escapeHtml(id)}">
-              <i data-lucide="activity"></i>
-              Track this issue
-            </button>
-            <button type="button" class="btn btn-ghost" data-action="report-another">
-              Report another
-            </button>
-          </div>
-        </div>
-      `;
-      refreshIcons();
-    }
-
-    updateStepper();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    toast(`${id} submitted to ${issue.department}`);
-  } catch (error) {
-    console.error("Civic OS database persistence failed:", error);
-
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.innerHTML =
-        '<i data-lucide="send"></i>Submit report';
-      refreshIcons();
-    }
-
-    toast(
-      "The report could not be saved. Please try again.",
-      "triangle-alert"
-    );
-  }
+  toast(
+    `${id} submitted to ${issue.department}`
+  );
 }
 
 function resetReportForm() {
@@ -3514,7 +2658,6 @@ function setPhoto(file) {
     revoke: true
   });
 
-  state.draftPhotoFile = file;
   state.draftPhotoUrl =
     URL.createObjectURL(file);
 
@@ -3558,9 +2701,6 @@ function clearPhoto({
   }
 
   state.draftPhotoUrl =
-    null;
-
-  state.draftPhotoFile =
     null;
 
   const photo =
@@ -3682,11 +2822,6 @@ function useCurrentLocation() {
           )}, ${pos.coords.longitude.toFixed(
             5
           )}`;
-
-        state.draftCoordinates = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
-        };
       }
 
       if (btn) {
@@ -3795,9 +2930,6 @@ function syncFilterControls() {
   const priority =
     $("#filterPriority");
 
-  const district =
-    $("#filterDistrict");
-
   const sort =
     $("#sortIssues");
 
@@ -3812,10 +2944,6 @@ function syncFilterControls() {
   if (priority) {
     priority.value =
       f.priority;
-  }
-
-  if (district) {
-    district.value = f.district || "all";
   }
 
   if (sort) {
@@ -3858,76 +2986,89 @@ function syncFilterControls() {
   });
 }
 
-function getIssueDistrict(issue) {
-  const known = ["Imphal West", "Imphal East", "Thoubal", "Bishnupur", "Kakching", "Tengnoupal"];
-  const place = String(issue.location || "");
-  return known.find((district) => place.toLowerCase().includes(district.toLowerCase())) || "Other";
-}
-
 function getFilteredIssues() {
   const {
     status,
     category,
     priority,
-    district,
     sort,
     query
   } = state.filters;
 
-  // Civic OS place search is intentionally forgiving:
-  // "Paona", "Paona Bazaar", "Imphal West" or
-  // "Khurai Imphal East" can all find the same report.
-  const q = String(query || "").trim().toLowerCase();
-  const queryTokens = q
-    .split(/[,\s]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 2);
+  const q =
+    query.trim().toLowerCase();
 
-  const list = issues.filter((i) => {
-    if (status !== "All" && i.status !== status) return false;
-    if (category !== "all" && i.category !== category) return false;
-    if (priority !== "all" && i.priority !== priority) return false;
-    if (district !== "all" && getIssueDistrict(i) !== district) return false;
+  const list =
+    issues.filter((i) => {
+      if (
+        status !== "All" &&
+        i.status !== status
+      ) {
+        return false;
+      }
 
-    if (!q) return true;
+      if (
+        category !== "all" &&
+        i.category !== category
+      ) {
+        return false;
+      }
 
-    const cat = CATEGORIES[i.category] || CATEGORIES.other;
-    const searchable = [
-      i.id,
-      i.title,
-      i.location,
-      i.area,
-      i.department,
-      i.description,
-      i.summary,
-      i.routing?.primaryDepartment,
-      i.routing?.routingReason,
-      cat.label
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+      if (
+        priority !== "all" &&
+        i.priority !== priority
+      ) {
+        return false;
+      }
 
-    // First try the complete phrase.
-    if (searchable.includes(q)) return true;
+      if (!q) {
+        return true;
+      }
 
-    // Then match every meaningful word, so place searches
-    // still work when the user types only part of a location.
-    return queryTokens.length > 0 &&
-      queryTokens.every((token) => searchable.includes(token));
-  });
+      const cat =
+        CATEGORIES[i.category] ||
+        CATEGORIES.other;
+
+      return [
+        i.id,
+        i.title,
+        i.location,
+        i.area,
+        i.department,
+        i.description,
+        cat.label
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
 
   if (sort === "priority") {
     list.sort(
       (a, b) =>
-        PRIORITY_RANK[b.priority] -
-          PRIORITY_RANK[a.priority] ||
-        b.reportedAt - a.reportedAt
+        PRIORITY_RANK[
+          b.priority
+        ] -
+          PRIORITY_RANK[
+            a.priority
+          ] ||
+        b.reportedAt -
+          a.reportedAt
     );
-  } else if (sort === "supported") {
-    list.sort((a, b) => b.supporters - a.supporters);
+  } else if (
+    sort === "supported"
+  ) {
+    list.sort(
+      (a, b) =>
+        b.supporters -
+        a.supporters
+    );
   } else {
-    list.sort((a, b) => b.reportedAt - a.reportedAt);
+    list.sort(
+      (a, b) =>
+        b.reportedAt -
+        a.reportedAt
+    );
   }
 
   return list;
@@ -4168,60 +3309,92 @@ function renderIssueSheet(issue) {
     <div class="sheet-section">
 
       <div class="sheet-section-title">
-        <span>Civic AI assessment</span>
-        <span class="demo-badge">${issue.ai?.source === "live" ? "LIVE AI" : "CIVIC AI"}</span>
+
+        <span>
+          Civic AI analysis
+        </span>
+
+        <span class="demo-badge">
+          Demo AI
+        </span>
+
       </div>
 
       <div class="ai-grid">
+
         <div class="ai-cell">
-          <span class="ai-label">Detected problem</span>
-          <span class="ai-value">${escapeHtml(issue.ai?.problem || cat.aiLabel)}</span>
+
+          <span class="ai-label">
+            Category
+          </span>
+
+          <span class="ai-value">
+            ${escapeHtml(
+              cat.aiLabel
+            )}
+          </span>
+
         </div>
+
         <div class="ai-cell">
-          <span class="ai-label">Severity</span>
-          <span class="ai-value is-high">${Number(issue.ai?.severity ?? 0)}/100</span>
+
+          <span class="ai-label">
+            Priority
+          </span>
+
+          <span
+            class="ai-value is-${issue.priority.toLowerCase()}"
+          >
+            ${escapeHtml(
+              issue.priority
+            )}
+          </span>
+
         </div>
-        <div class="ai-cell">
-          <span class="ai-label">Priority</span>
-          <span class="ai-value is-${issue.priority.toLowerCase()}">${escapeHtml(issue.priority)} · ${Number(issue.ai?.priority ?? 0)}/100</span>
-        </div>
-        <div class="ai-cell">
-          <span class="ai-label">AI confidence</span>
-          <span class="ai-value">${Number(issue.ai?.confidence ?? 0)}%</span>
-        </div>
-        <div class="ai-cell">
-          <span class="ai-label">Public impact</span>
-          <span class="ai-value">${escapeHtml(issue.ai?.publicImpact || "Needs assessment")}</span>
-        </div>
+
         <div class="ai-cell wide">
-          <span class="ai-label">Primary authority</span>
-          <span class="ai-value">${escapeHtml(issue.routing?.primaryDepartment || issue.department)}</span>
-          <p class="ai-text">${escapeHtml(issue.routing?.routingReason || "Routing grounded in civic responsibility.")}</p>
+
+          <span class="ai-label">
+            Department
+          </span>
+
+          <span class="ai-value">
+            ${escapeHtml(
+              issue.department
+            )}
+          </span>
+
         </div>
+
         <div class="ai-cell wide">
-          <span class="ai-label">Observed evidence</span>
-          <div class="signal-list">
-            ${(issue.ai?.signals || []).map((signal) => \`<span class="pill">${escapeHtml(signal)}</span>\`).join("") || \`<span class="ai-muted">No specific evidence signals recorded.</span>\`}
-          </div>
+
+          <span class="ai-label">
+            Summary
+          </span>
+
+          <p class="ai-text">
+            ${escapeHtml(
+              issue.summary
+            )}
+          </p>
+
         </div>
-        <div class="ai-cell wide">
-          <span class="ai-label">Likely consequences</span>
-          <ul class="ai-list">
-            ${(issue.ai?.consequences || []).map((item) => \`<li>${escapeHtml(item)}</li>\`).join("") || \`<li>Field verification required.</li>\`}
-          </ul>
-        </div>
-        <div class="ai-cell wide">
-          <span class="ai-label">AI reasoning</span>
-          <p class="ai-text">${escapeHtml(issue.summary || "Assessment requires field verification.")}</p>
-        </div>
+
       </div>
 
       <div class="ai-reco">
+
         <span class="ai-label">
           <i data-lucide="sparkles"></i>
-          Recommended response
+          Recommendation
         </span>
-        <p class="ai-text">${escapeHtml(issue.recommendation)}</p>
+
+        <p class="ai-text">
+          ${escapeHtml(
+            issue.recommendation
+          )}
+        </p>
+
       </div>
 
     </div>
@@ -4706,21 +3879,29 @@ function renderDashboard() {
       6 - d;
 
     const reported =
+      WEEKLY_BASELINE
+        .reported[idx] +
       issues.filter(
         (i) =>
-          i.reportedAt >= start &&
-          i.reportedAt < end
+          i.reportedAt >=
+            start &&
+          i.reportedAt <
+            end
       ).length;
 
     const resolved =
+      WEEKLY_BASELINE
+        .resolved[idx] +
       issues.filter(
         (i) =>
-          Array.isArray(i.updates) &&
           i.updates.some(
             (u) =>
-              u.status === "Resolved" &&
-              u.time >= start &&
-              u.time < end
+              u.status ===
+                "Resolved" &&
+              u.time >=
+                start &&
+              u.time <
+                end
           )
       ).length;
 
@@ -7085,7 +6266,6 @@ function bindEvents() {
           status: "All",
           category: "all",
           priority: "all",
-          district: "all",
           sort: "newest",
           query: ""
         };
@@ -7240,18 +6420,6 @@ function bindEvents() {
     );
   }
 
-  const clearSearch =
-    $("#clearIssueSearch");
-
-  if (clearSearch && issueSearch) {
-    clearSearch.addEventListener("click", () => {
-      issueSearch.value = "";
-      state.filters.query = "";
-      renderIssueList();
-      issueSearch.focus();
-    });
-  }
-
 
   const filterCategory =
     $("#filterCategory");
@@ -7284,14 +6452,6 @@ function bindEvents() {
     );
   }
 
-
-  const filterDistrict = $("#filterDistrict");
-  if (filterDistrict) {
-    filterDistrict.addEventListener("change", (event) => {
-      state.filters.district = event.target.value;
-      renderIssueList();
-    });
-  }
 
   const sortIssues =
     $("#sortIssues");
@@ -8229,113 +7389,29 @@ function openCreateActivity() {
 
 function init() {
 
-  try {
-    issues = SEED_ISSUES.map((seed) => {
-      try {
-        return createIssue(seed);
-      } catch (error) {
-        console.error("Civic OS seed issue error:", error, seed);
-        return {
-          ...seed,
-          area: seed.area || seed.location || "Manipur",
-          department: seed.department || "Civic Helpdesk",
-          supporters: Number(seed.supporters) || 0,
-          updates: Array.isArray(seed.updates) ? seed.updates : [],
-          recommendation: seed.recommendation || "Review and route this civic issue.",
-          reportedAt: Number(seed.reportedAt) || Date.now(),
-        };
-      }
-    });
-  } catch (error) {
-    console.error("Civic OS data initialization error:", error);
-    issues = [];
-  }
+  issues =
+    SEED_ISSUES.map(
+      createIssue
+    );
 
-  // Never let the public demo boot with an empty civic dataset.
-  // If a future seed/config change breaks, keep the core screens populated
-  // with safe local demo records instead of leaving Home, Issues and Dashboard blank.
-  if (!Array.isArray(issues) || issues.length === 0) {
-    issues = [
-      {
-        id: "CIV-DEMO-01",
-        title: "Road damage near public school",
-        category: "roads",
-        description: "Road surface is damaged near a school entrance and needs inspection.",
-        location: "Khurai, Imphal East",
-        area: "Khurai",
-        status: "Reported",
-        priority: "High",
-        supporters: 12,
-        updates: [],
-        recommendation: "Inspect the road section and assess repair priority.",
-        reportedAt: Date.now() - 2 * 60 * 60 * 1000,
-      },
-      {
-        id: "CIV-DEMO-02",
-        title: "Open drain overflowing after rain",
-        category: "water",
-        description: "An open drain is overflowing and affecting pedestrians after rainfall.",
-        location: "Singjamei, Imphal West",
-        area: "Singjamei",
-        status: "In Progress",
-        priority: "High",
-        supporters: 8,
-        updates: [],
-        recommendation: "Inspect drainage flow and clear the obstruction.",
-        reportedAt: Date.now() - 8 * 60 * 60 * 1000,
-      },
-      {
-        id: "CIV-DEMO-03",
-        title: "Garbage collection delayed",
-        category: "garbage",
-        description: "Waste has remained uncollected in a busy neighbourhood area.",
-        location: "Paona Bazaar, Imphal West",
-        area: "Paona Bazaar",
-        status: "Verified",
-        priority: "Medium",
-        supporters: 5,
-        updates: [],
-        recommendation: "Coordinate a sanitation collection visit.",
-        reportedAt: Date.now() - 24 * 60 * 60 * 1000,
-      },
-    ];
-  }
+  renderCategoryOptions();
 
-  const bootSteps = [
-    ["category options", renderCategoryOptions],
-    ["issue filters", setupIssueFilters],
-    ["skill picker", renderSkillPicker],
-    ["civic actions", renderCivicActions],
-    ["home", renderHome],
-    ["issues", renderIssues],
-    ["dashboard", renderDashboard],
-  ];
+  setupIssueFilters();
 
-  bootSteps.forEach(([name, fn]) => {
-    try {
-      fn();
-    } catch (error) {
-      console.error(`Civic OS ${name} initialization error:`, error);
+  renderSkillPicker();
+
+  bindEvents();
+
+  renderCivicActions();
+
+  showScreen(
+    screenFromHash(),
+    {
+      push: false
     }
-  });
-
-  try {
-    bindEvents();
-  } catch (error) {
-    console.error("Civic OS event binding error:", error);
-  }
-  try {
-    showScreen(screenFromHash(), { push: false });
-  } catch (error) {
-    console.error("Civic OS screen initialization error:", error);
-    showScreen("homeScreen", { push: false });
-  }
+  );
 
   refreshIcons();
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init, { once: true });
-} else {
-  init();
-}
+init();
