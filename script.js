@@ -2857,199 +2857,122 @@ function invalidateAnalysis() {
   }
 }
 
-function handleAnalyze(event) {
+async function handleAnalyze(event) {
   event.preventDefault();
 
   if (state.analyzing) return;
 
-  const draft =
-    getDraft();
-
-  const descEl =
-    $("#description");
-
-  const locEl =
-    $("#location");
+  const draft = getDraft();
+  const descEl = $("#description");
+  const locEl = $("#location");
 
   if (!descEl || !locEl) return;
 
-  descEl.removeAttribute(
-    "aria-invalid"
-  );
+  descEl.removeAttribute("aria-invalid");
+  locEl.removeAttribute("aria-invalid");
 
-  locEl.removeAttribute(
-    "aria-invalid"
-  );
-
-  if (
-    draft.description.length <
-    10
-  ) {
-    descEl.setAttribute(
-      "aria-invalid",
-      "true"
-    );
-
-    showFormError(
-      "Please describe the problem in at least a few words."
-    );
-
+  if (draft.description.length < 10) {
+    descEl.setAttribute("aria-invalid", "true");
+    showFormError("Please describe the problem in at least a few words.");
     descEl.focus();
-
     return;
   }
 
-  if (
-    draft.location.length <
-    3
-  ) {
-    locEl.setAttribute(
-      "aria-invalid",
-      "true"
-    );
-
-    showFormError(
-      "Please add a location so the right team can find it."
-    );
-
+  if (draft.location.length < 3) {
+    locEl.setAttribute("aria-invalid", "true");
+    showFormError("Please add a location so the right team can find it.");
     locEl.focus();
-
     return;
   }
 
   showFormError(null);
-
   state.draft = draft;
   state.analyzing = true;
 
-  const analyzeBtn =
-    $("#analyzeBtn");
-
-  if (analyzeBtn) {
-    analyzeBtn.disabled = true;
-  }
+  const analyzeBtn = $("#analyzeBtn");
+  if (analyzeBtn) analyzeBtn.disabled = true;
 
   const steps = [
     "Reading your description",
-    "Detecting the issue category",
-    "Assessing priority and risk",
-    "Routing to a department",
-    "Checking for duplicate reports"
+    draft.photo ? "Inspecting the evidence image" : "Checking the reported details",
+    "Assessing severity, public impact and risk",
+    "Verifying the responsible department",
+    "Checking for related reports"
   ];
 
-  const panel =
-    $("#aiPanel");
-
-  if (!panel) return;
+  const panel = $("#aiPanel");
+  if (!panel) {
+    state.analyzing = false;
+    if (analyzeBtn) analyzeBtn.disabled = false;
+    return;
+  }
 
   panel.innerHTML = `
     <div class="ai-card is-loading">
-
       <div class="ai-head">
         <span class="ai-title">
           <i data-lucide="brain-circuit"></i>
           Civic AI is analyzing…
         </span>
-
-        <span class="demo-badge">
-          Demo AI
-        </span>
+        <span class="demo-badge">AI TRIAGE</span>
       </div>
-
       <ol class="ai-steps">
-        ${steps
-          .map(
-            (s) => `
-              <li class="ai-step">
-                <span class="ai-step-icon">
-                  <i data-lucide="loader-circle"></i>
-                </span>
-                ${escapeHtml(s)}
-              </li>
-            `
-          )
-          .join("")}
+        ${steps.map((step) => `
+          <li class="ai-step">
+            <span class="ai-step-icon">
+              <i data-lucide="loader-circle"></i>
+            </span>
+            ${escapeHtml(step)}
+          </li>
+        `).join("")}
       </ol>
-
     </div>
   `;
 
   refreshIcons();
+  panel.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  panel.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  const stepEls = $$(".ai-step", panel);
 
-  const stepEls =
-    $$(".ai-step", panel);
+  // Keep the staged animation, but await it so the real AI request cannot
+  // accidentally overlap with an unfinished UI cycle.
+  for (let index = 0; index < stepEls.length; index++) {
+    stepEls.forEach((el, i) => {
+      el.classList.toggle("done", i <= index);
+      el.classList.toggle("active", i === index);
+    });
 
-  let index = 0;
+    await new Promise((resolve) => setTimeout(resolve, 320));
+  }
 
-  const tick = async () => {
-    stepEls.forEach(
-      (el, i) => {
-        el.classList.toggle(
-          "done",
-          i < index
-        );
+  try {
+    const multimodalAnalysis = await requestCivicAI(draft);
 
-        el.classList.toggle(
-          "active",
-          i === index
-        );
-      }
+    state.analysis = multimodalAnalysis || analyzeReport(draft);
+
+    if (multimodalAnalysis) {
+      state.analysis.aiSource = "live";
+    }
+  } catch (error) {
+    console.warn(
+      "Civic AI gateway unavailable; using deterministic civic fallback.",
+      error
     );
 
-    if (
-      index <
-      stepEls.length
-    ) {
-      index++;
+    state.analysis = analyzeReport(draft);
+    state.analysis.aiSource = "fallback";
 
-      setTimeout(
-        tick,
-        380
-      );
+    toast(
+      "AI gateway unavailable — using civic fallback",
+      "triangle-alert"
+    );
+  }
 
-      return;
-    }
+  state.analyzing = false;
+  if (analyzeBtn) analyzeBtn.disabled = false;
 
-    try {
-      const multimodalAnalysis =
-        await requestCivicAI(draft);
-
-      state.analysis =
-        multimodalAnalysis ||
-        analyzeReport(draft);
-    } catch (error) {
-      console.warn(
-        "Civic AI gateway unavailable; using deterministic civic fallback.",
-        error
-      );
-
-      state.analysis =
-        analyzeReport(draft);
-
-      toast(
-        "AI gateway unavailable — using civic fallback",
-        "triangle-alert"
-      );
-    }
-
-    state.analyzing = false;
-
-    if (analyzeBtn) {
-      analyzeBtn.disabled =
-        false;
-    }
-
-    renderAnalysis();
-  };
-
-  tick();
+  renderAnalysis();
 }
-
 function renderAnalysis() {
   const a = state.analysis;
   const d = state.draft;
