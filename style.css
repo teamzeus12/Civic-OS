@@ -5556,3 +5556,50 @@ transition: none;
     bottom: auto !important;
   }
 }
+
+
+/* =========================================================
+   INTERACTION SAFETY NET — MOBILE + TOUCH
+   ========================================================= */
+
+.btn,
+.link-btn,
+.chip-btn,
+.icon-btn,
+.action-card,
+.top-link,
+.nav-item,
+.brand,
+.civic-ai-fab,
+.ai-suggestion,
+[data-goto],
+[data-civic-action],
+[data-action] {
+  pointer-events: auto;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:disabled,
+.icon-btn:disabled,
+button:disabled {
+  cursor: not-allowed;
+}
+
+.action-card,
+.nav-item,
+.btn,
+.link-btn,
+.chip-btn,
+.icon-btn {
+  position: relative;
+  z-index: 1;
+}
+
+input,
+select,
+textarea,
+label {
+  pointer-events: auto;
+}
