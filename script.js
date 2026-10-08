@@ -7387,31 +7387,56 @@ function openCreateActivity() {
    13. INIT
    ========================================================= */
 
-function init() {
-
-  issues =
-    SEED_ISSUES.map(
-      createIssue
-    );
-
-  renderCategoryOptions();
-
-  setupIssueFilters();
-
-  renderSkillPicker();
-
-  bindEvents();
-
-  renderCivicActions();
-
-  showScreen(
-    screenFromHash(),
-    {
-      push: false
-    }
-  );
-
-  refreshIcons();
+function runInitStep(name, fn) {
+  try {
+    fn();
+  } catch (error) {
+    console.error(`Civic OS init step failed: ${name}`, error);
+  }
 }
 
-init();
+function init() {
+
+  runInitStep("demo data", () => {
+    issues = SEED_ISSUES.map(createIssue);
+  });
+
+  runInitStep("category options", renderCategoryOptions);
+  runInitStep("issue filters", setupIssueFilters);
+  runInitStep("skill picker", renderSkillPicker);
+  runInitStep("event bindings", bindEvents);
+  runInitStep("civic actions", renderCivicActions);
+
+  runInitStep("initial screen", () => {
+    showScreen(screenFromHash(), { push: false });
+  });
+
+  runInitStep("icons", refreshIcons);
+}
+
+/*
+ * Boot defensively: one optional UI component must never prevent the
+ * rest of Civic OS from becoming interactive. This is especially useful
+ * on mobile browsers when an external icon library is delayed or fails.
+ */
+function bootCivicOS() {
+  try {
+    init();
+  } catch (error) {
+    console.error("Civic OS boot error", error);
+  }
+
+  // Guarantee basic navigation even if an earlier initialization step fails.
+  document.querySelectorAll("[data-goto]").forEach((element) => {
+    if (element.dataset.civicBound === "true") return;
+    element.dataset.civicBound = "true";
+    element.addEventListener("click", () => {
+      const target = element.dataset.goto;
+      if (target && typeof showScreen === "function") {
+        showScreen(target);
+      }
+    });
+  });
+}
+
+bootCivicOS();
