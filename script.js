@@ -2564,310 +2564,127 @@ function handleAnalyze(event) {
 }
 
 function renderAnalysis() {
-  const a =
-    state.analysis;
+  const a = state.analysis;
+  const d = state.draft;
+  const panel = $("#aiPanel");
+  if (!a || !d || !panel) return;
 
-  const d =
-    state.draft;
+  const note = a.autoDetected
+    ? `<div class="ai-note"><i data-lucide="sparkles"></i><span>Civic AI detected <strong>${escapeHtml(a.categoryLabel)}</strong> from the report.</span></div>`
+    : "";
 
-  const panel =
-    $("#aiPanel");
+  const duplicate = a.duplicate ? `
+    <div class="ai-warning">
+      <i data-lucide="copy-check"></i>
+      <div class="ai-warning-body">
+        <span><strong>Possible related report:</strong> ${escapeHtml(a.duplicate.id)} · ${escapeHtml(a.duplicate.title)}</span>
+        <button type="button" class="link-btn" data-action="support-duplicate" data-id="${escapeHtml(a.duplicate.id)}">Support existing report <i data-lucide="arrow-right"></i></button>
+      </div>
+    </div>` : "";
 
-  if (!a || !d || !panel) {
-    return;
-  }
+  const signals = (a.signals || []).length ? `
+    <div class="ai-cell wide">
+      <span class="ai-label">Detected evidence signals</span>
+      <div class="signal-list">
+        ${a.signals.map((signal) => `<span class="pill pill-high">${escapeHtml(signal)}</span>`).join("")}
+      </div>
+    </div>` : "";
 
-  const note =
-    a.autoDetected
-      ? `
-        <div class="ai-note">
-          <i data-lucide="sparkles"></i>
-          <span>
-            Civic AI detected the category
-            <strong>
-              ${escapeHtml(
-                a.categoryLabel
-              )}
-            </strong>
-            from your description.
-          </span>
-        </div>
-      `
-      : a.suggestion
-        ? `
-          <div class="ai-note">
-            <i data-lucide="sparkles"></i>
-            <span>
-              Your description sounds more like
-              <strong>
-                ${escapeHtml(
-                  CATEGORIES[
-                    a.suggestion
-                  ].label
-                )}
-              </strong>.
+  const consequences = (a.consequences || []).map((item) =>
+    `<li>${escapeHtml(item)}</li>`).join("");
 
-              <button
-                type="button"
-                class="link-btn"
-                data-action="use-suggestion"
-                data-key="${escapeHtml(
-                  a.suggestion
-                )}"
-              >
-                Switch category
-              </button>
-            </span>
-          </div>
-        `
-        : "";
-
-  const duplicate =
-    a.duplicate
-      ? `
-        <div class="ai-warning">
-
-          <i data-lucide="copy-check"></i>
-
-          <div class="ai-warning-body">
-
-            <span>
-              <strong>
-                Possible duplicate:
-              </strong>
-
-              ${escapeHtml(
-                a.duplicate.id
-              )}
-
-              ·
-
-              ${escapeHtml(
-                a.duplicate.title
-              )}
-
-              (${a.duplicate.supporters}
-              supporters,
-              ${escapeHtml(
-                a.duplicate.status.toLowerCase()
-              )}).
-            </span>
-
-            <span>
-
-              <button
-                type="button"
-                class="link-btn"
-                data-action="support-duplicate"
-                data-id="${escapeHtml(
-                  a.duplicate.id
-                )}"
-              >
-                Support existing report instead
-                <i data-lucide="arrow-right"></i>
-              </button>
-
-            </span>
-
-          </div>
-        </div>
-      `
-      : "";
-
-  const signals =
-    a.signals.length
-      ? `
-        <div class="ai-cell wide">
-
-          <span class="ai-label">
-            Risk signals detected
-          </span>
-
-          <div class="signal-list">
-
-            ${a.signals
-              .map(
-                (s) => `
-                  <span class="pill pill-high">
-                    ${escapeHtml(s)}
-                  </span>
-                `
-              )
-              .join("")}
-
-          </div>
-        </div>
-      `
-      : "";
+  const supporting = a.routing?.supportingDepartments?.length
+    ? a.routing.supportingDepartments.map((item) =>
+      `<span class="pill">${escapeHtml(item.officialName)}</span>`).join("")
+    : `<span class="ai-muted">None identified</span>`;
 
   panel.innerHTML = `
     <div class="ai-card">
-
       <div class="ai-head">
-
-        <span class="ai-title">
-          <i data-lucide="brain-circuit"></i>
-          Civic AI analysis
-        </span>
-
-        <span class="demo-badge">
-          Demo AI
-        </span>
-
+        <span class="ai-title"><i data-lucide="brain-circuit"></i>Civic AI assessment</span>
+        <span class="demo-badge">AI TRIAGE</span>
       </div>
 
       ${note}
 
       <div class="ai-grid">
-
         <div class="ai-cell">
-          <span class="ai-label">
-            Issue category
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              a.categoryLabel
-            )}
-          </span>
+          <span class="ai-label">Detected problem</span>
+          <span class="ai-value">${escapeHtml(a.detectedProblem || a.categoryLabel)}</span>
         </div>
 
         <div class="ai-cell">
-          <span class="ai-label">
-            Priority
-          </span>
-
-          <span
-            class="ai-value is-${a.priority.toLowerCase()}"
-          >
-            ${escapeHtml(
-              a.priority
-            )}
-          </span>
+          <span class="ai-label">Severity</span>
+          <span class="ai-value is-high">${a.severity}/100</span>
         </div>
 
         <div class="ai-cell">
-          <span class="ai-label">
-            Suggested department
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              a.department
-            )}
-          </span>
+          <span class="ai-label">Priority</span>
+          <span class="ai-value is-${a.priority.toLowerCase()}">${escapeHtml(a.priority)} · ${a.priorityScore}/100</span>
         </div>
 
         <div class="ai-cell">
-          <span class="ai-label">
-            Location
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              d.location
-            )}
-          </span>
-        </div>
-
-        <div class="ai-cell">
-          <span class="ai-label">
-            Target response
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              a.responseTime
-            )}
-          </span>
-        </div>
-
-        <div class="ai-cell">
-
-          <span class="ai-label">
-            Confidence
-          </span>
-
-          <div class="confidence">
-
-            <span class="ai-value">
-              ${a.confidence}%
-            </span>
-
-            <span class="confidence-track">
-
-              <span
-                class="confidence-fill"
-                style="display:block;width:${a.confidence}%"
-              ></span>
-
-            </span>
-
-          </div>
-
+          <span class="ai-label">AI confidence</span>
+          <span class="ai-value">${a.confidence}%</span>
         </div>
 
         <div class="ai-cell wide">
+          <span class="ai-label">Primary authority</span>
+          <span class="ai-value">${escapeHtml(a.routing?.primaryDepartment || a.department)}</span>
+          <p class="ai-text">${escapeHtml(a.routing?.routingReason || "Routing based on civic responsibility and reported context.")}</p>
+        </div>
 
-          <span class="ai-label">
-            AI summary
-          </span>
+        <div class="ai-cell wide">
+          <span class="ai-label">Supporting authorities</span>
+          <div class="signal-list">${supporting}</div>
+        </div>
 
-          <p class="ai-text">
-            ${escapeHtml(
-              a.summary
-            )}
-          </p>
-
+        <div class="ai-cell wide">
+          <span class="ai-label">Evidence assessment</span>
+          <p class="ai-text">${escapeHtml(a.damageAssessment || "Evidence requires field verification.")}</p>
+          ${a.imageFindings?.length ? `<div class="signal-list">${a.imageFindings.map((x) => `<span class="pill">${escapeHtml(x)}</span>`).join("")}</div>` : ""}
         </div>
 
         ${signals}
 
+        <div class="ai-cell wide">
+          <span class="ai-label">Likely consequences</span>
+          <ul class="ai-list">${consequences}</ul>
+        </div>
+
+        <div class="ai-cell">
+          <span class="ai-label">Response estimate</span>
+          <span class="ai-value">${escapeHtml(a.responseTime)}</span>
+        </div>
+
+        <div class="ai-cell">
+          <span class="ai-label">Location</span>
+          <span class="ai-value">${escapeHtml(d.location || "Location pending")}</span>
+        </div>
+
+        <div class="ai-cell wide">
+          <span class="ai-label">AI reasoning</span>
+          <p class="ai-text">${escapeHtml(a.summary)}</p>
+        </div>
       </div>
 
       <div class="ai-reco">
-
-        <span class="ai-label">
-          <i data-lucide="sparkles"></i>
-          AI recommendation
-        </span>
-
-        <p class="ai-text">
-          ${escapeHtml(
-            a.recommendation
-          )}
-        </p>
-
+        <span class="ai-label"><i data-lucide="sparkles"></i>Recommended response</span>
+        <p class="ai-text">${escapeHtml(a.recommendation)}</p>
       </div>
 
       ${duplicate}
 
       <div class="ai-actions">
-
-        <button
-          type="button"
-          class="btn btn-primary btn-lg"
-          data-action="submit-report"
-        >
-          <i data-lucide="send"></i>
-          Submit report
+        <button type="button" class="btn btn-primary btn-lg" data-action="submit-report">
+          <i data-lucide="send"></i>Submit report
         </button>
-
-        <button
-          type="button"
-          class="btn btn-ghost btn-lg"
-          data-action="edit-report"
-        >
-          Edit details
-        </button>
-
+        <button type="button" class="btn btn-ghost btn-lg" data-action="edit-report">Edit details</button>
       </div>
-
     </div>
   `;
 
   refreshIcons();
-
   updateStepper();
 }
 
