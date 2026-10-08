@@ -3098,162 +3098,301 @@ function renderAnalysis() {
   updateStepper();
 }
 
-function submitReport() {
-  const a =
-    state.analysis;
 
-  const d =
-    state.draft;
+/* =========================================================
+   SUPABASE SHARED CIVIC DATA
+   Browser uses only the publishable/anon key. RLS controls access.
+   ========================================================= */
+
+const CIVIC_SUPABASE_URL =
+  "https://uoipyrwdmfjeshxecowi.supabase.co";
+
+const CIVIC_SUPABASE_KEY =
+  "sb_publishable_VeZcW61In2OIaGBSjYQcBg_bJejly-x";
+
+async function civicSupabaseRequest(path, options = {}) {
+  const response = await fetch(
+    `${CIVIC_SUPABASE_URL}/rest/v1/${path}`,
+    {
+      ...options,
+      headers: {
+        apikey: CIVIC_SUPABASE_KEY,
+        Authorization: `Bearer ${CIVIC_SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(
+      `Civic database request failed (${response.status})${body ? ": " + body.slice(0, 240) : ""}`
+    );
+  }
+
+  if (response.status === 204) return null;
+  return response.json().catch(() => null);
+}
+
+function buildSupabaseReportPayload(issue, analysis, draft) {
+  const report = issue.report || {};
+  const location = issue.locationData || {};
+  return {
+    public_id: issue.id,
+    title: issue.title,
+    category: issue.category,
+    description: issue.description,
+    status: issue.status,
+    priority: issue.priority,
+    priority_score: Number(issue.ai?.priority ?? analysis?.priorityScore ?? 0),
+    severity_score: Number(issue.ai?.severity ?? analysis?.severity ?? 0),
+    public_impact: String(issue.ai?.publicImpact || analysis?.publicImpact || "Needs assessment"),
+    ai_confidence: Number(issue.ai?.confidence ?? analysis?.confidence ?? 0),
+    primary_department_id: issue.departmentId || issue.routing?.primaryDepartmentId || null,
+    routing_reason: String(
+      issue.routing?.routingReason ||
+      analysis?.routing?.routingReason ||
+      "Routing grounded in Civic OS departmental responsibility rules."
+    ),
+    verification_required: Boolean(
+      issue.ai?.verificationRequired ??
+      analysis?.verificationRequired ??
+      true
+    ),
+    location: {
+      placeName: location.placeName || draft?.location || "",
+      locality: location.locality || "",
+      district: location.district || "",
+      state: location.state || "Manipur",
+      road: location.road || "",
+      landmark: location.landmark || "",
+      latitude: location.latitude ?? null,
+      longitude: location.longitude ?? null,
+      mapUrl: location.mapUrl || ""
+    },
+    reported_at: new Date(issue.reportedAt || Date.now()).toISOString()
+  };
+}
+
+async function persistCivicReport(issue, analysis, draft) {
+  const reportRows = await civicSupabaseRequest(
+    "reports?on_conflict=public_id",
+    {
+      method: "POST",
+      headers: {
+        Prefer: "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify(
+        buildSupabaseReportPayload(issue, analysis, draft)
+      )
+    }
+  );
+
+  const row = Array.isArray(reportRows) ? reportRows[0] : reportRows;
+  if (!row?.id) {
+    throw new Error("Civic database did not return the report id.");
+  }
+
+  const assessment = {
+    report_id: row.id,
+    source: analysis?.aiSource === "live" ? "live" : "fallback",
+    model: analysis?.aiSource === "live" ? "configured Civic AI gateway" : null,
+    problem_summary: String(
+      analysis?.detectedProblem || analysis?.categoryLabel || issue.title
+    ),
+    observed_evidence: analysis?.imageFindings || analysis?.signals || [],
+    inferred_risks: analysis?.consequences || [],
+    consequences: analysis?.consequences || [],
+    recommended_actions: [
+      String(analysis?.recommendation || issue.recommendation || "Field verification required.")
+    ],
+    assessment: {
+      severity: analysis?.severity ?? null,
+      priority: analysis?.priorityScore ?? null,
+      confidence: analysis?.confidence ?? null,
+      damageAssessment: analysis?.damageAssessment || "",
+      reasoning: analysis?.summary || ""
+    }
+  };
+
+  await civicSupabaseRequest("ai_assessments", {
+    method: "POST",
+    headers: {
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(assessment)
+  });
+
+  const routing = issue.routing || {};
+  const ranked = Array.isArray(routing.rankedDepartments)
+    ? routing.rankedDepartments
+    : [];
+
+  const routingRows = [];
+  const primaryId = routing.primaryDepartmentId || issue.departmentId;
+
+  if (primaryId) {
+    routingRows.push({
+      report_id: row.id,
+      department_id: primaryId,
+      rank: 1,
+      score: Number(routing.primaryScore || 0),
+      role: "primary",
+      reason: routing.routingReason || ""
+    });
+  }
+
+  (routing.supportingDepartments || []).forEach((department, index) => {
+    if (!department?.id || department.id === primaryId) return;
+    routingRows.push({
+      report_id: row.id,
+      department_id: department.id,
+      rank: index + 2,
+      score: Number(department.score || 0),
+      role: "supporting",
+      reason: routing.routingReason || ""
+    });
+  });
+
+  if (routingRows.length) {
+    await civicSupabaseRequest("report_routing", {
+      method: "POST",
+      headers: {
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify(routingRows)
+    });
+  }
+
+  await civicSupabaseRequest("report_status_history", {
+    method: "POST",
+    headers: {
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify({
+      report_id: row.id,
+      from_status: null,
+      to_status: issue.status,
+      note: `Citizen report received and routed to ${issue.department}.`
+    })
+  });
+
+  return row;
+}
+
+async function submitReport() {
+  const a = state.analysis;
+  const d = state.draft;
 
   if (!a || !d) return;
 
-  const id =
-    `CIV-${nextIssueNumber++}`;
+  const id = `CIV-${nextIssueNumber++}`;
 
-  const issue =
-    createIssue({
-      id,
+  const issue = createIssue({
+    id,
+    title: makeTitle(d.description),
+    category: a.categoryKey,
+    description: d.description,
+    location: d.location,
+    area: "Citizen report",
+    priority: a.priority,
+    status: "Reported",
+    supporters: 1,
+    photo: state.draftPhotoUrl,
+    coordinates: d.coordinates || state.draftCoordinates || {},
+    reportedAt: Date.now()
+  });
 
-      title:
-        makeTitle(
-          d.description
-        ),
+  issue.summary = a.summary;
+  issue.recommendation = a.recommendation;
+  issue.ai = {
+    ...issue.ai,
+    aiSource: a.aiSource || "fallback",
+    verificationRequired: Boolean(a.verificationRequired ?? true),
+    publicImpact: a.publicImpact || issue.ai.publicImpact
+  };
 
-      category:
-        a.categoryKey,
+  const submitButton = document.querySelector(
+    '[data-action="submit-report"]'
+  );
 
-      description:
-        d.description,
-
-      location:
-        d.location,
-
-      area:
-        "Citizen report",
-
-      priority:
-        a.priority,
-
-      status:
-        "Reported",
-
-      supporters:
-        1,
-
-      photo:
-        state.draftPhotoUrl,
-
-      reportedAt:
-        Date.now()
-    });
-
-  issue.summary =
-    a.summary;
-
-  issue.recommendation =
-    a.recommendation;
-
-  issues.unshift(issue);
-
-  state.supported.add(id);
-
-  const oldPhoto =
-    state.draftPhotoUrl;
-
-  state.draftPhotoUrl =
-    null;
-
-  resetReportForm();
-
-  if (oldPhoto) {
-    try {
-      URL.revokeObjectURL(
-        oldPhoto
-      );
-    } catch {}
-  }
-
-  const reportForm =
-    $("#reportForm");
-
-  if (reportForm) {
-    reportForm.hidden =
-      true;
-  }
-
-  state.analysis =
-    null;
-
-  const panel =
-    $("#aiPanel");
-
-  if (panel) {
-    panel.innerHTML = `
-      <div class="ai-card success-card">
-
-        <span class="success-icon">
-          <i data-lucide="check"></i>
-        </span>
-
-        <p class="kicker">
-          ${escapeHtml(id)}
-          ·
-          ${escapeHtml(
-            issue.department
-          )}
-        </p>
-
-        <h3 class="success-title">
-          Report submitted
-        </h3>
-
-        <p class="success-sub">
-          Your report is now live.
-          ${escapeHtml(
-            issue.department
-          )}
-          has been notified and
-          you will see every status
-          update here.
-        </p>
-
-        <div class="success-actions">
-
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-issue="${escapeHtml(id)}"
-          >
-            <i data-lucide="activity"></i>
-            Track this issue
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-ghost"
-            data-action="report-another"
-          >
-            Report another
-          </button>
-
-        </div>
-
-      </div>
-    `;
-
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.innerHTML =
+      '<i data-lucide="loader-circle"></i> Saving report…';
     refreshIcons();
   }
 
-  updateStepper();
+  try {
+    const savedRow = await persistCivicReport(issue, a, d);
+    issue.supabaseId = savedRow.id;
+    issue.report.identity.databaseId = savedRow.id;
+    issues.unshift(issue);
+    state.supported.add(id);
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+    const oldPhoto = state.draftPhotoUrl;
+    state.draftPhotoUrl = null;
+    resetReportForm();
 
-  toast(
-    `${id} submitted to ${issue.department}`
-  );
+    if (oldPhoto) {
+      try {
+        URL.revokeObjectURL(oldPhoto);
+      } catch {}
+    }
+
+    const reportForm = $("#reportForm");
+    if (reportForm) reportForm.hidden = true;
+
+    state.analysis = null;
+
+    const panel = $("#aiPanel");
+    if (panel) {
+      panel.innerHTML = `
+        <div class="ai-card success-card">
+          <span class="success-icon">
+            <i data-lucide="check"></i>
+          </span>
+          <p class="kicker">
+            ${escapeHtml(id)} · ${escapeHtml(issue.department)}
+          </p>
+          <h3 class="success-title">Report submitted</h3>
+          <p class="success-sub">
+            Your report is now stored in Civic OS and routed to
+            ${escapeHtml(issue.department)}. You can track its lifecycle here.
+          </p>
+          <div class="success-actions">
+            <button type="button" class="btn btn-primary" data-issue="${escapeHtml(id)}">
+              <i data-lucide="activity"></i>
+              Track this issue
+            </button>
+            <button type="button" class="btn btn-ghost" data-action="report-another">
+              Report another
+            </button>
+          </div>
+        </div>
+      `;
+      refreshIcons();
+    }
+
+    updateStepper();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast(`${id} submitted to ${issue.department}`);
+  } catch (error) {
+    console.error("Civic OS database persistence failed:", error);
+
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.innerHTML =
+        '<i data-lucide="send"></i>Submit report';
+      refreshIcons();
+    }
+
+    toast(
+      "The report could not be saved. Please try again.",
+      "triangle-alert"
+    );
+  }
 }
 
 function resetReportForm() {
