@@ -123,36 +123,9 @@
       white-space: nowrap !important;
     }
 
-    .bottom-nav .nav-item svg {
-      width: 24px !important;
-      height: 24px !important;
-      min-width: 24px !important;
-      min-height: 24px !important;
-      display: block !important;
-      flex: 0 0 24px !important;
-      margin: 0 auto 5px !important;
-      fill: none !important;
-      stroke: currentColor !important;
-      stroke-width: 1.9 !important;
-      stroke-linecap: round !important;
-      stroke-linejoin: round !important;
-      overflow: visible !important;
-    }
-
-    .bottom-nav .nav-item .civic-nav-plus {
-      width: 30px !important;
-      height: 30px !important;
-      min-width: 30px !important;
-      min-height: 30px !important;
-      flex-basis: 30px !important;
-      stroke-width: 2 !important;
-    }
-
-    .bottom-nav .nav-item > span:last-child {
-      font-size: 11px !important;
-      line-height: 1.1 !important;
-      font-weight: 600 !important;
-      letter-spacing: .01em !important;
+    .bottom-nav .nav-item svg,
+    .bottom-nav .nav-item i {
+      flex-shrink: 0 !important;
     }
 
     .bottom-nav .nav-item span {
@@ -215,44 +188,8 @@
       user-select: none;
     }
   </style>
-
-  <style id="civic-nav-icons">
-    .civic-fallback-icon {
-      display:inline-flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      width:22px !important;
-      height:22px !important;
-      margin-bottom:2px !important;
-      font-family:Arial,sans-serif !important;
-      font-size:21px !important;
-      line-height:1 !important;
-      font-weight:700 !important;
-      color:#3ee08f !important;
-    }
-    .nav-item:not(.nav-report) .civic-fallback-icon { color:inherit !important; }
-  </style>
-
-  <style id="civic-nav-icons-v2">
-    .bottom-nav .civic-nav-icon {
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      width:24px !important;
-      height:24px !important;
-      flex:0 0 24px !important;
-      font-family:Arial,sans-serif !important;
-      font-size:22px !important;
-      font-weight:700 !important;
-      line-height:24px !important;
-      color:currentColor !important;
-      visibility:visible !important;
-      opacity:1 !important;
-    }
-    .bottom-nav .civic-nav-plus { font-size:27px !important; }
-  </style>
-
 </head>
+
 <body>
 
   <div class="bg-grid" aria-hidden="true"></div>
@@ -1196,11 +1133,10 @@
               id="issueSearch"
               type="search"
               class="control control-icon"
-              placeholder="Search place, locality, district or issue ID"
-              aria-label="Search issues by place or details"
+              placeholder="Search issues, places, departments"
+              aria-label="Search issues"
               autocomplete="off"
             />
-            <button type="button" id="clearIssueSearch" class="search-clear" aria-label="Clear search" title="Clear search">×</button>
 
           </div>
 
@@ -1250,19 +1186,6 @@
 
             </label>
 
-
-            <label class="select">
-              <span class="sr-only">Filter by district</span>
-              <select id="filterDistrict">
-                <option value="all">All districts</option>
-                <option value="Imphal West">Imphal West</option>
-                <option value="Imphal East">Imphal East</option>
-                <option value="Thoubal">Thoubal</option>
-                <option value="Bishnupur">Bishnupur</option>
-                <option value="Kakching">Kakching</option>
-                <option value="Tengnoupal">Tengnoupal</option>
-              </select>
-            </label>
 
             <label class="select">
               <span class="sr-only">
@@ -2055,51 +1978,62 @@
     aria-label="Primary mobile"
   >
 
-    <button type="button" class="nav-item" data-nav data-goto="homeScreen">
-      <svg class="civic-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="m3 10 9-7 9 7"></path>
-        <path d="M5 9.5V21h14V9.5"></path>
-        <path d="M9 21v-6h6v6"></path>
-      </svg>
+    <button
+      type="button"
+      class="nav-item"
+      data-nav
+      data-goto="homeScreen"
+    >
+      <i data-lucide="house"></i>
       <span>Home</span>
     </button>
 
-    <button type="button" class="nav-item" data-nav data-goto="issuesScreen">
-      <svg class="civic-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 6h14"></path><path d="M5 12h14"></path><path d="M5 18h9"></path>
-      </svg>
+
+    <button
+      type="button"
+      class="nav-item"
+      data-nav
+      data-goto="issuesScreen"
+    >
+      <i data-lucide="list-filter"></i>
       <span>Issues</span>
     </button>
 
-    <button type="button" class="nav-item nav-report" data-nav data-goto="reportScreen">
-      <svg class="civic-nav-icon civic-nav-plus" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="9"></circle>
-        <path d="M12 8v8"></path><path d="M8 12h8"></path>
-      </svg>
+
+    <button
+      type="button"
+      class="nav-item nav-report"
+      data-nav
+      data-goto="reportScreen"
+    >
+      <i data-lucide="circle-plus"></i>
       <span>Report</span>
     </button>
 
-    <button type="button" class="nav-item" data-nav data-goto="actionsScreen">
-      <svg class="civic-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="10" cy="7" r="4"></circle>
-        <path d="M20 21v-2a4 4 0 0 0-3-3.9"></path>
-        <path d="M17 3.1a4 4 0 0 1 0 7.8"></path>
-      </svg>
+
+    <button
+      type="button"
+      class="nav-item"
+      data-nav
+      data-goto="actionsScreen"
+    >
+      <i data-lucide="hand-heart"></i>
       <span>Actions</span>
     </button>
 
-    <button type="button" class="nav-item" data-nav data-goto="dashboardScreen">
-      <svg class="civic-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3" y="3" width="7" height="7"></rect>
-        <rect x="14" y="3" width="7" height="7"></rect>
-        <rect x="3" y="14" width="7" height="7"></rect>
-        <rect x="14" y="14" width="7" height="7"></rect>
-      </svg>
+
+    <button
+      type="button"
+      class="nav-item"
+      data-nav
+      data-goto="dashboardScreen"
+    >
+      <i data-lucide="layout-dashboard"></i>
       <span>Dashboard</span>
     </button>
 
   </nav>
+
 
   <!-- =====================================================
        ISSUE DETAIL SHEET
@@ -2541,84 +2475,6 @@
        ===================================================== -->
 
 
-
-  <!-- =====================================================
-       CORE NAVIGATION FALLBACK
-       Keeps Civic OS navigable even if optional app initialization fails.
-       ===================================================== -->
-  <style id="civic-nav-emergency">
-    .bottom-nav {
-      display:grid !important;
-      position:fixed !important;
-      left:12px !important;
-      right:12px !important;
-      bottom:12px !important;
-      width:auto !important;
-      height:64px !important;
-      min-height:64px !important;
-      padding:6px !important;
-      box-sizing:border-box !important;
-      grid-template-columns:repeat(5,minmax(0,1fr)) !important;
-      gap:4px !important;
-      background:rgba(10,16,13,.96) !important;
-      border:1px solid rgba(62,224,143,.32) !important;
-      border-radius:20px !important;
-      box-shadow:0 14px 40px rgba(0,0,0,.55) !important;
-      visibility:visible !important;
-      opacity:1 !important;
-      pointer-events:auto !important;
-      transform:none !important;
-      z-index:99999 !important;
-    }
-    .bottom-nav .nav-item {
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      min-width:0 !important;
-      min-height:52px !important;
-      border:0 !important;
-      background:transparent !important;
-      color:#a9b5ae !important;
-      pointer-events:auto !important;
-      visibility:visible !important;
-      opacity:1 !important;
-      cursor:pointer !important;
-      -webkit-appearance:none !important;
-      appearance:none !important;
-    }
-    .bottom-nav .nav-item span { display:block !important; color:inherit !important; }
-    .bottom-nav .nav-item.active { color:#3ee08f !important; background:rgba(62,224,143,.12) !important; }
-    .bottom-nav .nav-report { color:#3ee08f !important; }
-  </style>
-  <script>
-    (function () {
-      function bootNavigation() {
-        document.querySelectorAll("[data-goto]").forEach(function (button) {
-          if (button.dataset.civicFallbackBound) return;
-          button.dataset.civicFallbackBound = "true";
-          button.addEventListener("click", function () {
-            var id = button.getAttribute("data-goto");
-            if (!id) return;
-            var target = document.getElementById(id);
-            if (!target) return;
-            document.querySelectorAll(".screen").forEach(function (screen) {
-              screen.classList.toggle("active", screen === target);
-            });
-            document.querySelectorAll("[data-nav]").forEach(function (nav) {
-              nav.classList.toggle("active", nav.getAttribute("data-goto") === id);
-            });
-            try { history.replaceState({ screen: id }, "", "#" + id.replace("Screen", "").replace("createActivity", "create-activity").replace("actionDetail", "action-detail")); } catch (e) {}
-            window.scrollTo(0, 0);
-          });
-        });
-      }
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", bootNavigation, { once: true });
-      } else {
-        bootNavigation();
-      }
-    })();
-  </script>
 
   <!-- =====================================================
        LIBRARIES
