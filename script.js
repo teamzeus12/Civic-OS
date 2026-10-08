@@ -1931,6 +1931,7 @@ const state = {
     status: "All",
     category: "all",
     priority: "all",
+    district: "all",
     sort: "newest",
     query: ""
   },
@@ -3794,6 +3795,9 @@ function syncFilterControls() {
   const priority =
     $("#filterPriority");
 
+  const district =
+    $("#filterDistrict");
+
   const sort =
     $("#sortIssues");
 
@@ -3808,6 +3812,10 @@ function syncFilterControls() {
   if (priority) {
     priority.value =
       f.priority;
+  }
+
+  if (district) {
+    district.value = f.district || "all";
   }
 
   if (sort) {
@@ -3850,11 +3858,18 @@ function syncFilterControls() {
   });
 }
 
+function getIssueDistrict(issue) {
+  const known = ["Imphal West", "Imphal East", "Thoubal", "Bishnupur", "Kakching", "Tengnoupal"];
+  const place = String(issue.location || "");
+  return known.find((district) => place.toLowerCase().includes(district.toLowerCase())) || "Other";
+}
+
 function getFilteredIssues() {
   const {
     status,
     category,
     priority,
+    district,
     sort,
     query
   } = state.filters;
@@ -3882,6 +3897,10 @@ function getFilteredIssues() {
         priority !== "all" &&
         i.priority !== priority
       ) {
+        return false;
+      }
+
+      if (district !== "all" && getIssueDistrict(i) !== district) {
         return false;
       }
 
@@ -7090,6 +7109,7 @@ function bindEvents() {
           status: "All",
           category: "all",
           priority: "all",
+          district: "all",
           sort: "newest",
           query: ""
         };
@@ -7288,6 +7308,14 @@ function bindEvents() {
     );
   }
 
+
+  const filterDistrict = $("#filterDistrict");
+  if (filterDistrict) {
+    filterDistrict.addEventListener("change", (event) => {
+      state.filters.district = event.target.value;
+      renderIssueList();
+    });
+  }
 
   const sortIssues =
     $("#sortIssues");
