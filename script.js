@@ -655,8 +655,54 @@ function civicAiFileToDataUrl(file) {
   });
 }
 
+async function civicAiImageToDataUrl(file) {
+  if (!file) return null;
+
+  /*
+   * iPhone photos can be very large. Keep the original file for the
+   * citizen's evidence preview, but send a compact analysis copy to
+   * the AI gateway so multimodal requests remain reliable on mobile.
+   */
+  const raw = await civicAiFileToDataUrl(file);
+  if (!raw || !raw.startsWith("data:image/")) return raw;
+
+  try {
+    const image = new Image();
+    image.src = raw;
+
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(new Error("Could not decode evidence image"));
+    });
+
+    const maxDimension = 1600;
+    const scale = Math.min(
+      1,
+      maxDimension / Math.max(image.naturalWidth || 1, image.naturalHeight || 1)
+    );
+
+    const width = Math.max(1, Math.round((image.naturalWidth || 1) * scale));
+    const height = Math.max(1, Math.round((image.naturalHeight || 1) * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d", { alpha: false });
+    if (!context) return raw;
+
+    context.drawImage(image, 0, 0, width, height);
+
+    const compressed = canvas.toDataURL("image/jpeg", 0.82);
+
+    return compressed.length < raw.length ? compressed : raw;
+  } catch {
+    return raw;
+  }
+}
+
 async function buildCivicAIPayload(draft) {
-  const evidenceImage = await civicAiFileToDataUrl(
+  const evidenceImage = await civicAiImageToDataUrl(
     state.draftPhotoFile
   );
 
