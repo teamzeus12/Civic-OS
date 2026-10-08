@@ -8312,6 +8312,56 @@ function init() {
     issues = [];
   }
 
+  // Never let the public demo boot with an empty civic dataset.
+  // If a future seed/config change breaks, keep the core screens populated
+  // with safe local demo records instead of leaving Home, Issues and Dashboard blank.
+  if (!Array.isArray(issues) || issues.length === 0) {
+    issues = [
+      {
+        id: "CIV-DEMO-01",
+        title: "Road damage near public school",
+        category: "roads",
+        description: "Road surface is damaged near a school entrance and needs inspection.",
+        location: "Khurai, Imphal East",
+        area: "Khurai",
+        status: "Reported",
+        priority: "High",
+        supporters: 12,
+        updates: [],
+        recommendation: "Inspect the road section and assess repair priority.",
+        reportedAt: Date.now() - 2 * 60 * 60 * 1000,
+      },
+      {
+        id: "CIV-DEMO-02",
+        title: "Open drain overflowing after rain",
+        category: "water",
+        description: "An open drain is overflowing and affecting pedestrians after rainfall.",
+        location: "Singjamei, Imphal West",
+        area: "Singjamei",
+        status: "In Progress",
+        priority: "High",
+        supporters: 8,
+        updates: [],
+        recommendation: "Inspect drainage flow and clear the obstruction.",
+        reportedAt: Date.now() - 8 * 60 * 60 * 1000,
+      },
+      {
+        id: "CIV-DEMO-03",
+        title: "Garbage collection delayed",
+        category: "garbage",
+        description: "Waste has remained uncollected in a busy neighbourhood area.",
+        location: "Paona Bazaar, Imphal West",
+        area: "Paona Bazaar",
+        status: "Verified",
+        priority: "Medium",
+        supporters: 5,
+        updates: [],
+        recommendation: "Coordinate a sanitation collection visit.",
+        reportedAt: Date.now() - 24 * 60 * 60 * 1000,
+      },
+    ];
+  }
+
   const bootSteps = [
     ["category options", renderCategoryOptions],
     ["issue filters", setupIssueFilters],
