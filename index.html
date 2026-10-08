@@ -2477,6 +2477,40 @@
 
 
   <!-- =====================================================
+       CORE NAVIGATION FALLBACK
+       Keeps Civic OS navigable even if optional app initialization fails.
+       ===================================================== -->
+  <script>
+    (function () {
+      function bootNavigation() {
+        document.querySelectorAll("[data-goto]").forEach(function (button) {
+          if (button.dataset.civicFallbackBound) return;
+          button.dataset.civicFallbackBound = "true";
+          button.addEventListener("click", function () {
+            var id = button.getAttribute("data-goto");
+            if (!id) return;
+            var target = document.getElementById(id);
+            if (!target) return;
+            document.querySelectorAll(".screen").forEach(function (screen) {
+              screen.classList.toggle("active", screen === target);
+            });
+            document.querySelectorAll("[data-nav]").forEach(function (nav) {
+              nav.classList.toggle("active", nav.getAttribute("data-goto") === id);
+            });
+            try { history.replaceState({ screen: id }, "", "#" + id.replace("Screen", "").replace("createActivity", "create-activity").replace("actionDetail", "action-detail")); } catch (e) {}
+            window.scrollTo(0, 0);
+          });
+        });
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootNavigation, { once: true });
+      } else {
+        bootNavigation();
+      }
+    })();
+  </script>
+
+  <!-- =====================================================
        LIBRARIES
        ===================================================== -->
 
