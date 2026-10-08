@@ -448,6 +448,391 @@ const CIVIC_DEPARTMENTS = {
   }
 };
 
+
+/* =========================================================
+   UNIVERSAL MANIPUR CIVIC KNOWLEDGE
+   The model may classify broadly; this layer keeps routing
+   grounded in known government functions and never relies
+   on a category label alone.
+   ========================================================= */
+
+Object.assign(CIVIC_DEPARTMENTS, {
+  youth_sports: {
+    id: "youth_sports",
+    officialName: "Youth Affairs & Sports Department",
+    responsibilityAreas: ["sports", "youth", "sports facilities", "playgrounds", "sports equipment"],
+    problemTypes: ["sports", "youth", "playground", "stadium"],
+    visualSignals: ["damaged sports equipment", "unsafe playground", "damaged sports facility"],
+    responseTypes: ["facility inspection", "equipment assessment", "maintenance coordination"],
+    escalationConditions: ["unsafe sports facility", "major facility failure"]
+  },
+  social_welfare: {
+    id: "social_welfare",
+    officialName: "Social Welfare Department",
+    responsibilityAreas: ["social welfare", "child welfare", "senior citizen services", "disability support"],
+    problemTypes: ["social welfare", "child welfare", "elderly", "disability"],
+    visualSignals: ["damaged welfare facility", "accessibility barrier"],
+    responseTypes: ["service investigation", "welfare support", "facility inspection"],
+    escalationConditions: ["immediate vulnerable-person risk"]
+  },
+  labour_employment: {
+    id: "labour_employment",
+    officialName: "Labour & Employment Department",
+    responsibilityAreas: ["labour", "employment", "worker welfare", "workplace issues"],
+    problemTypes: ["labour", "employment", "worker", "workplace"],
+    visualSignals: ["unsafe workplace condition"],
+    responseTypes: ["inspection", "worker-service response"],
+    escalationConditions: ["serious workplace safety concern"]
+  },
+  tribal_hills: {
+    id: "tribal_hills",
+    officialName: "Tribal Affairs & Hills Department",
+    responsibilityAreas: ["tribal affairs", "hill-area development", "tribal welfare"],
+    problemTypes: ["tribal", "hill area", "tribal welfare"],
+    visualSignals: ["hill infrastructure damage", "remote-area access issue"],
+    responseTypes: ["field assessment", "development coordination"],
+    escalationConditions: ["critical access or essential-service disruption"]
+  },
+  industries_commerce: {
+    id: "industries_commerce",
+    officialName: "Commerce & Industries Department",
+    responsibilityAreas: ["industries", "commerce", "industrial development"],
+    problemTypes: ["industry", "industrial", "commerce", "market infrastructure"],
+    visualSignals: ["industrial facility issue", "market infrastructure damage"],
+    responseTypes: ["inspection", "industry-service coordination"],
+    escalationConditions: ["major industrial disruption"]
+  },
+  skill_employment: {
+    id: "skill_employment",
+    officialName: "Skill, Labour & Employment Services",
+    responsibilityAreas: ["skill development", "vocational training", "employment services"],
+    problemTypes: ["skill training", "vocational", "job service"],
+    visualSignals: ["training facility issue"],
+    responseTypes: ["service investigation", "facility assessment"],
+    escalationConditions: ["major training-service disruption"]
+  },
+  information_technology: {
+    id: "information_technology",
+    officialName: "Information Technology Department",
+    responsibilityAreas: ["government IT", "digital services", "e-governance infrastructure"],
+    problemTypes: ["government website", "digital service", "IT", "e-governance"],
+    visualSignals: ["digital service failure"],
+    responseTypes: ["technical investigation", "service restoration"],
+    escalationConditions: ["critical public digital-service outage"]
+  },
+  science_technology: {
+    id: "science_technology",
+    officialName: "Science & Technology Department",
+    responsibilityAreas: ["science and technology services", "technology infrastructure"],
+    problemTypes: ["science", "technology", "technical service"],
+    visualSignals: ["technology equipment failure"],
+    responseTypes: ["technical assessment", "service coordination"],
+    escalationConditions: ["critical technology-service failure"]
+  },
+  art_culture: {
+    id: "art_culture",
+    officialName: "Art & Culture Department",
+    responsibilityAreas: ["cultural heritage", "arts", "cultural facilities"],
+    problemTypes: ["heritage", "culture", "museum", "art", "cultural site"],
+    visualSignals: ["heritage damage", "cultural facility damage"],
+    responseTypes: ["site inspection", "conservation coordination"],
+    escalationConditions: ["significant heritage damage"]
+  },
+  relief_rehabilitation: {
+    id: "relief_rehabilitation",
+    officialName: "Relief & Rehabilitation Services",
+    responsibilityAreas: ["relief", "rehabilitation", "displaced persons", "emergency assistance"],
+    problemTypes: ["relief", "rehabilitation", "displacement", "emergency assistance"],
+    visualSignals: ["disaster displacement", "damaged shelter"],
+    responseTypes: ["field assessment", "relief coordination", "rehabilitation support"],
+    escalationConditions: ["immediate shelter or safety need"]
+  },
+  consumer_affairs: {
+    id: "consumer_affairs",
+    officialName: "Consumer Affairs",
+    responsibilityAreas: ["consumer protection", "consumer complaints", "essential commodity issues"],
+    problemTypes: ["consumer", "overcharging", "consumer complaint"],
+    visualSignals: ["consumer-service issue"],
+    responseTypes: ["complaint investigation", "service inspection"],
+    escalationConditions: ["widespread essential-commodity issue"]
+  },
+  sericulture: {
+    id: "sericulture",
+    officialName: "Sericulture Department",
+    responsibilityAreas: ["sericulture", "silk production", "silkworm farming"],
+    problemTypes: ["sericulture", "silkworm", "silk"],
+    visualSignals: ["sericulture facility issue", "silkworm crop damage"],
+    responseTypes: ["field inspection", "technical advisory"],
+    escalationConditions: ["major production loss"]
+  },
+  panchayat_rural: {
+    id: "panchayat_rural",
+    officialName: "Panchayati Raj / Rural Development",
+    responsibilityAreas: ["village governance", "rural civic services", "panchayats"],
+    problemTypes: ["panchayat", "village service", "rural civic issue"],
+    visualSignals: ["village public facility damage"],
+    responseTypes: ["local verification", "rural service coordination"],
+    escalationConditions: ["essential rural service disruption"]
+  }
+});
+
+Object.assign(CIVIC_ROUTING_RULES, {
+  sports: { primary: "youth_sports", supporting: ["education", "pwd"] },
+  youth: { primary: "youth_sports", supporting: ["education", "social_welfare"] },
+  social_welfare: { primary: "social_welfare", supporting: ["health", "community_rural"] },
+  labour: { primary: "labour_employment", supporting: ["police", "health"] },
+  employment: { primary: "labour_employment", supporting: ["skill_employment"] },
+  skill: { primary: "skill_employment", supporting: ["labour_employment", "education"] },
+  tribal: { primary: "tribal_hills", supporting: ["community_rural", "pwd"] },
+  industry: { primary: "industries_commerce", supporting: ["environment_forest", "power"] },
+  it: { primary: "information_technology", supporting: ["science_technology"] },
+  technology: { primary: "science_technology", supporting: ["information_technology"] },
+  culture: { primary: "art_culture", supporting: ["tourism", "environment_forest"] },
+  heritage: { primary: "art_culture", supporting: ["tourism", "environment_forest"] },
+  relief: { primary: "relief_rehabilitation", supporting: ["relief_disaster", "social_welfare"] },
+  consumer: { primary: "consumer_affairs", supporting: ["food_civil_public_distribution"] },
+  sericulture: { primary: "sericulture", supporting: ["agriculture", "horticulture_soil"] },
+  panchayat: { primary: "panchayat_rural", supporting: ["community_rural"] }
+});
+
+Object.assign(CIVIC_CATEGORY_DEPARTMENT_MAP, {
+  sports: "youth_sports",
+  youth: "youth_sports",
+  social_welfare: "social_welfare",
+  labour: "labour_employment",
+  employment: "labour_employment",
+  skill: "skill_employment",
+  tribal: "tribal_hills",
+  industry: "industries_commerce",
+  it: "information_technology",
+  technology: "science_technology",
+  culture: "art_culture",
+  heritage: "art_culture",
+  relief: "relief_rehabilitation",
+  consumer: "consumer_affairs",
+  sericulture: "sericulture",
+  panchayat: "panchayat_rural"
+});
+
+/* =========================================================
+   CIVIC AI CONTRACT
+   Real multimodal AI can plug into this gateway without
+   changing the People Portal's report schema.
+   ========================================================= */
+
+const CIVIC_AI_ENDPOINT =
+  window.CIVIC_AI_ENDPOINT || "";
+
+const CIVIC_AI_SCHEMA = {
+  detectedProblem: "string",
+  domain: "string",
+  category: "string",
+  severity: "number 0-100",
+  priority: "number 0-100",
+  confidence: "number 0-100",
+  publicImpact: "string",
+  imageFindings: ["string"],
+  consequences: ["string"],
+  damageAssessment: "string",
+  reasoning: "string",
+  recommendedAction: ["string"],
+  estimatedResponseWindow: "string",
+  primaryDepartmentId: "string",
+  supportingDepartmentIds: ["string"],
+  verificationRequired: "boolean",
+  verificationReason: "string"
+};
+
+function civicAiFileToDataUrl(file) {
+  if (!file) return Promise.resolve(null);
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("Could not read evidence file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function buildCivicAIPayload(draft) {
+  const evidenceImage = await civicAiFileToDataUrl(
+    state.draftPhotoFile
+  );
+
+  return {
+    version: "civic-os-ai-v1",
+    task: "multimodal_civic_triage",
+    report: {
+      categoryHint: draft.categoryKey || "auto",
+      description: draft.description,
+      location: normalizeCivicLocation(
+        draft.location,
+        draft.coordinates || {}
+      )
+    },
+    evidence: {
+      image: evidenceImage
+    },
+    knowledge: Object.values(CIVIC_DEPARTMENTS).map((department) => ({
+      id: department.id,
+      officialName: department.officialName,
+      responsibilityAreas: department.responsibilityAreas,
+      problemTypes: department.problemTypes,
+      visualSignals: department.visualSignals,
+      escalationConditions: department.escalationConditions
+    })),
+    requiredOutput: CIVIC_AI_SCHEMA,
+    safetyRule:
+      "Do not invent visual evidence, department responsibility, severity, priority, or resolution time. If evidence is insufficient, mark verificationRequired true."
+  };
+}
+
+function normalizeCivicAIResult(raw, draft) {
+  if (!raw || typeof raw !== "object") return null;
+
+  const source =
+    raw.assessment &&
+    typeof raw.assessment === "object"
+      ? raw.assessment
+      : raw;
+
+  const clamp = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n)
+      ? Math.max(0, Math.min(100, Math.round(n)))
+      : null;
+  };
+
+  const visualFindings = Array.isArray(source.imageFindings)
+    ? source.imageFindings.filter(Boolean).map(String).slice(0, 12)
+    : [];
+
+  const routing = buildDepartmentRouting({
+    description:
+      String(draft.description || "") +
+      " " +
+      String(source.detectedProblem || "") +
+      " " +
+      String(source.domain || ""),
+    categoryKey:
+      source.category || draft.categoryKey || "other",
+    location:
+      draft.location,
+    visualFindings
+  });
+
+  const modelPrimary =
+    CIVIC_DEPARTMENTS[source.primaryDepartmentId]
+      ? source.primaryDepartmentId
+      : routing.primaryDepartmentId;
+
+  const modelSupporting = Array.isArray(source.supportingDepartmentIds)
+    ? source.supportingDepartmentIds.filter(
+        (id) => id !== modelPrimary && CIVIC_DEPARTMENTS[id]
+      )
+    : [];
+
+  const supportingIds = [
+    ...new Set([
+      ...modelSupporting,
+      ...(routing.supportingDepartments || []).map(
+        (department) => department.id
+      )
+    ])
+  ].filter((id) => id !== modelPrimary);
+
+  const priorityScore = clamp(source.priority);
+
+  return {
+    source: "multimodal-ai",
+    detectedProblem:
+      String(source.detectedProblem || "Civic issue").trim(),
+    categoryKey:
+      CIVIC_CATEGORY_DEPARTMENT_MAP[source.category]
+        ? source.category
+        : draft.categoryKey || "other",
+    severity: clamp(source.severity),
+    priorityScore,
+    priority:
+      priorityScore === null
+        ? "Medium"
+        : priorityScore >= 75
+          ? "High"
+          : priorityScore >= 45
+            ? "Medium"
+            : "Low",
+    confidence: clamp(source.confidence),
+    publicImpact:
+      String(source.publicImpact || "Needs assessment").trim(),
+    imageFindings: visualFindings,
+    consequences: Array.isArray(source.consequences)
+      ? source.consequences.filter(Boolean).map(String).slice(0, 8)
+      : [],
+    damageAssessment:
+      String(source.damageAssessment || "Needs field verification").trim(),
+    reasoning:
+      String(source.reasoning || "AI reasoning unavailable").trim(),
+    recommendation:
+      Array.isArray(source.recommendedAction)
+        ? source.recommendedAction.filter(Boolean).map(String).slice(0, 8).join(" ")
+        : String(source.recommendedAction || "Field verification required").trim(),
+    estimatedResponseWindow:
+      String(
+        source.estimatedResponseWindow ||
+        "Subject to department verification"
+      ).trim(),
+    routing: {
+      ...routing,
+      primaryDepartment:
+        CIVIC_DEPARTMENTS[modelPrimary] || routing.primaryDepartment,
+      primaryDepartmentId: modelPrimary,
+      supportingDepartments: supportingIds
+        .map((id) => CIVIC_DEPARTMENTS[id])
+        .filter(Boolean),
+      routingReason:
+        String(
+          source.routingReason ||
+          routing.routingReason ||
+          "Routing grounded in civic responsibility rules."
+        ).trim()
+    },
+    verificationRequired:
+      Boolean(
+        source.verificationRequired ||
+        !source.confidence ||
+        Number(source.confidence) < 70
+      ),
+    verificationReason:
+      String(
+        source.verificationReason ||
+        "Field verification remains required before final departmental action."
+      ).trim()
+  };
+}
+
+async function requestCivicAI(draft) {
+  if (!CIVIC_AI_ENDPOINT) return null;
+
+  const payload = await buildCivicAIPayload(draft);
+
+  const response = await fetch(CIVIC_AI_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      "Civic AI gateway returned HTTP " + response.status
+    );
+  }
+
+  const result = await response.json();
+  return normalizeCivicAIResult(result, draft);
+}
+
 const CIVIC_ROUTING_RULES = {
   roads: { primary: "pwd", supporting: ["transport", "relief_disaster"] },
   garbage: { primary: "mahud", supporting: ["health", "environment_forest"] },
@@ -1380,6 +1765,7 @@ const state = {
   screen: "homeScreen",
 
   draftPhotoUrl: null,
+  draftPhotoFile: null,
 
   draft: null,
 
@@ -2266,7 +2652,10 @@ function getDraft() {
     hasPhoto:
       Boolean(
         state.draftPhotoUrl
-      )
+      ),
+
+    coordinates:
+      state.draftCoordinates || {}
   };
 }
 
@@ -2518,7 +2907,7 @@ function handleAnalyze(event) {
 
   let index = 0;
 
-  const tick = () => {
+  const tick = async () => {
     stepEls.forEach(
       (el, i) => {
         el.classList.toggle(
@@ -2547,8 +2936,27 @@ function handleAnalyze(event) {
       return;
     }
 
-    state.analysis =
-      analyzeReport(draft);
+    try {
+      const multimodalAnalysis =
+        await requestCivicAI(draft);
+
+      state.analysis =
+        multimodalAnalysis ||
+        analyzeReport(draft);
+    } catch (error) {
+      console.warn(
+        "Civic AI gateway unavailable; using deterministic civic fallback.",
+        error
+      );
+
+      state.analysis =
+        analyzeReport(draft);
+
+      toast(
+        "AI gateway unavailable — using civic fallback",
+        "triangle-alert"
+      );
+    }
 
     state.analyzing = false;
 
@@ -2891,6 +3299,7 @@ function setPhoto(file) {
     revoke: true
   });
 
+  state.draftPhotoFile = file;
   state.draftPhotoUrl =
     URL.createObjectURL(file);
 
@@ -2934,6 +3343,9 @@ function clearPhoto({
   }
 
   state.draftPhotoUrl =
+    null;
+
+  state.draftPhotoFile =
     null;
 
   const photo =
@@ -3055,6 +3467,11 @@ function useCurrentLocation() {
           )}, ${pos.coords.longitude.toFixed(
             5
           )}`;
+
+        state.draftCoordinates = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude
+        };
       }
 
       if (btn) {
