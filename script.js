@@ -8172,11 +8172,8 @@ function openCreateActivity() {
 
 function init() {
 
-  /*
-   * Bind interaction handlers before optional rendering work.
-   * If a renderer hits a stale/missing DOM node, navigation and
-   * buttons must still remain interactive.
-   */
+  // Bind interaction handlers first so rendering errors cannot
+  // prevent navigation and buttons from becoming interactive.
   bindEvents();
 
   issues =
@@ -8186,11 +8183,8 @@ function init() {
 
   try {
     renderCategoryOptions();
-
     setupIssueFilters();
-
     renderSkillPicker();
-
     renderCivicActions();
   } catch (error) {
     console.error(
