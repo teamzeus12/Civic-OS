@@ -702,9 +702,13 @@ function analyzeReport({
   categoryKey,
   description,
   location,
-  hasPhoto
+  hasPhoto,
+  imageFindings = [],
+  coordinates = {}
 }) {
-  const text = description.toLowerCase();
+  const text = String(description || "").toLowerCase();
+  const evidenceText = imageFindings.join(" ").toLowerCase();
+  const combined = `${text} ${evidenceText}`;
   const detected = detectCategory(text);
 
   let key =
@@ -718,10 +722,7 @@ function analyzeReport({
 
   const chosenHits =
     categoryKey && CATEGORIES[categoryKey]
-      ? matchTerms(
-          text,
-          CATEGORIES[categoryKey].keywords
-        ).length
+      ? matchTerms(text, CATEGORIES[categoryKey].keywords).length
       : 0;
 
   const suggestion =
@@ -733,109 +734,128 @@ function analyzeReport({
       ? detected.key
       : null;
 
-  if (!CATEGORIES[key]) {
-    key = "other";
-  }
+  if (!CATEGORIES[key]) key = "other";
 
   const cat = CATEGORIES[key];
+  const highHits = matchTerms(combined, HIGH_PRIORITY_SIGNALS);
+  const impactHits = matchTerms(combined, IMPACT_SIGNALS);
+  const lowHits = matchTerms(combined, LOW_SIGNALS);
 
-  const highHits = matchTerms(
-    text,
-    HIGH_PRIORITY_SIGNALS
-  );
+  const emergencyHits = matchTerms(combined, [
+    "fire", "live wire", "sparking", "collapse",
+    "life threatening", "electrocution", "emergency"
+  ]);
 
-  const impactHits = matchTerms(
-    text,
-    IMPACT_SIGNALS
-  );
-
-  const lowHits = matchTerms(
-    text,
-    LOW_SIGNALS
-  );
+  const damageSignals = matchTerms(combined, [
+    "pothole", "crack", "broken", "collapsed", "damaged",
+    "eroded", "leak", "overflow", "flooded", "blocked",
+    "exposed", "missing", "destroyed", "deep"
+  ]);
 
   let priority = "Medium";
-
-  if (
-    highHits.length ||
-    impactHits.length >= 2
-  ) {
+  if (emergencyHits.length || highHits.length || impactHits.length >= 2) {
     priority = "High";
-  } else if (
-    lowHits.length &&
-    !impactHits.length
-  ) {
+  } else if (lowHits.length && !impactHits.length && !damageSignals.length) {
     priority = "Low";
   }
 
-  const confidence = Math.min(
-    97,
+  const baseConfidence =
     62 +
-      Math.min(
-        Math.max(
-          detected.hits,
-          chosenHits
-        ),
-        3
-      ) *
-        8 +
-      (categoryKey &&
-      categoryKey !== "other"
-        ? 8
-        : 0) +
-      (hasPhoto ? 6 : 0) +
-      Math.min(
-        highHits.length +
-          impactHits.length,
-        3
-      ) *
-        3
+    Math.min(Math.max(detected.hits, chosenHits), 3) * 7 +
+    (categoryKey && categoryKey !== "other" ? 7 : 0) +
+    (hasPhoto ? 8 : 0) +
+    Math.min(highHits.length + impactHits.length + damageSignals.length, 4) * 3;
+
+  const confidence = Math.min(98, baseConfidence);
+
+  const priorityScore = Math.min(
+    99,
+    Math.max(
+      15,
+      (priority === "High" ? 78 : priority === "Medium" ? 52 : 27) +
+      Math.min(15, emergencyHits.length * 8 + highHits.length * 4 + impactHits.length * 2 + damageSignals.length * 2)
+    )
   );
 
-  let riskNote = "";
+  const severity = Math.min(
+    99,
+    Math.max(
+      10,
+      35 +
+      damageSignals.length * 7 +
+      highHits.length * 8 +
+      emergencyHits.length * 12 +
+      Math.min(15, impactHits.length * 4)
+    )
+  );
 
-  if (highHits.length) {
-    riskNote =
-      ` The report mentions risk factors (${highHits.join(
-        ", "
-      )}), so it is flagged for urgent attention.`;
-  } else if (impactHits.length >= 2) {
-    riskNote =
-      ` Impact factors (${impactHits.join(
-        ", "
-      )}) raise its urgency.`;
-  }
+  const consequences = [];
+  if (key === "roads") consequences.push("Further pavement deterioration", "Traffic disruption", "Increased accident risk");
+  if (key === "water") consequences.push("Public access disruption", "Slip or sanitation risk", "Further infrastructure damage");
+  if (key === "garbage") consequences.push("Public-health and sanitation risk", "Blocked pedestrian access", "Pest attraction");
+  if (key === "streetlights") consequences.push("Reduced night visibility", "Public-safety risk");
+  if (key === "electric") consequences.push("Electrical safety risk", "Potential service disruption");
+  if (key === "education") consequences.push("Student and staff safety risk", "Reduced access to school facilities");
+  if (emergencyHits.length) consequences.unshift("Immediate human-safety risk");
+  if (!consequences.length) consequences.push("Service disruption", "Possible escalation if left unresolved");
+
+  const imageSignals = imageFindings.length
+    ? imageFindings
+    : (hasPhoto ? ["Image evidence attached — multimodal verification pending"] : []);
+
+  const detectedProblem = cat.aiLabel;
+  const damageAssessment = damageSignals.length
+    ? `Detected damage indicators: ${damageSignals.join(", ")}. Severity requires field verification.`
+    : "No specific structural damage can be verified from text alone.";
+
+  const riskNote = emergencyHits.length
+    ? " Emergency indicators require immediate safety escalation."
+    : highHits.length
+      ? ` Risk indicators detected: ${highHits.join(", ")}.`
+      : impactHits.length >= 2
+        ? ` Public-impact indicators detected: ${impactHits.join(", ")}.`
+        : "";
 
   const summary =
-    `A citizen reports a ${cat.aiLabel.toLowerCase()} problem at ${location}. ` +
+    `AI identified a ${detectedProblem.toLowerCase()} problem at ${location}. ` +
     `${firstSentence(description)}${riskNote}`;
 
-  const recommendation =
-    priority === "High"
-      ? `Priority dispatch: ${cat.action} Secure the area until the work is complete.`
-      : cat.action;
+  const recommendation = priority === "High"
+    ? `Priority dispatch: ${cat.action} Inspect the affected area, make it safe if necessary, and address the underlying cause.`
+    : cat.action;
+
+  const routing = buildDepartmentRouting({
+    description,
+    categoryKey: key,
+    location,
+    visualFindings: imageFindings,
+    emergency: emergencyHits.length > 0
+  });
 
   return {
     categoryKey: key,
     categoryLabel: cat.aiLabel,
-    department: cat.department,
+    detectedProblem,
+    department: routing.primaryDepartment,
     priority,
+    priorityScore,
+    severity,
     confidence,
+    evidenceConfidence: hasPhoto ? 0.78 : 0.45,
     summary,
     recommendation,
     responseTime: RESPONSE_TIME[priority],
-    signals: [
-      ...highHits,
-      ...impactHits
-    ],
+    signals: [...new Set([...highHits, ...impactHits, ...damageSignals])],
+    imageFindings: imageSignals,
+    consequences: [...new Set(consequences)],
+    damageAssessment,
+    routing,
+    coordinates,
     skills: cat.skills,
     autoDetected,
     suggestion,
-    duplicate: findPossibleDuplicate(
-      key,
-      location,
-      description
-    ),
+    emergency: emergencyHits.length > 0,
+    duplicate: findPossibleDuplicate(key, location, description)
   };
 }
 
@@ -1614,7 +1634,9 @@ function createIssue(seed) {
     categoryKey: seed.category,
     description: seed.description,
     location: seed.location,
-    hasPhoto: Boolean(seed.photo)
+    hasPhoto: Boolean(seed.photo),
+    imageFindings: seed.imageFindings || [],
+    coordinates: seed.coordinates || {}
   });
 
   const reportedAt = seed.reportedAt ?? NOW - (seed.hoursAgo || 0) * HOUR;
