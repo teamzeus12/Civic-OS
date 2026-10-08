@@ -639,6 +639,7 @@ const CIVIC_AI_SCHEMA = {
   estimatedResponseWindow: "string",
   primaryDepartmentId: "string",
   supportingDepartmentIds: ["string"],
+  routingReason: "string",
   verificationRequired: "boolean",
   verificationReason: "string"
 };
