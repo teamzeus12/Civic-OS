@@ -4530,29 +4530,21 @@ function renderDashboard() {
       6 - d;
 
     const reported =
-      WEEKLY_BASELINE
-        .reported[idx] +
       issues.filter(
         (i) =>
-          i.reportedAt >=
-            start &&
-          i.reportedAt <
-            end
+          i.reportedAt >= start &&
+          i.reportedAt < end
       ).length;
 
     const resolved =
-      WEEKLY_BASELINE
-        .resolved[idx] +
       issues.filter(
         (i) =>
+          Array.isArray(i.updates) &&
           i.updates.some(
             (u) =>
-              u.status ===
-                "Resolved" &&
-              u.time >=
-                start &&
-              u.time <
-                end
+              u.status === "Resolved" &&
+              u.time >= start &&
+              u.time < end
           )
       ).length;
 
