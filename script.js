@@ -3874,84 +3874,60 @@ function getFilteredIssues() {
     query
   } = state.filters;
 
-  const q =
-    query.trim().toLowerCase();
+  // Civic OS place search is intentionally forgiving:
+  // "Paona", "Paona Bazaar", "Imphal West" or
+  // "Khurai Imphal East" can all find the same report.
+  const q = String(query || "").trim().toLowerCase();
+  const queryTokens = q
+    .split(/[,\s]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2);
 
-  const list =
-    issues.filter((i) => {
-      if (
-        status !== "All" &&
-        i.status !== status
-      ) {
-        return false;
-      }
+  const list = issues.filter((i) => {
+    if (status !== "All" && i.status !== status) return false;
+    if (category !== "all" && i.category !== category) return false;
+    if (priority !== "all" && i.priority !== priority) return false;
+    if (district !== "all" && getIssueDistrict(i) !== district) return false;
 
-      if (
-        category !== "all" &&
-        i.category !== category
-      ) {
-        return false;
-      }
+    if (!q) return true;
 
-      if (
-        priority !== "all" &&
-        i.priority !== priority
-      ) {
-        return false;
-      }
+    const cat = CATEGORIES[i.category] || CATEGORIES.other;
+    const searchable = [
+      i.id,
+      i.title,
+      i.location,
+      i.area,
+      i.department,
+      i.description,
+      i.summary,
+      i.routing?.primaryDepartment,
+      i.routing?.routingReason,
+      cat.label
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
-      if (district !== "all" && getIssueDistrict(i) !== district) {
-        return false;
-      }
+    // First try the complete phrase.
+    if (searchable.includes(q)) return true;
 
-      if (!q) {
-        return true;
-      }
-
-      const cat =
-        CATEGORIES[i.category] ||
-        CATEGORIES.other;
-
-      return [
-        i.id,
-        i.title,
-        i.location,
-        i.area,
-        i.department,
-        i.description,
-        cat.label
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
-    });
+    // Then match every meaningful word, so place searches
+    // still work when the user types only part of a location.
+    return queryTokens.length > 0 &&
+      queryTokens.every((token) => searchable.includes(token));
+  });
 
   if (sort === "priority") {
     list.sort(
       (a, b) =>
-        PRIORITY_RANK[
-          b.priority
-        ] -
-          PRIORITY_RANK[
-            a.priority
-          ] ||
-        b.reportedAt -
-          a.reportedAt
+        PRIORITY_RANK[b.priority] -
+          PRIORITY_RANK[a.priority] ||
+        b.reportedAt - a.reportedAt
     );
-  } else if (
-    sort === "supported"
-  ) {
-    list.sort(
-      (a, b) =>
-        b.supporters -
-        a.supporters
-    );
+  } else if (sort === "supported") {
+    list.sort((a, b) => b.supporters - a.supporters);
   } else {
-    list.sort(
-      (a, b) =>
-        b.reportedAt -
-        a.reportedAt
-    );
+    list.sort((a, b) => b.reportedAt - a.reportedAt);
   }
 
   return list;
