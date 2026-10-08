@@ -2480,6 +2480,50 @@
        CORE NAVIGATION FALLBACK
        Keeps Civic OS navigable even if optional app initialization fails.
        ===================================================== -->
+  <style id="civic-nav-emergency">
+    .bottom-nav {
+      display:grid !important;
+      position:fixed !important;
+      left:12px !important;
+      right:12px !important;
+      bottom:12px !important;
+      width:auto !important;
+      height:64px !important;
+      min-height:64px !important;
+      padding:6px !important;
+      box-sizing:border-box !important;
+      grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+      gap:4px !important;
+      background:rgba(10,16,13,.96) !important;
+      border:1px solid rgba(62,224,143,.32) !important;
+      border-radius:20px !important;
+      box-shadow:0 14px 40px rgba(0,0,0,.55) !important;
+      visibility:visible !important;
+      opacity:1 !important;
+      pointer-events:auto !important;
+      transform:none !important;
+      z-index:99999 !important;
+    }
+    .bottom-nav .nav-item {
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      min-width:0 !important;
+      min-height:52px !important;
+      border:0 !important;
+      background:transparent !important;
+      color:#a9b5ae !important;
+      pointer-events:auto !important;
+      visibility:visible !important;
+      opacity:1 !important;
+      cursor:pointer !important;
+      -webkit-appearance:none !important;
+      appearance:none !important;
+    }
+    .bottom-nav .nav-item span { display:block !important; color:inherit !important; }
+    .bottom-nav .nav-item.active { color:#3ee08f !important; background:rgba(62,224,143,.12) !important; }
+    .bottom-nav .nav-report { color:#3ee08f !important; }
+  </style>
   <script>
     (function () {
       function bootNavigation() {
