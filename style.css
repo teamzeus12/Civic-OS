@@ -1134,6 +1134,24 @@ main {
   position: relative;
 }
 
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: rgba(62, 224, 143, 0.08);
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.search-clear:hover { background: rgba(62, 224, 143, 0.16); }
+#issueSearch { padding-right: 48px; }
+
 .input-icon {
   position: absolute;
   top: 50%;
