@@ -8172,35 +8172,45 @@ function openCreateActivity() {
 
 function init() {
 
-  // Bind interaction handlers first so rendering errors cannot
-  // prevent navigation and buttons from becoming interactive.
-  bindEvents();
-
-  issues =
-    SEED_ISSUES.map(
-      createIssue
-    );
+  // Initialize the data/render layer even if one optional event
+  // binding fails. A single UI listener must never blank the app.
+  try {
+    issues = SEED_ISSUES.map(createIssue);
+  } catch (error) {
+    console.error("Civic OS data initialization error:", error);
+    issues = [];
+  }
 
   try {
     renderCategoryOptions();
     setupIssueFilters();
     renderSkillPicker();
     renderCivicActions();
+    renderHome();
+    renderIssues();
+    renderDashboard();
   } catch (error) {
-    console.error(
-      "Civic OS render initialization error:",
-      error
-    );
+    console.error("Civic OS render initialization error:", error);
   }
 
-  showScreen(
-    screenFromHash(),
-    {
-      push: false
-    }
-  );
+  try {
+    bindEvents();
+  } catch (error) {
+    console.error("Civic OS event binding error:", error);
+  }
+
+  try {
+    showScreen(screenFromHash(), { push: false });
+  } catch (error) {
+    console.error("Civic OS screen initialization error:", error);
+    showScreen("homeScreen", { push: false });
+  }
 
   refreshIcons();
 }
 
-init();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+} else {
+  init();
+}
