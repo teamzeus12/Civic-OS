@@ -722,14 +722,46 @@ function normalizeCivicAIResult(raw, draft) {
     visualFindings
   });
 
-  const modelPrimary =
+  const modelCandidateId =
     CIVIC_DEPARTMENTS[source.primaryDepartmentId]
       ? source.primaryDepartmentId
+      : "";
+
+  const modelCandidate =
+    routing.rankedDepartments.find(
+      (department) => department.id === modelCandidateId
+    );
+
+  /*
+   * Ground departmental routing instead of blindly trusting a model label.
+   * A model-selected department must exist in the civic knowledge layer and
+   * have meaningful evidence support. When an explicit responsibility rule
+   * exists, that rule remains authoritative for the primary department.
+   */
+  const explicitRule =
+    CIVIC_ROUTING_RULES[source.category] ||
+    CIVIC_ROUTING_RULES[draft.categoryKey];
+
+  const modelIsGrounded =
+    Boolean(modelCandidate) &&
+    Number(modelCandidate.score) >= 0.40;
+
+  const modelAgreesWithRule =
+    !explicitRule ||
+    explicitRule.primary === modelCandidateId;
+
+  const modelPrimary =
+    modelIsGrounded && modelAgreesWithRule
+      ? modelCandidateId
       : routing.primaryDepartmentId;
 
   const modelSupporting = Array.isArray(source.supportingDepartmentIds)
     ? source.supportingDepartmentIds.filter(
-        (id) => id !== modelPrimary && CIVIC_DEPARTMENTS[id]
+        (id) =>
+          id !== modelPrimary &&
+          CIVIC_DEPARTMENTS[id] &&
+          (!explicitRule ||
+            explicitRule.supporting.includes(id))
       )
     : [];
 
