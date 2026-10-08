@@ -7244,6 +7244,18 @@ function bindEvents() {
     );
   }
 
+  const clearSearch =
+    $("#clearIssueSearch");
+
+  if (clearSearch && issueSearch) {
+    clearSearch.addEventListener("click", () => {
+      issueSearch.value = "";
+      state.filters.query = "";
+      renderIssueList();
+      issueSearch.focus();
+    });
+  }
+
 
   const filterCategory =
     $("#filterCategory");
