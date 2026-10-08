@@ -1196,10 +1196,11 @@
               id="issueSearch"
               type="search"
               class="control control-icon"
-              placeholder="Search issues, places, departments"
-              aria-label="Search issues"
+              placeholder="Search place, locality, district or issue ID"
+              aria-label="Search issues by place or details"
               autocomplete="off"
             />
+            <button type="button" id="clearIssueSearch" class="search-clear" aria-label="Clear search" title="Clear search">×</button>
 
           </div>
 
@@ -1249,6 +1250,19 @@
 
             </label>
 
+
+            <label class="select">
+              <span class="sr-only">Filter by district</span>
+              <select id="filterDistrict">
+                <option value="all">All districts</option>
+                <option value="Imphal West">Imphal West</option>
+                <option value="Imphal East">Imphal East</option>
+                <option value="Thoubal">Thoubal</option>
+                <option value="Bishnupur">Bishnupur</option>
+                <option value="Kakching">Kakching</option>
+                <option value="Tengnoupal">Tengnoupal</option>
+              </select>
+            </label>
 
             <label class="select">
               <span class="sr-only">
