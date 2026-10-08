@@ -4100,92 +4100,60 @@ function renderIssueSheet(issue) {
     <div class="sheet-section">
 
       <div class="sheet-section-title">
-
-        <span>
-          Civic AI analysis
-        </span>
-
-        <span class="demo-badge">
-          Demo AI
-        </span>
-
+        <span>Civic AI assessment</span>
+        <span class="demo-badge">\${issue.ai?.source === "live" ? "LIVE AI" : "CIVIC AI"}</span>
       </div>
 
       <div class="ai-grid">
-
         <div class="ai-cell">
-
-          <span class="ai-label">
-            Category
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              cat.aiLabel
-            )}
-          </span>
-
+          <span class="ai-label">Detected problem</span>
+          <span class="ai-value">\${escapeHtml(issue.ai?.problem || cat.aiLabel)}</span>
         </div>
-
         <div class="ai-cell">
-
-          <span class="ai-label">
-            Priority
-          </span>
-
-          <span
-            class="ai-value is-${issue.priority.toLowerCase()}"
-          >
-            ${escapeHtml(
-              issue.priority
-            )}
-          </span>
-
+          <span class="ai-label">Severity</span>
+          <span class="ai-value is-high">\${Number(issue.ai?.severity ?? 0)}/100</span>
         </div>
-
+        <div class="ai-cell">
+          <span class="ai-label">Priority</span>
+          <span class="ai-value is-\${issue.priority.toLowerCase()}">\${escapeHtml(issue.priority)} · \${Number(issue.ai?.priority ?? 0)}/100</span>
+        </div>
+        <div class="ai-cell">
+          <span class="ai-label">AI confidence</span>
+          <span class="ai-value">\${Number(issue.ai?.confidence ?? 0)}%</span>
+        </div>
+        <div class="ai-cell">
+          <span class="ai-label">Public impact</span>
+          <span class="ai-value">\${escapeHtml(issue.ai?.publicImpact || "Needs assessment")}</span>
+        </div>
         <div class="ai-cell wide">
-
-          <span class="ai-label">
-            Department
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              issue.department
-            )}
-          </span>
-
+          <span class="ai-label">Primary authority</span>
+          <span class="ai-value">\${escapeHtml(issue.routing?.primaryDepartment || issue.department)}</span>
+          <p class="ai-text">\${escapeHtml(issue.routing?.routingReason || "Routing grounded in civic responsibility.")}</p>
         </div>
-
         <div class="ai-cell wide">
-
-          <span class="ai-label">
-            Summary
-          </span>
-
-          <p class="ai-text">
-            ${escapeHtml(
-              issue.summary
-            )}
-          </p>
-
+          <span class="ai-label">Observed evidence</span>
+          <div class="signal-list">
+            \${(issue.ai?.signals || []).map((signal) => \`<span class="pill">\${escapeHtml(signal)}</span>\`).join("") || \`<span class="ai-muted">No specific evidence signals recorded.</span>\`}
+          </div>
         </div>
-
+        <div class="ai-cell wide">
+          <span class="ai-label">Likely consequences</span>
+          <ul class="ai-list">
+            \${(issue.ai?.consequences || []).map((item) => \`<li>\${escapeHtml(item)}</li>\`).join("") || \`<li>Field verification required.</li>\`}
+          </ul>
+        </div>
+        <div class="ai-cell wide">
+          <span class="ai-label">AI reasoning</span>
+          <p class="ai-text">\${escapeHtml(issue.summary || "Assessment requires field verification.")}</p>
+        </div>
       </div>
 
       <div class="ai-reco">
-
         <span class="ai-label">
           <i data-lucide="sparkles"></i>
-          Recommendation
+          Recommended response
         </span>
-
-        <p class="ai-text">
-          ${escapeHtml(
-            issue.recommendation
-          )}
-        </p>
-
+        <p class="ai-text">\${escapeHtml(issue.recommendation)}</p>
       </div>
 
     </div>
