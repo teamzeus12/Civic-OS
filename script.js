@@ -1609,7 +1609,80 @@ const SEED_ISSUES = [
       "Chingmeirong, Imphal West",
     description:
       "Almost all lamps on this walkway are out. It is completely dark at night and many people avoid walking home this way."
+  },
+  {
+    id: "CIV-1028", title: "Floodwater covering the roadside", category: "water",
+    priority: "High", status: "Verified", hoursAgo: 18, supporters: 36,
+    area: "Ward 7", location: "Kanglatongbi Bazaar, Imphal West",
+    description: "Rainwater remains across the roadside and makes it difficult for pedestrians and two-wheelers to pass. Please inspect nearby drains and the road shoulder."
+  },
+  {
+    id: "CIV-1027", title: "Broken hand pump at community ground", category: "water",
+    priority: "Medium", status: "Reported", hoursAgo: 27, supporters: 14,
+    area: "Ward 1", location: "Heingang Community Ground, Imphal East",
+    description: "The public hand pump beside the community ground has not worked for several days. Residents are asking for an inspection and repair."
+  },
+  {
+    id: "CIV-1026", title: "Damaged footbridge railing", category: "roads",
+    priority: "High", status: "In Progress", hoursAgo: 33, supporters: 29,
+    area: "Ward 3", location: "Iroisemba Crossing, Imphal West",
+    description: "A section of the pedestrian bridge railing is loose and the walking surface is uneven. Please secure the area and arrange an inspection."
+  },
+  {
+    id: "CIV-1025", title: "Public school toilet needs repair", category: "education",
+    priority: "Medium", status: "Reported", hoursAgo: 41, supporters: 18,
+    area: "Ward 2", location: "Wangkhei High School Road, Imphal East",
+    description: "The school toilet plumbing is damaged and the facility is difficult to use. The school needs a maintenance inspection and repair."
+  },
+  {
+    id: "CIV-1024", title: "Streetlight out near health centre", category: "streetlights",
+    priority: "Medium", status: "Verified", hoursAgo: 57, supporters: 21,
+    area: "Ward 5", location: "RIMS Main Gate Road, Lamphel, Imphal West",
+    description: "The streetlight near the health centre entrance is not working after dark, leaving the crossing poorly lit for pedestrians."
+  },
+  {
+    id: "CIV-1023", title: "Waste piled beside market entrance", category: "garbage",
+    priority: "Medium", status: "In Progress", hoursAgo: 63, supporters: 32,
+    area: "Ward 4", location: "Kakching Keithel, Kakching",
+    description: "Mixed household and market waste has accumulated beside the entrance. Please arrange collection and check whether bins are sufficient."
+  },
+  {
+    id: "CIV-1022", title: "Road surface broken near bus stop", category: "roads",
+    priority: "High", status: "Reported", hoursAgo: 70, supporters: 25,
+    area: "Ward 2", location: "Thoubal Wangmataba Bus Stop, Thoubal",
+    description: "The road edge near the bus stop is broken and vehicles move into the opposite lane to avoid it. Inspection and temporary safety measures are requested."
+  },
+  {
+    id: "CIV-1021", title: "Drain blocked near residential lane", category: "water",
+    priority: "Medium", status: "Verified", hoursAgo: 82, supporters: 16,
+    area: "Ward 6", location: "Lilong Haoreibi Makha Leikai, Thoubal",
+    description: "Water is not draining properly after rain and is backing up along the lane. Please inspect for a blockage and clear it if appropriate."
+  },
+  {
+    id: "CIV-1020", title: "Damaged public dustbin stand", category: "garbage",
+    priority: "Low", status: "Resolved", hoursAgo: 98, supporters: 7,
+    area: "Ward 1", location: "Moreh Main Market, Tengnoupal",
+    description: "The public bin stand had broken supports and waste was spilling onto the pavement. The report is marked resolved in this demo dataset."
+  },
+  {
+    id: "CIV-1019", title: "Unsafe pothole near health sub-centre", category: "roads",
+    priority: "High", status: "In Progress", hoursAgo: 109, supporters: 38,
+    area: "Ward 2", location: "Bishnupur District Hospital Road, Bishnupur",
+    description: "A deep pothole has formed near the health facility approach. Two-wheelers are swerving around it and the surface needs prompt inspection."
+  },
+  {
+    id: "CIV-1018", title: "Playground drainage needs cleaning", category: "water",
+    priority: "Low", status: "Reported", hoursAgo: 122, supporters: 11,
+    area: "Ward 3", location: "Nambol Multipurpose Ground, Bishnupur",
+    description: "Water is remaining in low areas of the playground after rain. Please check the drainage channels and identify routine maintenance needs."
+  },
+  {
+    id: "CIV-1017", title: "Traffic congestion at market junction", category: "safety",
+    priority: "Medium", status: "Verified", hoursAgo: 136, supporters: 44,
+    area: "Ward 4", location: "Moirang Bazar Junction, Bishnupur",
+    description: "Vehicles and roadside loading frequently block the junction during busy periods. A traffic-flow review and suitable management measures are requested."
   }
+
 ];
 
 let issues = [];
@@ -4101,50 +4174,50 @@ function renderIssueSheet(issue) {
 
       <div class="sheet-section-title">
         <span>Civic AI assessment</span>
-        <span class="demo-badge">\${issue.ai?.source === "live" ? "LIVE AI" : "CIVIC AI"}</span>
+        <span class="demo-badge">${issue.ai?.source === "live" ? "LIVE AI" : "CIVIC AI"}</span>
       </div>
 
       <div class="ai-grid">
         <div class="ai-cell">
           <span class="ai-label">Detected problem</span>
-          <span class="ai-value">\${escapeHtml(issue.ai?.problem || cat.aiLabel)}</span>
+          <span class="ai-value">${escapeHtml(issue.ai?.problem || cat.aiLabel)}</span>
         </div>
         <div class="ai-cell">
           <span class="ai-label">Severity</span>
-          <span class="ai-value is-high">\${Number(issue.ai?.severity ?? 0)}/100</span>
+          <span class="ai-value is-high">${Number(issue.ai?.severity ?? 0)}/100</span>
         </div>
         <div class="ai-cell">
           <span class="ai-label">Priority</span>
-          <span class="ai-value is-\${issue.priority.toLowerCase()}">\${escapeHtml(issue.priority)} · \${Number(issue.ai?.priority ?? 0)}/100</span>
+          <span class="ai-value is-${issue.priority.toLowerCase()}">${escapeHtml(issue.priority)} · ${Number(issue.ai?.priority ?? 0)}/100</span>
         </div>
         <div class="ai-cell">
           <span class="ai-label">AI confidence</span>
-          <span class="ai-value">\${Number(issue.ai?.confidence ?? 0)}%</span>
+          <span class="ai-value">${Number(issue.ai?.confidence ?? 0)}%</span>
         </div>
         <div class="ai-cell">
           <span class="ai-label">Public impact</span>
-          <span class="ai-value">\${escapeHtml(issue.ai?.publicImpact || "Needs assessment")}</span>
+          <span class="ai-value">${escapeHtml(issue.ai?.publicImpact || "Needs assessment")}</span>
         </div>
         <div class="ai-cell wide">
           <span class="ai-label">Primary authority</span>
-          <span class="ai-value">\${escapeHtml(issue.routing?.primaryDepartment || issue.department)}</span>
-          <p class="ai-text">\${escapeHtml(issue.routing?.routingReason || "Routing grounded in civic responsibility.")}</p>
+          <span class="ai-value">${escapeHtml(issue.routing?.primaryDepartment || issue.department)}</span>
+          <p class="ai-text">${escapeHtml(issue.routing?.routingReason || "Routing grounded in civic responsibility.")}</p>
         </div>
         <div class="ai-cell wide">
           <span class="ai-label">Observed evidence</span>
           <div class="signal-list">
-            \${(issue.ai?.signals || []).map((signal) => \`<span class="pill">\${escapeHtml(signal)}</span>\`).join("") || \`<span class="ai-muted">No specific evidence signals recorded.</span>\`}
+            ${(issue.ai?.signals || []).map((signal) => \`<span class="pill">${escapeHtml(signal)}</span>\`).join("") || \`<span class="ai-muted">No specific evidence signals recorded.</span>\`}
           </div>
         </div>
         <div class="ai-cell wide">
           <span class="ai-label">Likely consequences</span>
           <ul class="ai-list">
-            \${(issue.ai?.consequences || []).map((item) => \`<li>\${escapeHtml(item)}</li>\`).join("") || \`<li>Field verification required.</li>\`}
+            ${(issue.ai?.consequences || []).map((item) => \`<li>${escapeHtml(item)}</li>\`).join("") || \`<li>Field verification required.</li>\`}
           </ul>
         </div>
         <div class="ai-cell wide">
           <span class="ai-label">AI reasoning</span>
-          <p class="ai-text">\${escapeHtml(issue.summary || "Assessment requires field verification.")}</p>
+          <p class="ai-text">${escapeHtml(issue.summary || "Assessment requires field verification.")}</p>
         </div>
       </div>
 
@@ -4153,7 +4226,7 @@ function renderIssueSheet(issue) {
           <i data-lucide="sparkles"></i>
           Recommended response
         </span>
-        <p class="ai-text">\${escapeHtml(issue.recommendation)}</p>
+        <p class="ai-text">${escapeHtml(issue.recommendation)}</p>
       </div>
 
     </div>
