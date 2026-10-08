@@ -8172,26 +8172,45 @@ function openCreateActivity() {
 
 function init() {
 
-  // Initialize the data/render layer even if one optional event
-  // binding fails. A single UI listener must never blank the app.
   try {
-    issues = SEED_ISSUES.map(createIssue);
+    issues = SEED_ISSUES.map((seed) => {
+      try {
+        return createIssue(seed);
+      } catch (error) {
+        console.error("Civic OS seed issue error:", error, seed);
+        return {
+          ...seed,
+          area: seed.area || seed.location || "Manipur",
+          department: seed.department || "Civic Helpdesk",
+          supporters: Number(seed.supporters) || 0,
+          updates: Array.isArray(seed.updates) ? seed.updates : [],
+          recommendation: seed.recommendation || "Review and route this civic issue.",
+          reportedAt: Number(seed.reportedAt) || Date.now(),
+        };
+      }
+    });
   } catch (error) {
     console.error("Civic OS data initialization error:", error);
     issues = [];
   }
 
-  try {
-    renderCategoryOptions();
-    setupIssueFilters();
-    renderSkillPicker();
-    renderCivicActions();
-    renderHome();
-    renderIssues();
-    renderDashboard();
-  } catch (error) {
-    console.error("Civic OS render initialization error:", error);
-  }
+  const bootSteps = [
+    ["category options", renderCategoryOptions],
+    ["issue filters", setupIssueFilters],
+    ["skill picker", renderSkillPicker],
+    ["civic actions", renderCivicActions],
+    ["home", renderHome],
+    ["issues", renderIssues],
+    ["dashboard", renderDashboard],
+  ];
+
+  bootSteps.forEach(([name, fn]) => {
+    try {
+      fn();
+    } catch (error) {
+      console.error(`Civic OS ${name} initialization error:`, error);
+    }
+  });
 
   try {
     bindEvents();
