@@ -8172,20 +8172,32 @@ function openCreateActivity() {
 
 function init() {
 
+  /*
+   * Bind interaction handlers before optional rendering work.
+   * If a renderer hits a stale/missing DOM node, navigation and
+   * buttons must still remain interactive.
+   */
+  bindEvents();
+
   issues =
     SEED_ISSUES.map(
       createIssue
     );
 
-  renderCategoryOptions();
+  try {
+    renderCategoryOptions();
 
-  setupIssueFilters();
+    setupIssueFilters();
 
-  renderSkillPicker();
+    renderSkillPicker();
 
-  bindEvents();
-
-  renderCivicActions();
+    renderCivicActions();
+  } catch (error) {
+    console.error(
+      "Civic OS render initialization error:",
+      error
+    );
+  }
 
   showScreen(
     screenFromHash(),
