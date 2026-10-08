@@ -257,6 +257,418 @@ const STOPWORDS = new Set([
 ]);
 
 
+
+
+/* =========================================================
+   CIVIC INTELLIGENCE DATA LAYER
+   Structured civic knowledge for AI triage, routing,
+   location intelligence and Government Portal analytics.
+   ========================================================= */
+
+const CIVIC_DEPARTMENTS = {
+  agriculture: {
+    id: "agriculture",
+    officialName: "Department of Agriculture",
+    responsibilityAreas: ["crops", "crop disease", "crop damage", "farmland"],
+    problemTypes: ["agriculture", "crop", "pest", "farm"],
+    visualSignals: ["crop damage", "wilting", "pest damage"],
+    responseTypes: ["inspection", "advisory", "field response"],
+    escalationConditions: ["major crop loss", "disaster-related crop damage"]
+  },
+  horticulture_soil: {
+    id: "horticulture_soil",
+    officialName: "Department of Horticulture & Soil Conservation",
+    responsibilityAreas: ["horticulture", "soil erosion", "soil conservation"],
+    problemTypes: ["horticulture", "soil", "erosion"],
+    visualSignals: ["erosion", "exposed soil", "land degradation"],
+    responseTypes: ["inspection", "soil conservation", "technical support"],
+    escalationConditions: ["severe erosion", "landslide risk"]
+  },
+  pwd: {
+    id: "pwd",
+    officialName: "Public Works Department (PWD)",
+    responsibilityAreas: ["major roads", "bridges", "government infrastructure", "road maintenance"],
+    problemTypes: ["road", "pothole", "bridge", "infrastructure"],
+    visualSignals: ["pothole", "crack", "road damage", "collapsed road", "bridge damage"],
+    responseTypes: ["inspection", "temporary safety measure", "repair", "maintenance"],
+    escalationConditions: ["bridge unsafe", "road collapse", "immediate traffic danger"]
+  },
+  mahud: {
+    id: "mahud",
+    officialName: "Municipal Administration, Housing & Urban Development (MAHUD)",
+    responsibilityAreas: ["urban local government", "urban roads", "garbage", "public sanitation", "urban drainage"],
+    problemTypes: ["garbage", "waste", "sanitation", "urban", "drainage"],
+    visualSignals: ["overflowing bins", "garbage pile", "blocked drain", "urban flooding"],
+    responseTypes: ["municipal inspection", "cleaning", "drainage response"],
+    escalationConditions: ["public health hazard", "severe urban flooding"]
+  },
+  phed: {
+    id: "phed",
+    officialName: "Public Health Engineering Department (PHED)",
+    responsibilityAreas: ["drinking water", "water supply", "pipelines"],
+    problemTypes: ["water supply", "pipeline", "drinking water"],
+    visualSignals: ["broken pipe", "water leak", "contaminated water"],
+    responseTypes: ["inspection", "pipeline repair", "water supply restoration"],
+    escalationConditions: ["contaminated drinking water", "major supply failure"]
+  },
+  water_resources: {
+    id: "water_resources",
+    officialName: "Water Resources / Irrigation & Flood Control",
+    responsibilityAreas: ["flood control", "rivers", "major drainage", "water management"],
+    problemTypes: ["flood", "river", "water management"],
+    visualSignals: ["floodwater", "river overflow", "embankment damage"],
+    responseTypes: ["inspection", "flood control", "water management"],
+    escalationConditions: ["major flooding", "embankment failure", "life safety risk"]
+  },
+  minor_irrigation: {
+    id: "minor_irrigation",
+    officialName: "Minor Irrigation Department",
+    responsibilityAreas: ["minor irrigation", "farm irrigation infrastructure"],
+    problemTypes: ["irrigation", "farm water"],
+    visualSignals: ["irrigation channel damage", "broken irrigation structure"],
+    responseTypes: ["inspection", "irrigation repair"],
+    escalationConditions: ["major agricultural water disruption"]
+  },
+  food_civil_public_distribution: {
+    id: "food_civil_public_distribution",
+    officialName: "Food, Civil Supplies & Consumer Affairs",
+    responsibilityAreas: ["public distribution", "essential commodities"],
+    problemTypes: ["ration", "food distribution", "public distribution"],
+    visualSignals: ["ration outlet issue", "distribution queue"],
+    responseTypes: ["service investigation", "distribution response"],
+    escalationConditions: ["essential commodity disruption"]
+  },
+  health: {
+    id: "health",
+    officialName: "Department of Health",
+    responsibilityAreas: ["public health", "health facilities", "health hazards"],
+    problemTypes: ["health", "hospital", "clinic", "sanitation hazard"],
+    visualSignals: ["unsafe facility", "health hazard"],
+    responseTypes: ["health inspection", "public health response"],
+    escalationConditions: ["public health emergency"]
+  },
+  environment_forest: {
+    id: "environment_forest",
+    officialName: "Forest & Environment Department",
+    responsibilityAreas: ["forests", "environment", "pollution", "wildlife"],
+    problemTypes: ["environment", "forest", "pollution", "wildlife"],
+    visualSignals: ["tree loss", "pollution", "dumping", "forest damage"],
+    responseTypes: ["environmental inspection", "enforcement", "restoration"],
+    escalationConditions: ["protected-area impact", "serious pollution"]
+  },
+  home_fire: {
+    id: "home_fire",
+    officialName: "Home Department / Fire Services",
+    responsibilityAreas: ["fire", "immediate safety", "emergency response"],
+    problemTypes: ["fire", "emergency", "immediate danger"],
+    visualSignals: ["fire", "smoke", "sparking", "dangerous structure"],
+    responseTypes: ["emergency response", "scene safety"],
+    escalationConditions: ["fire", "immediate threat to life"]
+  },
+  relief_disaster: {
+    id: "relief_disaster",
+    officialName: "Relief & Disaster Management",
+    responsibilityAreas: ["disasters", "flood emergencies", "disaster response"],
+    problemTypes: ["disaster", "flood emergency", "major damage"],
+    visualSignals: ["flooding", "collapsed infrastructure", "disaster damage"],
+    responseTypes: ["emergency coordination", "relief", "damage assessment"],
+    escalationConditions: ["life safety risk", "major disaster"]
+  },
+  power: {
+    id: "power",
+    officialName: "Power Department",
+    responsibilityAreas: ["electricity", "street lighting", "electrical infrastructure"],
+    problemTypes: ["electric", "power", "streetlight", "electrical"],
+    visualSignals: ["broken pole", "exposed wire", "sparking", "failed streetlight"],
+    responseTypes: ["electrical inspection", "repair", "isolation"],
+    escalationConditions: ["live wire", "sparking", "electrocution risk"]
+  },
+  education: {
+    id: "education",
+    officialName: "School Education Department",
+    responsibilityAreas: ["government schools", "school facilities", "education infrastructure"],
+    problemTypes: ["school", "education"],
+    visualSignals: ["damaged classroom", "unsafe school building"],
+    responseTypes: ["school inspection", "facility repair"],
+    escalationConditions: ["unsafe school building"]
+  },
+  transport: {
+    id: "transport",
+    officialName: "Transport Department",
+    responsibilityAreas: ["transport services", "road-user coordination", "traffic-related transport issues"],
+    problemTypes: ["transport", "traffic"],
+    visualSignals: ["traffic obstruction"],
+    responseTypes: ["transport coordination", "traffic management"],
+    escalationConditions: ["major transport disruption"]
+  },
+  police: {
+    id: "police",
+    officialName: "Police Department",
+    responsibilityAreas: ["public safety", "enforcement", "traffic safety"],
+    problemTypes: ["public safety", "enforcement"],
+    visualSignals: ["unsafe obstruction", "security incident"],
+    responseTypes: ["safety response", "enforcement"],
+    escalationConditions: ["immediate public safety threat"]
+  },
+  fisheries: {
+    id: "fisheries",
+    officialName: "Fisheries Department",
+    responsibilityAreas: ["fisheries", "fishery infrastructure", "waterbody fisheries"],
+    problemTypes: ["fisheries", "fishery"],
+    visualSignals: ["fishery infrastructure damage"],
+    responseTypes: ["inspection", "fishery support"],
+    escalationConditions: ["major fishery loss"]
+  },
+  animal_husbandry: {
+    id: "animal_husbandry",
+    officialName: "Veterinary & Animal Husbandry Department",
+    responsibilityAreas: ["livestock", "animal health"],
+    problemTypes: ["animal", "livestock", "veterinary"],
+    visualSignals: ["animal health issue", "livestock facility damage"],
+    responseTypes: ["veterinary inspection", "animal health response"],
+    escalationConditions: ["suspected animal disease outbreak"]
+  },
+  community_rural: {
+    id: "community_rural",
+    officialName: "Rural Development & Panchayati Raj",
+    responsibilityAreas: ["rural development", "rural public infrastructure", "Panchayati Raj"],
+    problemTypes: ["rural", "village infrastructure"],
+    visualSignals: ["rural road damage", "village infrastructure damage"],
+    responseTypes: ["rural engineering inspection", "repair coordination"],
+    escalationConditions: ["rural access disruption"]
+  },
+  tourism: {
+    id: "tourism",
+    officialName: "Tourism Department",
+    responsibilityAreas: ["tourist infrastructure", "tourism sites"],
+    problemTypes: ["tourism", "tourist site"],
+    visualSignals: ["damaged tourist facility"],
+    responseTypes: ["site inspection", "maintenance coordination"],
+    escalationConditions: ["unsafe tourist site"]
+  }
+};
+
+const CIVIC_ROUTING_RULES = {
+  roads: { primary: "pwd", supporting: ["transport", "relief_disaster"] },
+  garbage: { primary: "mahud", supporting: ["health", "environment_forest"] },
+  water: { primary: "phed", supporting: ["mahud", "health"] },
+  streetlights: { primary: "power", supporting: ["mahud"] },
+  electric: { primary: "power", supporting: ["home_fire", "mahud"] },
+  education: { primary: "education", supporting: ["pwd"] },
+  health: { primary: "health", supporting: ["mahud", "environment_forest"] },
+  environment: { primary: "environment_forest", supporting: ["mahud", "police"] },
+  agriculture: { primary: "agriculture", supporting: ["horticulture_soil", "relief_disaster"] },
+  horticulture: { primary: "horticulture_soil", supporting: ["agriculture", "water_resources"] },
+  irrigation: { primary: "minor_irrigation", supporting: ["agriculture", "water_resources"] },
+  food_distribution: { primary: "food_civil_public_distribution", supporting: [] },
+  fisheries: { primary: "fisheries", supporting: ["environment_forest"] },
+  animal: { primary: "animal_husbandry", supporting: [] },
+  rural: { primary: "community_rural", supporting: ["pwd"] },
+  tourism: { primary: "tourism", supporting: ["pwd", "environment_forest"] },
+  flood: { primary: "water_resources", supporting: ["relief_disaster", "mahud", "pwd"] }
+};
+
+const CIVIC_CATEGORY_DEPARTMENT_MAP = {
+  roads: "pwd",
+  garbage: "mahud",
+  water: "phed",
+  streetlights: "power",
+  electric: "power",
+  education: "education",
+  health: "health",
+  environment: "environment_forest",
+  agriculture: "agriculture",
+  horticulture: "horticulture_soil",
+  irrigation: "minor_irrigation",
+  flood: "water_resources",
+  fisheries: "fisheries",
+  animal: "animal_husbandry",
+  rural: "community_rural",
+  tourism: "tourism"
+};
+
+function normalizeCivicLocation(location, coordinates = {}) {
+  const raw = String(location || "").trim();
+  const parts = raw.split(",").map((part) => part.trim()).filter(Boolean);
+  const district = parts.length > 1 ? parts[parts.length - 1] : "";
+  const locality = parts.length > 1 ? parts.slice(0, -1).join(", ") : raw;
+  const latitude = Number.isFinite(Number(coordinates.latitude)) ? Number(coordinates.latitude) : null;
+  const longitude = Number.isFinite(Number(coordinates.longitude)) ? Number(coordinates.longitude) : null;
+  const placeName = raw || "Location pending";
+  const mapUrl = latitude !== null && longitude !== null
+    ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${placeName}, Manipur`)}`;
+
+  return {
+    placeName,
+    locality,
+    district,
+    state: "Manipur",
+    latitude,
+    longitude,
+    road: "",
+    landmark: "",
+    mapUrl,
+    searchText: `${placeName} ${locality} ${district} Manipur`.toLowerCase()
+  };
+}
+
+function scoreCivicDepartments({ description = "", categoryKey = "other", location = "", visualFindings = [] }) {
+  const text = `${description} ${location} ${visualFindings.join(" ")}`.toLowerCase();
+  const scores = new Map();
+
+  const addScore = (id, amount) => {
+    scores.set(id, Math.min(0.99, (scores.get(id) || 0) + amount));
+  };
+
+  const rule = CIVIC_ROUTING_RULES[categoryKey];
+  if (rule) {
+    addScore(rule.primary, 0.58);
+    rule.supporting.forEach((id, index) => addScore(id, Math.max(0.18, 0.32 - index * 0.04)));
+  }
+
+  const mapped = CIVIC_CATEGORY_DEPARTMENT_MAP[categoryKey];
+  if (mapped) addScore(mapped, 0.22);
+
+  for (const [id, department] of Object.entries(CIVIC_DEPARTMENTS)) {
+    const hits = [
+      ...department.problemTypes,
+      ...department.responsibilityAreas,
+      ...department.visualSignals
+    ].filter((term) => text.includes(term.toLowerCase()));
+    if (hits.length) addScore(id, Math.min(0.24, hits.length * 0.06));
+  }
+
+  return [...scores.entries()]
+    .map(([id, score]) => ({ ...CIVIC_DEPARTMENTS[id], score: Number(score.toFixed(2)) }))
+    .sort((a, b) => b.score - a.score);
+}
+
+function buildDepartmentRouting({ description = "", categoryKey = "other", location = "", visualFindings = [], emergency = false }) {
+  const ranked = scoreCivicDepartments({ description, categoryKey, location, visualFindings });
+  const rule = CIVIC_ROUTING_RULES[categoryKey];
+  let primary = ranked[0] || CIVIC_DEPARTMENTS.pwd;
+
+  if (rule?.primary && CIVIC_DEPARTMENTS[rule.primary]) {
+    primary = ranked.find((item) => item.id === rule.primary) || {
+      ...CIVIC_DEPARTMENTS[rule.primary],
+      score: 0.72
+    };
+  }
+
+  let supportingIds = rule?.supporting || [];
+  if (emergency) supportingIds = [...new Set(["home_fire", "relief_disaster", ...supportingIds])];
+
+  const supportingDepartments = supportingIds
+    .filter((id) => id !== primary.id && CIVIC_DEPARTMENTS[id])
+    .map((id) => {
+      const rankedItem = ranked.find((item) => item.id === id);
+      return rankedItem || { ...CIVIC_DEPARTMENTS[id], score: 0.35 };
+    });
+
+  const topSignals = ranked.slice(0, 3).map((item) => `${item.officialName} (${Math.round(item.score * 100)}%)`);
+  const routingReason = emergency
+    ? "Emergency indicators elevate safety/disaster response while the infrastructure owner remains responsible for the underlying issue."
+    : `Routing considers the reported problem, location context, detected evidence and Manipur departmental responsibilities. Top candidates: ${topSignals.join(", ")}.`;
+
+  return {
+    primaryDepartment: primary.officialName,
+    primaryDepartmentId: primary.id,
+    primaryScore: primary.score,
+    supportingDepartments,
+    routingReason,
+    rankedDepartments: ranked
+  };
+}
+
+function civicPriorityScore(priority, description = "") {
+  const base = { High: 82, Medium: 55, Low: 28 }[priority] ?? 50;
+  const text = description.toLowerCase();
+  const impact = matchTerms(text, [...HIGH_PRIORITY_SIGNALS, ...IMPACT_SIGNALS]).length;
+  return Math.min(99, base + Math.min(15, impact * 3));
+}
+
+function createCivicReportData(seed, analysis) {
+  const location = normalizeCivicLocation(seed.location, seed.coordinates || {});
+  const visualFindings = analysis.imageFindings || analysis.signals || [];
+  const emergency = matchTerms(
+    `${seed.description || ""} ${visualFindings.join(" ")}`,
+    ["fire", "live wire", "sparking", "collapse", "dangerous", "emergency", "life threatening"]
+  ).length > 0;
+
+  const routing = buildDepartmentRouting({
+    description: seed.description,
+    categoryKey: analysis.categoryKey,
+    location: location.placeName,
+    visualFindings,
+    emergency
+  });
+
+  const priorityScore = civicPriorityScore(analysis.priority, seed.description);
+  const severity = Math.min(99, Math.max(10, priorityScore - (analysis.priority === "Low" ? 2 : 0)));
+  const evidenceConfidence = seed.photo ? 0.68 : 0.35;
+  const civicId = seed.id?.startsWith("CIV-") ? seed.id : `CIV-2026-${String(seed.id || Date.now()).slice(-5)}`;
+  const reportedAt = seed.reportedAt ?? NOW - (seed.hoursAgo || 0) * HOUR;
+
+  return {
+    identity: { civicId, createdAt: reportedAt, source: seed.source || "people_portal" },
+    problem: {
+      title: seed.title,
+      category: analysis.categoryKey,
+      description: seed.description,
+      affectedPeople: seed.affectedPeople || 0
+    },
+    evidence: {
+      images: seed.photo ? [seed.photo] : [],
+      videos: seed.videos || [],
+      evidenceNotes: seed.evidenceNotes || ""
+    },
+    location,
+    ai: {
+      detectedProblem: analysis.categoryLabel,
+      category: analysis.categoryKey,
+      severity,
+      priority: priorityScore,
+      confidence: analysis.confidence,
+      evidenceConfidence,
+      imageFindings: visualFindings,
+      consequences: analysis.consequences || [],
+      damageAssessment: analysis.damageAssessment || `${analysis.priority} impact indicated from the submitted description and available evidence.`,
+      reasoning: analysis.summary,
+      recommendedAction: analysis.recommendation,
+      estimatedResponseWindow: analysis.responseTime
+    },
+    routing,
+    lifecycle: {
+      status: seed.status || "Reported",
+      history: [],
+      assignedDepartment: routing.primaryDepartment,
+      resolvedAt: null
+    },
+    community: {
+      supporters: seed.supporters ?? 1,
+      duplicateOf: analysis.duplicate?.id || null,
+      relatedReports: analysis.duplicate ? [analysis.duplicate.id] : []
+    }
+  };
+}
+
+function searchIssuesByPlace(query) {
+  const q = String(query || "").trim().toLowerCase();
+  if (!q) return issues;
+  return issues.filter((issue) => {
+    const location = issue.locationData || normalizeCivicLocation(issue.location);
+    return location.searchText.includes(q) ||
+      String(issue.location || "").toLowerCase().includes(q) ||
+      String(issue.area || "").toLowerCase().includes(q);
+  });
+}
+
+function getCivicReport(id) {
+  return getIssue(id)?.report || null;
+}
+
+
 /* =========================================================
    2. DEMO AI ENGINE
    ========================================================= */
@@ -502,7 +914,7 @@ const SEED_ISSUES = [
     supporters: 23,
     area: "Ward 4",
     location:
-      "Oakridge Primary School, Main Road",
+      "Khurai, Imphal East",
     description:
       "A large, deep pothole has formed right at the school entrance. Cars swerve to avoid it and it is dangerous for children crossing in the morning."
   },
@@ -518,7 +930,7 @@ const SEED_ISSUES = [
     supporters: 41,
     area: "Ward 2",
     location:
-      "Market Street, Block C",
+      "Paona Bazaar, Imphal West",
     description:
       "Garbage has not been collected for seven days. Bins are overflowing onto the footpath and the smell is spreading to nearby shops."
   },
@@ -534,7 +946,7 @@ const SEED_ISSUES = [
     supporters: 12,
     area: "Ward 3",
     location:
-      "Lake View Road, near Pine Apartments",
+      "Lamphelpat, Imphal West",
     description:
       "One streetlight was flickering and then stopped working. The stretch was dark after 8pm."
   },
@@ -550,7 +962,7 @@ const SEED_ISSUES = [
     supporters: 17,
     area: "Ward 1",
     location:
-      "Station Road, near the bus depot",
+      "Porompat, Imphal East",
     description:
       "A water pipe under the footpath has been leaking for two days. Clean water is being wasted and the path is slippery."
   },
@@ -566,7 +978,7 @@ const SEED_ISSUES = [
     supporters: 58,
     area: "Ward 5",
     location:
-      "Riverside Colony, Lane 5",
+      "Singjamei, Imphal West",
     description:
       "The open drain overflows every time it rains and sewage water floods the lane. Residents cannot walk through safely."
   },
@@ -582,7 +994,7 @@ const SEED_ISSUES = [
     supporters: 34,
     area: "Ward 3",
     location:
-      "Central Park, west gate",
+      "Thangmeiband, Imphal West",
     description:
       "The cover of the streetlight pole is missing and exposed wires are hanging at hand height. This is unsafe for children playing nearby."
   },
@@ -598,7 +1010,7 @@ const SEED_ISSUES = [
     supporters: 9,
     area: "Ward 2",
     location:
-      "Behind Green Avenue Apartments",
+      "Nagaram, Imphal East",
     description:
       "Construction waste and household trash are being dumped in the empty plot at night. The pile keeps growing."
   },
@@ -614,7 +1026,7 @@ const SEED_ISSUES = [
     supporters: 27,
     area: "Ward 5",
     location:
-      "Riverside Colony playground",
+      "Khurai Konsam Leikai, Imphal East",
     description:
       "Stagnant water has collected around the playground and there are a lot of mosquitoes. Several families reported dengue symptoms."
   },
@@ -630,7 +1042,7 @@ const SEED_ISSUES = [
     supporters: 19,
     area: "Ward 6",
     location:
-      "Government High School, Hill Road",
+      "Yairipok, Thoubal",
     description:
       "Two classrooms have a leaking roof and many desks are broken. Students are sitting on the floor during lessons."
   },
@@ -646,7 +1058,7 @@ const SEED_ISSUES = [
     supporters: 46,
     area: "Ward 6",
     location:
-      "Old Mill Road",
+      "Kakching, Kakching",
     description:
       "Six old trees were cut down along the road over the weekend. Residents are not aware of any approval for this."
   },
@@ -662,7 +1074,7 @@ const SEED_ISSUES = [
     supporters: 64,
     area: "Ward 1",
     location:
-      "Clock Tower Junction",
+      "Keishampat, Imphal West",
     description:
       "The traffic signal at the junction has been off since the storm. There was almost an accident during rush hour."
   },
@@ -678,7 +1090,7 @@ const SEED_ISSUES = [
     supporters: 22,
     area: "Ward 4",
     location:
-      "Sector 9 Ring Road",
+      "Tera, Imphal West",
     description:
       "Long cracks have opened up on the road surface and water collects in them after rain, slowing traffic."
   },
@@ -694,7 +1106,7 @@ const SEED_ISSUES = [
     supporters: 8,
     area: "Ward 1",
     location:
-      "City Bus Terminal",
+      "MG Avenue, Imphal West",
     description:
       "The public bins at the terminal are full by noon and litter spreads across the waiting area."
   },
@@ -710,7 +1122,7 @@ const SEED_ISSUES = [
     supporters: 31,
     area: "Ward 3",
     location:
-      "Canal Walk, between bridges 2 and 3",
+      "Chingmeirong, Imphal West",
     description:
       "Almost all lamps on this walkway are out. It is completely dark at night and many people avoid walking home this way."
   }
@@ -887,7 +1299,7 @@ const MISSIONS = [
     id: "M5",
     issueId: "CIV-1033",
     title:
-      "Tree census on Old Mill Road",
+      "Tree census on Kakching, Kakching",
     needed: 8,
     joined: 3,
     description:
@@ -917,7 +1329,7 @@ const EXAMPLES = [
   {
     category: "garbage",
     location:
-      "Market Street, Block C",
+      "Paona Bazaar, Imphal West",
     description:
       "Garbage has not been collected for five days and bins are overflowing onto the footpath. The smell is very bad."
   },
@@ -933,7 +1345,7 @@ const EXAMPLES = [
   {
     category: "other",
     location:
-      "Station Road, near the bus depot",
+      "Porompat, Imphal East",
     description:
       "A water pipe has burst and water is flooding the road since this morning."
   }
@@ -1198,70 +1610,52 @@ function buildUpdates(
 }
 
 function createIssue(seed) {
-  const analysis =
-    analyzeReport({
-      categoryKey: seed.category,
-      description: seed.description,
-      location: seed.location,
-      hasPhoto: Boolean(seed.photo)
-    });
-
-  const reportedAt =
-    seed.reportedAt ??
-    NOW - seed.hoursAgo * HOUR;
-
-  const department =
-    CATEGORIES[seed.category]?.department ||
-    "Municipal Helpdesk";
-
-  return {
-    id: seed.id,
-
-    title: seed.title,
-
-    category: seed.category,
-
+  const analysis = analyzeReport({
+    categoryKey: seed.category,
     description: seed.description,
-
     location: seed.location,
+    hasPhoto: Boolean(seed.photo)
+  });
 
+  const reportedAt = seed.reportedAt ?? NOW - (seed.hoursAgo || 0) * HOUR;
+  const report = createCivicReportData({ ...seed, reportedAt }, analysis);
+  const department = report.routing.primaryDepartment;
+
+  const issue = {
+    id: seed.id,
+    title: seed.title,
+    category: seed.category,
+    description: seed.description,
+    location: seed.location,
     area: seed.area,
-
-    priority:
-      seed.priority ??
-      analysis.priority,
-
-    status:
-      seed.status ??
-      "Reported",
-
-    supporters:
-      seed.supporters ?? 1,
-
-    photo:
-      seed.photo ?? null,
-
+    priority: seed.priority ?? analysis.priority,
+    status: seed.status ?? "Reported",
+    supporters: seed.supporters ?? 1,
+    photo: seed.photo ?? null,
     reportedAt,
-
     department,
-
+    departmentId: report.routing.primaryDepartmentId,
     summary: analysis.summary,
-
-    recommendation:
-      seed.priority === "High" ||
-      analysis.priority === "High"
-        ? analysis.recommendation
-        : CATEGORIES[
-            seed.category
-          ]?.action ||
-          CATEGORIES.other.action,
-
-    updates: buildUpdates(
-      seed.status ?? "Reported",
-      reportedAt,
-      department
-    )
+    recommendation: seed.priority === "High" || analysis.priority === "High"
+      ? analysis.recommendation
+      : CATEGORIES[seed.category]?.action || CATEGORIES.other.action,
+    updates: buildUpdates(seed.status ?? "Reported", reportedAt, department),
+    locationData: report.location,
+    photos: report.evidence.images,
+    ai: report.ai,
+    routing: report.routing,
+    lifecycle: report.lifecycle,
+    community: report.community,
+    report
   };
+
+  issue.lifecycle.history = issue.updates.map((update) => ({
+    status: update.status,
+    timestamp: update.time || update.date || reportedAt,
+    note: update.text || update.message || ""
+  }));
+
+  return issue;
 }
 
 function getIssue(id) {
