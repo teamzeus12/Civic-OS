@@ -494,225 +494,226 @@ const HOUR = 36e5;
 const SEED_ISSUES = [
   {
     id: "CIV-1042",
-    title: "Large pothole near school entrance",
+    title: "Pothole on road near Kangla Western Gate",
     category: "roads",
     priority: "High",
     status: "Reported",
     hoursAgo: 2,
     supporters: 23,
-    area: "Ward 4",
-    location:
-      "Oakridge Primary School, Main Road",
-    description:
-      "A large, deep pothole has formed right at the school entrance. Cars swerve to avoid it and it is dangerous for children crossing in the morning."
+    area: "Kangla, Imphal West",
+    location: "Near Kangla Western Gate, Imphal, Manipur",
+    latitude: 24.809,
+    longitude: 93.9426,
+    locationPrecision: "approximate",
+    description: "A deep pothole has opened on the approach road near Kangla Western Gate. Vehicles are swerving around it, making it risky for pedestrians."
   },
 
   {
     id: "CIV-1041",
-    title:
-      "Garbage collection delayed for a week",
+    title: "Waste collection delayed near Ima Keithel",
     category: "garbage",
     priority: "Medium",
     status: "In Progress",
     hoursAgo: 9,
     supporters: 41,
-    area: "Ward 2",
-    location:
-      "Market Street, Block C",
-    description:
-      "Garbage has not been collected for seven days. Bins are overflowing onto the footpath and the smell is spreading to nearby shops."
+    area: "Khwairamband, Imphal West",
+    location: "Ima Keithel, Khwairamband Bazaar, Imphal, Manipur",
+    latitude: 24.808,
+    longitude: 93.935,
+    locationPrecision: "approximate",
+    description: "Bins near the busy Khwairamband Bazaar area are overflowing after missed collections, leaving waste on nearby footpaths."
   },
 
   {
     id: "CIV-1040",
-    title:
-      "Streetlight repaired on Lake View Road",
+    title: "Streetlight outage in Lamphelpat",
     category: "streetlights",
     priority: "Low",
     status: "Resolved",
     hoursAgo: 30,
     supporters: 12,
-    area: "Ward 3",
-    location:
-      "Lake View Road, near Pine Apartments",
-    description:
-      "One streetlight was flickering and then stopped working. The stretch was dark after 8pm."
+    area: "Lamphelpat, Imphal West",
+    location: "RIMS Road area, Lamphelpat, Imphal, Manipur",
+    latitude: 24.8354,
+    longitude: 93.9136,
+    locationPrecision: "approximate",
+    description: "A streetlight along the Lamphelpat road stretch stopped working, leaving part of the footpath dark after sunset."
   },
 
   {
     id: "CIV-1039",
-    title:
-      "Water pipe leaking onto footpath",
+    title: "Leaking water pipe near Khuman Lampak",
     category: "water",
     priority: "Medium",
     status: "Verified",
     hoursAgo: 14,
     supporters: 17,
-    area: "Ward 1",
-    location:
-      "Station Road, near the bus depot",
-    description:
-      "A water pipe under the footpath has been leaking for two days. Clean water is being wasted and the path is slippery."
+    area: "Khuman Lampak, Imphal East",
+    location: "Khuman Lampak bus terminal area, Imphal, Manipur",
+    latitude: 24.8218,
+    longitude: 93.9517,
+    locationPrecision: "approximate",
+    description: "Water is leaking onto the roadside near the Khuman Lampak transport area, creating a slippery patch for people walking past."
   },
 
   {
     id: "CIV-1038",
-    title:
-      "Open drain overflowing after rain",
+    title: "Drain overflowing in Thangmeiband",
     category: "water",
     priority: "High",
     status: "In Progress",
     hoursAgo: 26,
     supporters: 58,
-    area: "Ward 5",
-    location:
-      "Riverside Colony, Lane 5",
-    description:
-      "The open drain overflows every time it rains and sewage water floods the lane. Residents cannot walk through safely."
+    area: "Thangmeiband, Imphal West",
+    location: "Thangmeiband, Imphal, Manipur",
+    latitude: 24.82,
+    longitude: 93.9343,
+    locationPrecision: "approximate",
+    description: "A roadside drain in Thangmeiband overflows after heavy rain, leaving dirty water across part of the lane."
   },
 
   {
     id: "CIV-1037",
-    title:
-      "Exposed wires on streetlight pole",
+    title: "Exposed wiring near Khuman Lampak",
     category: "streetlights",
     priority: "High",
     status: "Verified",
     hoursAgo: 20,
     supporters: 34,
-    area: "Ward 3",
-    location:
-      "Central Park, west gate",
-    description:
-      "The cover of the streetlight pole is missing and exposed wires are hanging at hand height. This is unsafe for children playing nearby."
+    area: "Khuman Lampak, Imphal East",
+    location: "Near Khuman Lampak Sports Complex, Imphal, Manipur",
+    latitude: 24.82268,
+    longitude: 93.95222,
+    locationPrecision: "approximate",
+    description: "A damaged streetlight fitting has exposed wiring along a public approach road near the sports complex. The area needs a safety check."
   },
 
   {
     id: "CIV-1036",
-    title:
-      "Illegal dumping in empty plot",
+    title: "Illegal dumping reported in Uripok",
     category: "garbage",
     priority: "Medium",
     status: "Reported",
     hoursAgo: 30,
     supporters: 9,
-    area: "Ward 2",
-    location:
-      "Behind Green Avenue Apartments",
-    description:
-      "Construction waste and household trash are being dumped in the empty plot at night. The pile keeps growing."
+    area: "Uripok, Imphal West",
+    location: "Uripok, Imphal, Manipur",
+    latitude: 24.8225,
+    longitude: 93.9237,
+    locationPrecision: "approximate",
+    description: "Household rubbish and construction debris have been left on an open roadside plot in Uripok instead of being taken to a collection point."
   },
 
   {
     id: "CIV-1035",
-    title:
-      "Mosquito breeding in stagnant water",
+    title: "Stagnant water near Porompat",
     category: "health",
     priority: "Medium",
     status: "In Progress",
     hoursAgo: 48,
     supporters: 27,
-    area: "Ward 5",
-    location:
-      "Riverside Colony playground",
-    description:
-      "Stagnant water has collected around the playground and there are a lot of mosquitoes. Several families reported dengue symptoms."
+    area: "Porompat, Imphal East",
+    location: "Porompat, near JNIMS Road, Imphal, Manipur",
+    latitude: 24.8125,
+    longitude: 93.9596,
+    locationPrecision: "approximate",
+    description: "Rainwater has remained pooled near a residential lane in Porompat, attracting mosquitoes. Residents are requesting drainage and prevention measures."
   },
 
   {
     id: "CIV-1034",
-    title:
-      "Leaking roof and broken desks at public school",
+    title: "Leaking school roof in Singjamei",
     category: "education",
     priority: "Medium",
     status: "Reported",
     hoursAgo: 52,
     supporters: 19,
-    area: "Ward 6",
-    location:
-      "Government High School, Hill Road",
-    description:
-      "Two classrooms have a leaking roof and many desks are broken. Students are sitting on the floor during lessons."
+    area: "Singjamei, Imphal",
+    location: "Singjamei, Imphal, Manipur",
+    latitude: 24.77736,
+    longitude: 93.94243,
+    locationPrecision: "approximate",
+    description: "A public-school classroom roof leaks during heavy rain and several desks need repair before students can use the room comfortably."
   },
 
   {
     id: "CIV-1033",
-    title:
-      "Trees cut down without permission",
+    title: "Tree cutting concern near Khurai Lamlong",
     category: "environment",
     priority: "Medium",
     status: "Verified",
     hoursAgo: 72,
     supporters: 46,
-    area: "Ward 6",
-    location:
-      "Old Mill Road",
-    description:
-      "Six old trees were cut down along the road over the weekend. Residents are not aware of any approval for this."
+    area: "Khurai, Imphal East",
+    location: "Khurai Lamlong Market area, Imphal, Manipur",
+    latitude: 24.8405,
+    longitude: 93.97,
+    locationPrecision: "approximate",
+    description: "Residents have raised a concern about trees removed along a road near Khurai Lamlong and are asking for the site to be reviewed."
   },
 
   {
     id: "CIV-1032",
-    title:
-      "Traffic signal not working at junction",
+    title: "Traffic signal issue near Keishampat",
     category: "safety",
     priority: "High",
     status: "Resolved",
     hoursAgo: 96,
     supporters: 64,
-    area: "Ward 1",
-    location:
-      "Clock Tower Junction",
-    description:
-      "The traffic signal at the junction has been off since the storm. There was almost an accident during rush hour."
+    area: "Keishampat, Imphal West",
+    location: "Keishampat junction, Imphal, Manipur",
+    latitude: 24.80758,
+    longitude: 93.92979,
+    locationPrecision: "approximate",
+    description: "A junction signal near Keishampat was not operating correctly, making it difficult for vehicles and pedestrians to cross safely during busy periods."
   },
 
   {
     id: "CIV-1031",
-    title:
-      "Road cracks and waterlogging on ring road",
+    title: "Road cracks and waterlogging in Sagolband",
     category: "roads",
     priority: "Medium",
     status: "In Progress",
     hoursAgo: 120,
     supporters: 22,
-    area: "Ward 4",
-    location:
-      "Sector 9 Ring Road",
-    description:
-      "Long cracks have opened up on the road surface and water collects in them after rain, slowing traffic."
+    area: "Sagolband, Imphal West",
+    location: "Sagolband, near the Nambul River, Imphal, Manipur",
+    latitude: 24.8025,
+    longitude: 93.9249,
+    locationPrecision: "approximate",
+    description: "Cracks in a local road around Sagolband collect rainwater and slow traffic. The damaged stretch needs inspection and repair."
   },
 
   {
     id: "CIV-1030",
-    title:
-      "Overflowing public bins at bus terminal",
+    title: "Overflowing bins near Khuman Lampak terminal",
     category: "garbage",
     priority: "Low",
     status: "Resolved",
     hoursAgo: 144,
     supporters: 8,
-    area: "Ward 1",
-    location:
-      "City Bus Terminal",
-    description:
-      "The public bins at the terminal are full by noon and litter spreads across the waiting area."
+    area: "Khuman Lampak, Imphal East",
+    location: "Near Khuman Lampak bus terminal, Imphal, Manipur",
+    latitude: 24.82035,
+    longitude: 93.95283,
+    locationPrecision: "approximate",
+    description: "Public bins near the Khuman Lampak transport terminal filled up quickly, causing litter around the waiting area before collection was arranged."
   },
 
   {
     id: "CIV-1029",
-    title:
-      "Dark stretch with no working streetlights",
+    title: "Streetlights out along the Nambul River",
     category: "streetlights",
     priority: "Medium",
     status: "Reported",
     hoursAgo: 76,
     supporters: 31,
-    area: "Ward 3",
-    location:
-      "Canal Walk, between bridges 2 and 3",
-    description:
-      "Almost all lamps on this walkway are out. It is completely dark at night and many people avoid walking home this way."
+    area: "Sagolband, Imphal West",
+    location: "Nambul River embankment, Sagolband, Imphal, Manipur",
+    latitude: 24.8045,
+    longitude: 93.921,
+    locationPrecision: "approximate",
+    description: "Several lights along a walkway beside the Nambul River are not working, leaving the stretch poorly lit for people returning home after dark."
   }
 ];
 
@@ -825,7 +826,7 @@ const MISSIONS = [
     id: "M1",
     issueId: "CIV-1035",
     title:
-      "Riverside drain & mosquito cleanup drive",
+      "Porompat drain & mosquito cleanup drive",
     needed: 12,
     joined: 7,
     description:
@@ -841,11 +842,11 @@ const MISSIONS = [
     id: "M2",
     issueId: "CIV-1041",
     title:
-      "Waste segregation awareness campaign",
+      "Waste segregation awareness at Ima Keithel",
     needed: 6,
     joined: 3,
     description:
-      "Design posters and social posts so Market Street shops separate waste correctly.",
+      "Create posters and social posts to help shops around Khwairamband Bazaar separate waste correctly.",
     skills: [
       "Graphic Design",
       "Social Media",
@@ -857,11 +858,11 @@ const MISSIONS = [
     id: "M3",
     issueId: "CIV-1029",
     title:
-      "Map every unlit street in Ward 3",
+      "Map unlit streets in Thangmeiband",
     needed: 5,
     joined: 2,
     description:
-      "Walk the ward at night, photograph dark spots and build a lighting gap map for the department.",
+      "Record poorly lit stretches around Thangmeiband and build a location map for the electricity team.",
     skills: [
       "Mapping",
       "Data Analysis",
@@ -877,7 +878,7 @@ const MISSIONS = [
     needed: 4,
     joined: 1,
     description:
-      "Document classroom damage and help the school prepare a repair request.",
+      "Document classroom damage at a school in Singjamei and help prepare a repair request.",
     skills: [
       "Infrastructure Assessment",
       "Teaching",
@@ -889,11 +890,11 @@ const MISSIONS = [
     id: "M5",
     issueId: "CIV-1033",
     title:
-      "Tree census on Old Mill Road",
+      "Tree census around Khurai Lamlong",
     needed: 8,
     joined: 3,
     description:
-      "Count and map remaining trees to support the environment department's investigation.",
+      "Count and map roadside trees around Khurai Lamlong to support a local environmental review.",
     skills: [
       "Environmental Science",
       "Mapping",
@@ -910,34 +911,23 @@ const WEEKLY_BASELINE = {
 const EXAMPLES = [
   {
     category: "roads",
-    location:
-      "Near the school entrance, Main Road",
-    description:
-      "There is a large pothole near the school entrance. Cars swerve around it and it is dangerous for children crossing."
+    location: "Near Kangla Western Gate, Imphal, Manipur",
+    description: "A pothole has opened on the road near Kangla Western Gate in Imphal. Vehicles swerve around it and pedestrians have trouble crossing safely."
   },
-
   {
     category: "garbage",
-    location:
-      "Market Street, Block C",
-    description:
-      "Garbage has not been collected for five days and bins are overflowing onto the footpath. The smell is very bad."
+    location: "Ima Keithel, Khwairamband Bazaar, Imphal, Manipur",
+    description: "Waste bins near Khwairamband Bazaar are overflowing onto the footpath after several missed collections."
   },
-
   {
     category: "streetlights",
-    location:
-      "Canal Walk, Ward 3",
-    description:
-      "Three streetlights are not working on this stretch. It is completely dark at night and feels unsafe walking home."
+    location: "Thangmeiband, Imphal, Manipur",
+    description: "Several streetlights along a Thangmeiband lane are not working, making the walk home difficult after dark."
   },
-
   {
     category: "other",
-    location:
-      "Station Road, near the bus depot",
-    description:
-      "A water pipe has burst and water is flooding the road since this morning."
+    location: "Khuman Lampak, Imphal, Manipur",
+    description: "A water pipe is leaking onto the road near the Khuman Lampak transport area, leaving a slippery patch for pedestrians."
   }
 ];
 
@@ -1259,9 +1249,11 @@ function renderDashboardMapIssue(issue) {
   const coords = getIssueMapCoordinates(issue);
   const locationLabel = String(issue.location || "Location not supplied");
   const categoryLabel = CATEGORIES[issue.category]?.label || "Other";
-  const locationNote = coords
-    ? `GPS pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
-    : "Address text only · exact map pin unavailable";
+  const locationNote = issue.locationPrecision === "approximate" && coords
+    ? "Approximate demo pin · area-level location"
+    : coords
+      ? `GPS pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
+      : "Address text only · exact map pin unavailable";
 
   panel.innerHTML = `
     <div class="dashboard-map-detail-top">
@@ -1310,8 +1302,9 @@ function renderDashboardMapIssue(issue) {
     if (selected && dashboardMapInstance) {
       const coordsForMarker = getIssueMapCoordinates(issue);
       if (coordsForMarker) {
-        dashboardMapInstance.panTo(
+        dashboardMapInstance.setView(
           [coordsForMarker.latitude, coordsForMarker.longitude],
+          Math.max(dashboardMapInstance.getZoom(), 14),
           { animate: true }
         );
       }
@@ -1343,7 +1336,7 @@ function initDashboardMap() {
 
   if (statusElement) {
     statusElement.textContent =
-      `${mappedIssues.length} of ${issues.length} reports have exact GPS pins. Address-only reports are listed beside the map.`;
+      `${mappedIssues.length} of ${issues.length} reports have map coordinates. Seeded demo pins are approximate area-level locations; reports submitted with GPS use exact coordinates.`;
   }
 
   if (!mapElement) return;
@@ -1453,6 +1446,7 @@ function createIssue(seed) {
     CATEGORIES[seed.category]?.department ||
     "Municipal Helpdesk";
 
+  const parsedLocationCoordinates = parseIssueCoordinates(seed.location);
   const coordinates =
     Number.isFinite(Number(seed.latitude)) &&
     seed.latitude !== null &&
@@ -1461,7 +1455,11 @@ function createIssue(seed) {
     seed.longitude !== null &&
     seed.longitude !== undefined
       ? { latitude: Number(seed.latitude), longitude: Number(seed.longitude) }
-      : parseIssueCoordinates(seed.location);
+      : parsedLocationCoordinates;
+
+  const locationPrecision =
+    seed.locationPrecision ||
+    (parsedLocationCoordinates ? "gps" : coordinates ? "approximate" : null);
 
   return {
     id: seed.id,
@@ -1477,6 +1475,8 @@ function createIssue(seed) {
     latitude: coordinates?.latitude ?? null,
 
     longitude: coordinates?.longitude ?? null,
+
+    locationPrecision,
 
     area: seed.area,
 
@@ -4448,7 +4448,7 @@ function renderDashboard() {
           <h3 id="dashboardMapTitle" class="panel-title">Report locations</h3>
           <p class="panel-sub">Select a pin to inspect the issue and open its location.</p>
         </div>
-        <span class="dashboard-map-count"><i data-lucide="map-pin"></i>${mappedMapIssues.length} pinned</span>
+        <span class="dashboard-map-count"><i data-lucide="map-pin"></i>${mappedMapIssues.length} mapped</span>
       </div>
 
       <div class="dashboard-map-layout">
@@ -4475,7 +4475,7 @@ function renderDashboard() {
 
           <section class="dashboard-unpinned-section" aria-labelledby="dashboardUnpinnedTitle">
             <div class="dashboard-unpinned-head">
-              <h4 id="dashboardUnpinnedTitle">Reports without GPS pins</h4>
+              <h4 id="dashboardUnpinnedTitle">Reports without map coordinates</h4>
               <span class="dashboard-map-count is-small">${unpinnedMapIssues.length}</span>
             </div>
             <p class="dashboard-unpinned-help">These reports have text addresses but no exact coordinates. Select one for details and a map search link.</p>
