@@ -1203,7 +1203,7 @@ function parseIssueCoordinates(locationValue) {
   const value = String(locationValue || "").trim();
   // Accept only an explicit GPS prefix or a bare coordinate pair; never guess
   // coordinates from a street address or ward name.
-  const match = value.match(/^(?:GPS\\s*)?(-?\\d{1,2}(?:\\.\\d+)?)\\s*,\\s*(-?\\d{1,3}(?:\\.\\d+)?)$/i);
+  const match = value.match(/^(?:GPS\s*)?(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/i);
   if (!match) return null;
 
   const latitude = Number(match[1]);
