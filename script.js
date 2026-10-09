@@ -3065,6 +3065,15 @@ function useCurrentLocation() {
           )}`;
       }
 
+      setLocationStatus(
+        `Device coordinates captured (estimated accuracy ±${Math.round(pos.coords.accuracy || 0)} m). Looking up the place name…`,
+        "success"
+      );
+      reverseGeocodeReportLocation(
+        pos.coords.latitude,
+        pos.coords.longitude
+      );
+
       if (btn) {
         btn.disabled = false;
 
@@ -3115,6 +3124,96 @@ function useCurrentLocation() {
     }
   );
 }
+
+function setLocationStatus(message, kind = "info") {
+  const status = $("#locationStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.kind = kind;
+}
+
+async function geocodeReportLocation() {
+  const input = $("#location");
+  const button = $("#geocodeBtn");
+  const place = input?.value.trim();
+
+  if (!place) {
+    setLocationStatus("Enter a place or landmark first.", "error");
+    input?.focus();
+    return;
+  }
+
+  if (/^GPS\s+-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?$/i.test(place) && state.draftCoordinates) {
+    setLocationStatus("Device coordinates are already attached to this report.", "success");
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    const label = button.querySelector("span");
+    if (label) label.textContent = "Finding place…";
+  }
+  setLocationStatus("Searching for a map location in Manipur…");
+
+  try {
+    const query = encodeURIComponent(`${place}, Manipur, India`);
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=in&viewbox=92.6,26.1,94.8,23.4&bounded=1&q=${query}`;
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error("Place lookup is temporarily unavailable.");
+    const results = await response.json();
+    const result = Array.isArray(results) ? results[0] : null;
+    if (!result || !Number.isFinite(Number(result.lat)) || !Number.isFinite(Number(result.lon))) {
+      state.draftCoordinates = null;
+      setLocationStatus("No map match found. Keep the place name and submit; the report will remain searchable without a pin.", "error");
+      return;
+    }
+
+    state.draftCoordinates = {
+      lat: Number(result.lat),
+      lng: Number(result.lon)
+    };
+
+    const readablePlace = result.display_name
+      ? result.display_name.split(",").slice(0, 4).join(",").trim()
+      : place;
+    if (input) input.value = readablePlace;
+    setLocationStatus("Map pin found for this place. The pin is approximate; check the location text before submitting.", "success");
+    invalidateAnalysis();
+    updateStepper();
+  } catch (error) {
+    setLocationStatus("Place lookup failed right now. You can still submit the written location, or use device location.", "error");
+  } finally {
+    if (button) {
+      button.disabled = false;
+      const label = button.querySelector("span");
+      if (label) label.textContent = "Find map pin from place";
+    }
+  }
+}
+
+async function reverseGeocodeReportLocation(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error("Reverse lookup unavailable.");
+    const result = await response.json();
+    const location = $("#location");
+    if (!result?.display_name || !location) return;
+    // Do not overwrite a place the user has started typing while the lookup runs.
+    if (!/^GPS\s+-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?$/i.test(location.value.trim())) return;
+    location.value = result.display_name.split(",").slice(0, 4).join(",").trim();
+    setLocationStatus("Place name found from device location. Its map pin uses your device coordinates.", "success");
+    invalidateAnalysis();
+    updateStepper();
+  } catch (error) {
+    // Keep the GPS coordinates in the location field if reverse lookup is unavailable.
+  }
+}
+
 
 
 /* =========================================================
@@ -6742,22 +6841,24 @@ function bindEvents() {
   /* ---------- Location ---------- */
 
   const locationInput = $("#location");
+  const geocodeBtn = $("#geocodeBtn");
 
   if (locationInput) {
     locationInput.addEventListener("input", () => {
       state.draftCoordinates = null;
+      const status = $("#locationStatus");
+      if (status) status.textContent = "";
     });
   }
 
+  if (geocodeBtn) {
+    geocodeBtn.addEventListener("click", geocodeReportLocation);
+  }
 
-  const locateBtn =
-    $("#locateBtn");
+  const locateBtn = $("#locateBtn");
 
   if (locateBtn) {
-    locateBtn.addEventListener(
-      "click",
-      useCurrentLocation
-    );
+    locateBtn.addEventListener("click", useCurrentLocation);
   }
 
 
