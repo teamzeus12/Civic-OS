@@ -6033,3 +6033,371 @@ button:disabled,
   color: #526878;
   opacity: 0.8;
 }
+
+
+/* =========================================================
+   CIVIC ACTIONS — HIGH VISIBILITY, STRONG CONTRAST
+   ========================================================= */
+
+/* Give the whole section a clear visual boundary from the page. */
+#actionsScreen {
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(62,224,143,.15), transparent 34%),
+    linear-gradient(180deg, #edf8f5 0%, #f4f8fb 48%, #eaf3f7 100%);
+  border-top: 1px solid #c7e2d9;
+  border-bottom: 1px solid #c7e2d9;
+  padding-top: clamp(28px, 4vw, 52px);
+  padding-bottom: clamp(36px, 5vw, 64px);
+}
+
+#actionsScreen .screen-head,
+#actionsScreen .block-head {
+  color: #122f3d;
+}
+
+#actionsScreen .screen-title,
+#actionsScreen .block-title {
+  color: #102f3e !important;
+  font-weight: 850;
+  letter-spacing: -.035em;
+}
+
+#actionsScreen .screen-sub {
+  color: #334f5e !important;
+  max-width: 680px;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+#actionsScreen .kicker {
+  color: #07664e !important;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+#actionsScreen .hero-actions {
+  margin-top: 24px;
+  margin-bottom: 34px;
+}
+
+/* Make the main create button impossible to mistake for a pale outline. */
+#actionsScreen #createActionBtn,
+#actionsScreen .hero-actions .btn-primary {
+  min-height: 54px;
+  padding: 15px 24px;
+  border: 2px solid #07563f !important;
+  border-radius: 15px;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #087b59 0%, #07583f 100%) !important;
+  box-shadow: 0 8px 20px rgba(7, 88, 63, .24);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+#actionsScreen #createActionBtn svg,
+#actionsScreen #createActionBtn i {
+  color: #ffffff !important;
+}
+
+#actionsScreen #createActionBtn:hover,
+#actionsScreen #createActionBtn:focus-visible {
+  color: #ffffff !important;
+  background: #064b38 !important;
+  box-shadow: 0 10px 24px rgba(7, 88, 63, .32);
+  transform: translateY(-2px);
+}
+
+/* Distinct, non-white cards with readable text and an obvious click target. */
+#actionsScreen #civicActionsList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 22px;
+  margin-top: 20px;
+}
+
+#actionsScreen .civic-action-card,
+#actionsScreen .action-card.civic-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: 0 !important;
+  overflow: hidden;
+  text-align: left;
+  color: #f5fbff !important;
+  background: linear-gradient(160deg, #194b55 0%, #123742 58%, #102e3b 100%) !important;
+  border: 1px solid #2f6870 !important;
+  border-radius: 22px !important;
+  box-shadow: 0 10px 28px rgba(15, 48, 61, .16), 0 2px 5px rgba(15, 48, 61, .10);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+#actionsScreen .civic-action-card:hover,
+#actionsScreen .civic-action-card:focus-visible {
+  color: #ffffff !important;
+  background: linear-gradient(160deg, #205d63 0%, #153f4c 60%, #103541 100%) !important;
+  border-color: #3ee08f !important;
+  box-shadow: 0 16px 34px rgba(15, 48, 61, .24);
+  transform: translateY(-4px);
+}
+
+#actionsScreen .civic-action-card:focus-visible {
+  outline: 3px solid #087d60;
+  outline-offset: 4px;
+}
+
+#actionsScreen .civic-action-card .action-card-image {
+  display: block;
+  width: 100%;
+  height: 190px;
+  min-height: 190px;
+  flex: 0 0 190px;
+  margin: 0 !important;
+  border: 0;
+  border-bottom: 3px solid #3ee08f;
+  border-radius: 0 !important;
+  background-color: #294e58;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow: inset 0 -42px 50px rgba(6, 26, 35, .34);
+}
+
+#actionsScreen .civic-action-card .action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  margin: 18px 18px 12px !important;
+  color: #082e26 !important;
+  background: #72efb0 !important;
+  border: 1px solid #a5ffd0 !important;
+  border-radius: 14px;
+}
+
+#actionsScreen .civic-action-card .action-icon svg,
+#actionsScreen .civic-action-card .action-icon i {
+  color: #082e26 !important;
+  stroke-width: 2.4;
+}
+
+#actionsScreen .civic-action-card .action-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 10px;
+  padding: 0 20px 22px !important;
+  color: #f5fbff !important;
+}
+
+#actionsScreen .civic-action-card .action-title {
+  display: block;
+  color: #ffffff !important;
+  font-size: 19px;
+  font-weight: 850;
+  line-height: 1.3;
+  letter-spacing: -.015em;
+}
+
+#actionsScreen .civic-action-card .action-desc {
+  display: block;
+  color: #d5e7ed !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#actionsScreen .civic-action-card .action-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 15px;
+  color: #effff7 !important;
+}
+
+#actionsScreen .civic-action-card .action-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  color: #effff7 !important;
+  background: rgba(235, 250, 255, .10);
+  border: 1px solid rgba(215, 244, 248, .24);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+#actionsScreen .civic-action-card .action-meta svg,
+#actionsScreen .civic-action-card .action-meta i {
+  width: 14px;
+  height: 14px;
+  color: #72efb0 !important;
+}
+
+#actionsScreen .civic-action-card .action-arrow {
+  top: 204px;
+  right: 18px;
+  color: #ffffff !important;
+  background: rgba(7, 35, 44, .82);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  padding: 7px;
+  width: 34px;
+  height: 34px;
+}
+
+#actionsScreen .civic-action-card:hover .action-arrow,
+#actionsScreen .civic-action-card:focus-visible .action-arrow {
+  color: #082e26 !important;
+  background: #72efb0;
+  border-color: #72efb0;
+}
+
+/* The activity creation form should feel like a defined panel, not white-on-white. */
+#createActivityScreen {
+  background:
+    radial-gradient(ellipse at 10% 0%, rgba(62,224,143,.12), transparent 34%),
+    linear-gradient(180deg, #edf8f5 0%, #f3f7fa 100%);
+  border-top: 1px solid #c7e2d9;
+  padding-top: clamp(28px, 4vw, 48px);
+  padding-bottom: 48px;
+}
+
+#createActivityScreen .screen-title {
+  color: #102f3e !important;
+  font-weight: 850;
+}
+
+#createActivityScreen .screen-sub {
+  color: #334f5e !important;
+}
+
+#createActivityForm.project-form {
+  color: #183747;
+  background: #ffffff !important;
+  border: 1px solid #9bb8c4 !important;
+  border-top: 5px solid #087b59 !important;
+  border-radius: 22px;
+  box-shadow: 0 14px 34px rgba(18, 55, 70, .12);
+}
+
+#createActivityForm .form-field label {
+  color: #183747 !important;
+  font-weight: 800;
+}
+
+#createActivityForm input,
+#createActivityForm select,
+#createActivityForm textarea {
+  color: #142f3d !important;
+  background: #f7fbfc !important;
+  border: 1.5px solid #8ca9b6 !important;
+  border-radius: 10px;
+}
+
+#createActivityForm input:focus,
+#createActivityForm select:focus,
+#createActivityForm textarea:focus {
+  background: #ffffff !important;
+  border-color: #087b59 !important;
+  outline: 3px solid rgba(8, 123, 89, .16);
+}
+
+#createActivityForm input::placeholder,
+#createActivityForm textarea::placeholder {
+  color: #5c7380 !important;
+  opacity: 1;
+}
+
+#createActivityForm .form-actions .btn-primary {
+  color: #ffffff !important;
+  background: #087b59 !important;
+  border: 2px solid #07563f !important;
+  font-weight: 800;
+}
+
+#createActivityForm .form-actions .btn-ghost,
+#createActivityForm .form-actions .btn-secondary {
+  color: #173447 !important;
+  background: #eaf2f5 !important;
+  border: 1.5px solid #8ca9b6 !important;
+  font-weight: 800;
+}
+
+/* Detail page buttons and information panels also need to stand out. */
+#actionDetailScreen .action-detail-join,
+#actionDetailScreen .action-detail-join.btn,
+#actionDetailScreen .action-detail-join button {
+  color: #ffffff !important;
+  background: #087b59 !important;
+  border: 2px solid #07563f !important;
+  box-shadow: 0 7px 18px rgba(7, 88, 63, .24);
+  font-weight: 800;
+}
+
+#actionDetailScreen .action-detail-organizer,
+#actionDetailScreen .action-detail-support,
+#actionDetailScreen .action-detail-about {
+  color: #173447;
+  background: #ffffff;
+  border: 1px solid #b2c8d1;
+  box-shadow: 0 6px 18px rgba(20, 54, 69, .07);
+}
+
+#actionDetailScreen .action-detail-organizer strong,
+#actionDetailScreen .action-detail-support strong,
+#actionDetailScreen .action-detail-about strong {
+  color: #153746 !important;
+}
+
+#actionDetailScreen .action-detail-support p,
+#actionDetailScreen .action-detail-about p {
+  color: #3d5663 !important;
+}
+
+@media (max-width: 900px) {
+  #actionsScreen #civicActionsList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  #actionsScreen #civicActionsList {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  #actionsScreen .civic-action-card .action-card-image {
+    height: 180px;
+    min-height: 180px;
+    flex-basis: 180px;
+  }
+
+  #actionsScreen .civic-action-card .action-title {
+    font-size: 18px;
+  }
+
+  #actionsScreen .civic-action-card .action-desc {
+    font-size: 14px;
+  }
+
+  #actionsScreen #createActionBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #actionsScreen .civic-action-card,
+  #actionsScreen #createActionBtn {
+    transition: none !important;
+  }
+}
