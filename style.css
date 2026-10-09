@@ -5876,3 +5876,80 @@ select option { color: #172b3a; background: #fff; }
     transition-duration: .01ms !important;
   }
 }
+
+
+/* =========================================================
+   UX FIXES — readable text and a clearly visible Report CTA
+   ========================================================= */
+:root {
+  --muted: #526878;
+  --subtle: #526878;
+  --text: #172b3a;
+}
+
+.btn-primary {
+  color: #062d22;
+  background: #3ee08f;
+  border-color: #20bf75;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(8, 125, 96, 0.24);
+}
+
+.btn-primary:hover:not(:disabled) {
+  color: #062d22;
+  background: #62eaa6;
+  box-shadow: 0 8px 24px rgba(8, 125, 96, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.nav-item:focus-visible,
+.top-link:focus-visible {
+  outline: 3px solid #087d60;
+  outline-offset: 3px;
+}
+
+.bottom-nav .nav-report {
+  color: #ffffff !important;
+  background: #087d60 !important;
+  border: 1px solid #06694f !important;
+  border-radius: 18px !important;
+  box-shadow: 0 6px 18px rgba(8, 125, 96, 0.28) !important;
+}
+
+.bottom-nav .nav-report svg,
+.bottom-nav .nav-report i,
+.bottom-nav .nav-report span {
+  color: #ffffff !important;
+}
+
+.bottom-nav .nav-report:hover,
+.bottom-nav .nav-report:focus-visible {
+  background: #06694f !important;
+}
+
+.field-hint,
+.field-foot .counter,
+.ai-label,
+.stat-label,
+.issue-meta,
+.action-desc,
+.portal-label,
+.screen-sub {
+  color: #526878;
+}
+
+input::placeholder,
+textarea::placeholder,
+.civic-ai-input input::placeholder {
+  color: #617786;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn-primary,
+  .bottom-nav .nav-report {
+    transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+}
