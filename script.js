@@ -789,7 +789,7 @@ const SEED_ISSUES = [
     area: "Imphal West district, Manipur",
     location: "Sekmai area, irrigation channel",
     description: "DEMO REPORT: Farmers report a blocked irrigation channel affecting nearby paddy fields. Confirm the responsible agriculture or irrigation office.",
-    district: "Imphal West"
+    district: "Imphal West",
     lat: 24.95,
     lng: 93.88
   },
@@ -804,7 +804,7 @@ const SEED_ISSUES = [
     area: "Imphal West district, Manipur",
     location: "Khwairamband Keithel, market approach road",
     description: "DEMO REPORT: Vehicle queues are blocking the market approach road during busy hours. Confirm the correct traffic-management authority.",
-    district: "Imphal West"
+    district: "Imphal West",
     lat: 24.81,
     lng: 93.94
   },
@@ -819,7 +819,7 @@ const SEED_ISSUES = [
     area: "Imphal West district, Manipur",
     location: "Thangal Bazar, near the main market road",
     description: "DEMO REPORT: A deep pothole is causing vehicles to swerve near the market. Confirm the responsible road-maintenance authority.",
-    district: "Imphal West"
+    district: "Imphal West",
     lat: 24.8105,
     lng: 93.9405
   },
@@ -834,7 +834,7 @@ const SEED_ISSUES = [
     area: "Imphal West district, Manipur",
     location: "Ima Keithel, market-side collection point",
     description: "DEMO REPORT: Waste bins near the market-side collection point are overflowing. Request collection and review the pickup schedule.",
-    district: "Imphal West"
+    district: "Imphal West",
     lat: 24.81,
     lng: 93.94
   },
@@ -849,7 +849,7 @@ const SEED_ISSUES = [
     area: "Imphal East district, Manipur",
     location: "Porompat, main road bus-stop area",
     description: "DEMO REPORT: Route and timetable information is missing at this bus-stop area. Confirm the relevant transport operator or authority.",
-    district: "Imphal East"
+    district: "Imphal East",
     lat: 24.82,
     lng: 93.96
   },
@@ -864,7 +864,7 @@ const SEED_ISSUES = [
     area: "Imphal East district, Manipur",
     location: "Porompat, residential lane near the main road",
     description: "DEMO REPORT: Residents report repeated electricity interruptions. Verify the service area and refer it to the appropriate electricity team.",
-    district: "Imphal East"
+    district: "Imphal East",
     lat: 24.8205,
     lng: 93.9605
   },
@@ -879,7 +879,7 @@ const SEED_ISSUES = [
     area: "Imphal West district, Manipur",
     location: "Government school area, Singjamei",
     description: "DEMO REPORT: A school reports insufficient classroom desks and learning materials. Route the request to the relevant education office.",
-    district: "Imphal West"
+    district: "Imphal West",
     lat: 24.78,
     lng: 93.93
   },
@@ -894,7 +894,7 @@ const SEED_ISSUES = [
     area: "Imphal West district, Manipur",
     location: "Kangla Gate area, Imphal",
     description: "DEMO REPORT: Assistance is requested for an apparently injured stray animal. Refer to the appropriate local animal-care authority.",
-    district: "Imphal West"
+    district: "Imphal West",
     lat: 24.8,
     lng: 93.94
   },
@@ -909,7 +909,7 @@ const SEED_ISSUES = [
     area: "Imphal East district, Manipur",
     location: "Khuman Lampak sports complex area",
     description: "DEMO REPORT: A request has been raised to inspect public sports equipment and identify damaged items. Confirm the responsible maintenance office.",
-    district: "Imphal East"
+    district: "Imphal East",
     lat: 24.82,
     lng: 93.93
   },
@@ -924,7 +924,9 @@ const SEED_ISSUES = [
     area: "Imphal East district, Manipur",
     location: "Porompat, community water point",
     description: "DEMO REPORT: Residents report an interrupted community water supply. Verify the location and refer the case to the appropriate water-supply office.",
-    district: "Imphal East"
+    district: "Imphal East",
+    lat: 24.8205,
+    lng: 93.96
   }
 ];
 
@@ -941,8 +943,6 @@ const PEOPLE = [
       "Data Analysis",
       "Photography"
     ]
-    lat: 24.8205,
-    lng: 93.96
   },
 
   {
