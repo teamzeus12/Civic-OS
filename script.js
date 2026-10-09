@@ -420,6 +420,37 @@ function analyzeReport({
     priority = "Low";
   }
 
+  const priorityReason =
+    highHits.length
+      ? `High priority: detected risk terms ${highHits.join(", ")}.`
+      : impactHits.length >= 2
+        ? `High priority: multiple impact signals detected (${impactHits.join(", ")}).`
+        : lowHits.length && !impactHits.length
+          ? `Low priority: the description includes lower-impact terms (${lowHits.join(", ")}) and no impact signals from the current demo rules.`
+          : `Medium priority: the current demo rules found no strong emergency signal. A human reviewer should confirm severity.`;
+
+  const routingStatus =
+    key === "other" || key === "publicServices" || key === "traffic" || key === "transport" || key === "agriculture" || key === "animals" || key === "sports" || key === "electricity"
+      ? "Needs human confirmation"
+      : "Suggested route — not submitted";
+
+  const routingNote =
+    key === "other"
+      ? "The report does not match a specific supported category strongly enough. A reviewer should choose the responsible department."
+      : key === "traffic" || key === "transport"
+        ? "Traffic and transport responsibilities can overlap. Confirm the road owner and local authority before assignment."
+        : key === "agriculture"
+          ? "Confirm whether the issue belongs to agriculture, irrigation, or another local office before assignment."
+          : key === "animals"
+            ? "Confirm the appropriate local animal-care or public-health contact before assignment."
+            : key === "sports"
+              ? "Confirm the facility owner and maintenance authority before assignment."
+              : key === "electricity"
+                ? "Confirm the local electricity service area and responsible service team before assignment."
+                : key === "publicServices"
+                  ? "Identify the exact public service and responsible office before assignment."
+                  : "This is a category-based suggestion only. Civic OS has not contacted or submitted anything to a government department.";
+
   const confidence = Math.min(
     97,
     62 +
@@ -472,6 +503,9 @@ function analyzeReport({
     categoryLabel: cat.aiLabel,
     department: cat.department,
     priority,
+    priorityReason,
+    routingStatus,
+    routingNote,
     confidence,
     summary,
     recommendation,
@@ -2532,6 +2566,8 @@ function renderAnalysis() {
 
       ${note}
 
+      <p class="ai-disclaimer">This prototype uses transparent keyword rules, not a connected AI model. Its score is not calibrated accuracy. Priority and department suggestions must be checked by a human; no authority is contacted automatically.</p>
+
       <div class="ai-grid">
 
         <div class="ai-cell">
@@ -2574,6 +2610,33 @@ function renderAnalysis() {
 
         <div class="ai-cell">
           <span class="ai-label">
+            Routing status
+          </span>
+          <span class="ai-value">
+            ${escapeHtml(a.routingStatus)}
+          </span>
+        </div>
+
+        <div class="ai-cell wide">
+          <span class="ai-label">
+            Why this priority?
+          </span>
+          <p class="ai-text">
+            ${escapeHtml(a.priorityReason)}
+          </p>
+        </div>
+
+        <div class="ai-cell wide">
+          <span class="ai-label">
+            Routing explanation
+          </span>
+          <p class="ai-text">
+            ${escapeHtml(a.routingNote)}
+          </p>
+        </div>
+
+        <div class="ai-cell">
+          <span class="ai-label">
             Location
           </span>
 
@@ -2599,7 +2662,7 @@ function renderAnalysis() {
         <div class="ai-cell">
 
           <span class="ai-label">
-            Confidence
+            Heuristic score (demo)
           </span>
 
           <div class="confidence">
