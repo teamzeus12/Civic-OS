@@ -138,6 +138,70 @@ const CATEGORIES = {
     skills: ["Community Outreach", "Mapping"],
   },
 
+  agriculture: {
+    label: "Agriculture",
+    aiLabel: "Agriculture & Irrigation",
+    department: "Agriculture / Irrigation Office (suggested)",
+    icon: "sprout",
+    keywords: ["agriculture", "farmer", "farming", "crop", "seed", "fertilizer", "irrigation", "paddy", "harvest"],
+    action: "Review the agriculture or irrigation concern and confirm the responsible local office before assignment.",
+    skills: ["Environmental Science", "Data Analysis", "Community Outreach"],
+  },
+  traffic: {
+    label: "Traffic & congestion",
+    aiLabel: "Traffic Management",
+    department: "Traffic Police / Transport Office (suggested)",
+    icon: "traffic-cone",
+    keywords: ["traffic", "congestion", "jam", "rush hour", "signal", "junction", "parking", "blocked road"],
+    action: "Review the congestion and confirm whether traffic police, road engineering or local traffic management should handle it.",
+    skills: ["Mapping", "Data Analysis", "Community Outreach"],
+  },
+  transport: {
+    label: "Public transport",
+    aiLabel: "Public Transport",
+    department: "Transport Office (suggested)",
+    icon: "bus",
+    keywords: ["bus", "public transport", "bus stop", "route", "shared taxi", "timetable", "fare"],
+    action: "Check the affected route or stop and confirm the relevant transport operator or authority.",
+    skills: ["Mapping", "Data Analysis", "Community Outreach"],
+  },
+  electricity: {
+    label: "Electricity & power",
+    aiLabel: "Electricity Supply",
+    department: "Electricity Office (suggested)",
+    icon: "zap",
+    keywords: ["electricity", "power cut", "blackout", "transformer", "power supply", "voltage", "power line"],
+    action: "Refer the outage to the relevant electricity service team; keep away from exposed or sparking wires.",
+    skills: ["Electrical Repair", "Mapping", "Infrastructure Assessment"],
+  },
+  animals: {
+    label: "Animal welfare",
+    aiLabel: "Animal Welfare",
+    department: "Animal Husbandry / Local Authority (suggested)",
+    icon: "paw-print",
+    keywords: ["animal", "stray dog", "stray cattle", "injured dog", "injured animal", "livestock", "animal welfare", "dead animal"],
+    action: "Refer the concern to the appropriate local animal-care or public-health authority; do not approach an injured or aggressive animal.",
+    skills: ["Community Outreach", "Public Health", "Mapping"],
+  },
+  sports: {
+    label: "Sports & recreation",
+    aiLabel: "Sports and Recreation Facilities",
+    department: "Sports / Local Facilities Office (suggested)",
+    icon: "trophy",
+    keywords: ["sports", "playground", "sports ground", "stadium", "basketball court", "football field", "recreation", "playing field"],
+    action: "Request a facilities inspection and confirm the responsible sports or local authority.",
+    skills: ["Project Management", "Community Outreach", "Infrastructure Assessment"],
+  },
+  publicServices: {
+    label: "Public services",
+    aiLabel: "Public Service Access",
+    department: "Relevant Service Office (needs review)",
+    icon: "building-2",
+    keywords: ["public service", "ration", "certificate", "pension", "benefit", "government office", "service counter"],
+    action: "Route for human review to identify the correct public office before assignment.",
+    skills: ["Community Outreach", "Data Analysis"],
+  },
+
   other: {
     label: "Other",
     aiLabel: "General Civic Issue",
@@ -713,11 +777,141 @@ const SEED_ISSUES = [
       "Canal Walk, between bridges 2 and 3",
     description:
       "Almost all lamps on this walkway are out. It is completely dark at night and many people avoid walking home this way."
+  },
+  {
+    id: "CIV-1052",
+    title: "DEMO — Irrigation channel needs repair",
+    category: "agriculture",
+    priority: "Medium",
+    status: "Reported",
+    hoursAgo: 3,
+    supporters: 6,
+    area: "Imphal West district, Manipur",
+    location: "Sekmai area, irrigation channel",
+    description: "DEMO REPORT: Farmers report a blocked irrigation channel affecting nearby paddy fields. Confirm the responsible agriculture or irrigation office.",
+    district: "Imphal West"
+  },
+  {
+    id: "CIV-1051",
+    title: "DEMO — Traffic congestion near Khwairamband Keithel",
+    category: "traffic",
+    priority: "High",
+    status: "Verified",
+    hoursAgo: 5,
+    supporters: 18,
+    area: "Imphal West district, Manipur",
+    location: "Khwairamband Keithel, market approach road",
+    description: "DEMO REPORT: Vehicle queues are blocking the market approach road during busy hours. Confirm the correct traffic-management authority.",
+    district: "Imphal West"
+  },
+  {
+    id: "CIV-1050",
+    title: "DEMO — Pothole near Thangal Bazar",
+    category: "roads",
+    priority: "High",
+    status: "In Progress",
+    hoursAgo: 7,
+    supporters: 21,
+    area: "Imphal West district, Manipur",
+    location: "Thangal Bazar, near the main market road",
+    description: "DEMO REPORT: A deep pothole is causing vehicles to swerve near the market. Confirm the responsible road-maintenance authority.",
+    district: "Imphal West"
+  },
+  {
+    id: "CIV-1049",
+    title: "DEMO — Waste collection near Ima Keithel",
+    category: "garbage",
+    priority: "Medium",
+    status: "Reported",
+    hoursAgo: 10,
+    supporters: 11,
+    area: "Imphal West district, Manipur",
+    location: "Ima Keithel, market-side collection point",
+    description: "DEMO REPORT: Waste bins near the market-side collection point are overflowing. Request collection and review the pickup schedule.",
+    district: "Imphal West"
+  },
+  {
+    id: "CIV-1048",
+    title: "DEMO — Public transport stop information missing",
+    category: "transport",
+    priority: "Low",
+    status: "Reported",
+    hoursAgo: 12,
+    supporters: 4,
+    area: "Imphal East district, Manipur",
+    location: "Porompat, main road bus-stop area",
+    description: "DEMO REPORT: Route and timetable information is missing at this bus-stop area. Confirm the relevant transport operator or authority.",
+    district: "Imphal East"
+  },
+  {
+    id: "CIV-1047",
+    title: "DEMO — Power supply interruption",
+    category: "electricity",
+    priority: "Medium",
+    status: "In Progress",
+    hoursAgo: 16,
+    supporters: 13,
+    area: "Imphal East district, Manipur",
+    location: "Porompat, residential lane near the main road",
+    description: "DEMO REPORT: Residents report repeated electricity interruptions. Verify the service area and refer it to the appropriate electricity team.",
+    district: "Imphal East"
+  },
+  {
+    id: "CIV-1046",
+    title: "DEMO — Classroom resources needed",
+    category: "education",
+    priority: "Medium",
+    status: "Reported",
+    hoursAgo: 21,
+    supporters: 9,
+    area: "Imphal West district, Manipur",
+    location: "Government school area, Singjamei",
+    description: "DEMO REPORT: A school reports insufficient classroom desks and learning materials. Route the request to the relevant education office.",
+    district: "Imphal West"
+  },
+  {
+    id: "CIV-1045",
+    title: "DEMO — Animal welfare assistance requested",
+    category: "animals",
+    priority: "Medium",
+    status: "Verified",
+    hoursAgo: 28,
+    supporters: 7,
+    area: "Imphal West district, Manipur",
+    location: "Kangla Gate area, Imphal",
+    description: "DEMO REPORT: Assistance is requested for an apparently injured stray animal. Refer to the appropriate local animal-care authority.",
+    district: "Imphal West"
+  },
+  {
+    id: "CIV-1044",
+    title: "DEMO — Sports ground equipment inspection",
+    category: "sports",
+    priority: "Low",
+    status: "Reported",
+    hoursAgo: 34,
+    supporters: 5,
+    area: "Imphal East district, Manipur",
+    location: "Khuman Lampak sports complex area",
+    description: "DEMO REPORT: A request has been raised to inspect public sports equipment and identify damaged items. Confirm the responsible maintenance office.",
+    district: "Imphal East"
+  },
+  {
+    id: "CIV-1043",
+    title: "DEMO — Drinking-water supply concern",
+    category: "water",
+    priority: "High",
+    status: "In Progress",
+    hoursAgo: 42,
+    supporters: 16,
+    area: "Imphal East district, Manipur",
+    location: "Porompat, community water point",
+    description: "DEMO REPORT: Residents report an interrupted community water supply. Verify the location and refer the case to the appropriate water-supply office.",
+    district: "Imphal East"
   }
 ];
 
 let issues = [];
-let nextIssueNumber = 1043;
+let nextIssueNumber = 1053;
 
 const PEOPLE = [
   {
@@ -1226,6 +1420,8 @@ function createIssue(seed) {
     location: seed.location,
 
     area: seed.area,
+
+    district: seed.district || "",
 
     priority:
       seed.priority ??
@@ -3042,6 +3238,7 @@ function getFilteredIssues() {
         i.title,
         i.location,
         i.area,
+        i.district,
         i.department,
         i.description,
         cat.label
