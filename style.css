@@ -6795,3 +6795,86 @@ button:disabled,
 #createActivityScreen #createActivityForm .form-field small {
   color: #000000;
 }
+
+
+/* =========================================================
+   CIVIC AI CHAT — SENT ATTACHMENT PREVIEWS
+   ========================================================= */
+.civic-ai-message-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px solid rgba(62, 224, 143, .2);
+  border-radius: 12px;
+  background: rgba(5, 20, 13, .26);
+}
+
+.civic-ai-image-attachment {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.civic-ai-message-attachment img {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  max-height: 220px;
+  object-fit: contain;
+  object-position: left center;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, .16);
+}
+
+.civic-ai-attachment-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.civic-ai-attachment-copy strong {
+  margin: 0 !important;
+  color: #f5fff9;
+  font-size: 12px;
+}
+
+.civic-ai-attachment-copy small {
+  display: block;
+  max-width: 250px;
+  color: rgba(235, 246, 239, .72);
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.civic-ai-file-attachment > svg {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  color: #72e7aa;
+}
+
+.civic-ai-attachment-note {
+  margin-bottom: 8px !important;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: rgba(235, 246, 239, .82);
+  background: rgba(62, 224, 143, .07);
+  border: 1px solid rgba(62, 224, 143, .13);
+  font-size: 12px;
+}
+
+.civic-ai-attachment-note strong {
+  display: inline !important;
+  margin: 0 !important;
+  color: #8bf0b8;
+}
+
+.civic-ai-send:disabled {
+  opacity: .55;
+  cursor: progress;
+  transform: none;
+}
