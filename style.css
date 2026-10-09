@@ -5840,3 +5840,35 @@ label {
   .civic-reports-map { height: 300px; }
   .report-map-panel { padding: 14px; }
 }
+
+
+/* Location lookup feedback */
+.location-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.location-actions .chip-btn {
+  margin-top: 0;
+  min-height: 36px;
+  cursor: pointer;
+}
+.location-actions .chip-btn:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+.location-status {
+  min-height: 0;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+.location-status:empty { display: none; }
+.location-status[data-kind="success"] { color: var(--accent); }
+.location-status[data-kind="error"] { color: #ff9b91; }
+@media (max-width: 440px) {
+  .location-actions { flex-direction: column; align-items: stretch; }
+  .location-actions .chip-btn { justify-content: center; width: 100%; }
+}
