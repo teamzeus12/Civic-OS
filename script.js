@@ -1327,14 +1327,14 @@ function initDashboardMap() {
   const mappedIssues = issues.filter((issue) => getIssueMapCoordinates(issue));
   const unpinnedIssues = issues.filter((issue) => !getIssueMapCoordinates(issue));
 
-  $("#dashboardMap [data-map-select]").forEach((button) => {
+  $$("#dashboardMap [data-map-select]").forEach((button) => {
     button.addEventListener("click", () => {
       const issue = getIssue(button.dataset.mapSelect);
       if (issue) renderDashboardMapIssue(issue);
     });
   });
 
-  $("#dashboardUnpinnedList [data-map-select]").forEach((button) => {
+  $$("#dashboardUnpinnedList [data-map-select]").forEach((button) => {
     button.addEventListener("click", () => {
       const issue = getIssue(button.dataset.mapSelect);
       if (issue) renderDashboardMapIssue(issue);
