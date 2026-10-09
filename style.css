@@ -6610,3 +6610,69 @@ button:disabled,
     flex: 1 1 auto;
   }
 }
+
+
+/* =========================================================
+   CIVIC ACTION DETAIL — HEADER CONTRAST + BRIGHTER PHOTOS
+   Final overrides for desktop and mobile layouts.
+   ========================================================= */
+
+/* The detail header sits on a light page, so keep its controls dark and clear. */
+#actionDetailScreen .action-detail-back {
+  color: #075f49 !important;
+  background: #e7f6ee !important;
+  border: 1px solid #93cdb0 !important;
+  box-shadow: 0 3px 12px rgba(7, 95, 73, .12) !important;
+}
+
+#actionDetailScreen .action-detail-back svg {
+  color: #075f49 !important;
+  stroke: currentColor !important;
+}
+
+#actionDetailScreen .action-detail-back:hover,
+#actionDetailScreen .action-detail-back:focus-visible {
+  color: #064a39 !important;
+  background: #cceedd !important;
+  border-color: #55b987 !important;
+}
+
+#actionDetailScreen .action-detail-brand,
+#actionDetailScreen .action-detail-brand strong {
+  color: #173447 !important;
+  text-shadow: none !important;
+}
+
+#actionDetailScreen .action-detail-brand:focus-visible {
+  outline: 3px solid #087d60 !important;
+  outline-offset: 4px !important;
+  border-radius: 8px;
+}
+
+/* Lift the activity card photos noticeably and remove any leftover dark fade. */
+#actionsScreen .civic-action-card .action-card-image {
+  filter: saturate(1.1) brightness(1.4) contrast(.97) !important;
+  box-shadow: none !important;
+}
+
+#actionsScreen .civic-action-card .action-card-image::after {
+  background: none !important;
+}
+
+/* The selected activity uses its own hero image and several legacy dark overlays.
+   Keep the photograph bright while retaining just enough shading for white hero text. */
+#actionDetailScreen .action-detail-hero-image {
+  opacity: 1 !important;
+  filter: brightness(1.38) saturate(1.1) contrast(.97) !important;
+}
+
+#actionDetailScreen .action-detail-hero::before {
+  background:
+    linear-gradient(90deg, rgba(3,10,7,.24) 0%, rgba(3,10,7,.08) 58%, rgba(3,10,7,0) 100%),
+    linear-gradient(0deg, rgba(3,10,7,.18) 0%, rgba(3,10,7,.025) 58%, rgba(3,10,7,0) 100%) !important;
+}
+
+#actionDetailScreen .action-detail-title,
+#actionDetailScreen .action-detail-description {
+  text-shadow: 0 1px 4px rgba(0,0,0,.24);
+}
