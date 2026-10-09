@@ -976,17 +976,27 @@
 
             </div>
 
-            <button
-              type="button"
-              class="chip-btn"
-              id="locateBtn"
-            >
-              <i data-lucide="locate-fixed"></i>
+            <div class="location-actions">
+              <button
+                type="button"
+                class="chip-btn"
+                id="locateBtn"
+              >
+                <i data-lucide="locate-fixed"></i>
+                <span>Use my current location</span>
+              </button>
 
-              <span>
-                Use my current location
-              </span>
-            </button>
+              <button
+                type="button"
+                class="chip-btn"
+                id="geocodeBtn"
+              >
+                <i data-lucide="map-pin"></i>
+                <span>Find map pin from place</span>
+              </button>
+            </div>
+
+            <p id="locationStatus" class="location-status" role="status" aria-live="polite"></p>
 
           </div>
 
