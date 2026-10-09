@@ -292,40 +292,63 @@ function analyzeReport({
   location,
   hasPhoto
 }) {
-  const text = description.toLowerCase();
+  // This demo analyzer uses the written description, not image recognition.
+  const text = String(description || "").toLowerCase();
   const detected = detectCategory(text);
 
-  let key =
-    categoryKey && categoryKey !== "other"
+  const selectedCategory =
+    categoryKey &&
+    categoryKey !== "other" &&
+    CATEGORIES[categoryKey]
       ? categoryKey
-      : detected.key;
-
-  const autoDetected =
-    (!categoryKey || categoryKey === "other") &&
-    detected.key !== "other";
+      : null;
 
   const chosenHits =
-    categoryKey && CATEGORIES[categoryKey]
+    selectedCategory
       ? matchTerms(
           text,
-          CATEGORIES[categoryKey].keywords
+          CATEGORIES[selectedCategory].keywords
         ).length
       : 0;
 
-  const suggestion =
-    categoryKey &&
-    categoryKey !== "other" &&
+  // Respect a selected category only when the written report supports it.
+  // Never infer a category from the mere presence of an uploaded image.
+  const categoryNeedsReview = Boolean(
+    selectedCategory &&
     chosenHits === 0 &&
+    detected.hits === 0
+  );
+
+  const categoryMismatch =
+    Boolean(
+      selectedCategory &&
+      chosenHits === 0 &&
+      detected.hits > 0 &&
+      detected.key !== selectedCategory
+    );
+
+  const key =
+    categoryNeedsReview
+      ? "other"
+      : categoryMismatch
+        ? detected.key
+        : selectedCategory && chosenHits > 0
+          ? selectedCategory
+          : detected.key;
+
+  const autoDetected =
     detected.hits > 0 &&
-    detected.key !== categoryKey
+    (
+      !selectedCategory ||
+      chosenHits === 0
+    );
+
+  const suggestion =
+    categoryMismatch
       ? detected.key
       : null;
 
-  if (!CATEGORIES[key]) {
-    key = "other";
-  }
-
-  const cat = CATEGORIES[key];
+  const cat = CATEGORIES[key] || CATEGORIES.other;
 
   const highHits = matchTerms(
     text,
@@ -356,29 +379,35 @@ function analyzeReport({
     priority = "Low";
   }
 
-  const confidence = Math.min(
-    97,
-    62 +
-      Math.min(
-        Math.max(
-          detected.hits,
-          chosenHits
-        ),
-        3
-      ) *
-        8 +
-      (categoryKey &&
-      categoryKey !== "other"
-        ? 8
-        : 0) +
-      (hasPhoto ? 6 : 0) +
-      Math.min(
-        highHits.length +
-          impactHits.length,
-        3
-      ) *
-        3
-  );
+  // Do not increase confidence merely because a photo was attached.
+  // There is no visual model connected in this prototype.
+  const hasCategoryEvidence =
+    detected.hits > 0 ||
+    chosenHits > 0;
+
+  const confidence = hasCategoryEvidence
+    ? Math.min(
+        97,
+        62 +
+          Math.min(
+            Math.max(
+              detected.hits,
+              chosenHits
+            ),
+            3
+          ) * 8 +
+          (
+            selectedCategory &&
+            chosenHits > 0
+              ? 8
+              : 0
+          ) +
+          Math.min(
+            highHits.length + impactHits.length,
+            3
+          ) * 3
+      )
+    : 35;
 
   let riskNote = "";
 
@@ -419,6 +448,8 @@ function analyzeReport({
     skills: cat.skills,
     autoDetected,
     suggestion,
+    categoryNeedsReview,
+    imageNotAnalyzed: Boolean(hasPhoto),
     duplicate: findPossibleDuplicate(
       key,
       location,
@@ -2459,6 +2490,40 @@ function renderAnalysis() {
         `
         : "";
 
+  const photoNote =
+    d.hasPhoto
+      ? `
+        <div class="ai-warning ai-evidence-warning">
+          <i data-lucide="image-off"></i>
+          <div class="ai-warning-body">
+            <strong>Photo not visually analyzed</strong>
+            <span>
+              This demo does not inspect image contents. The category is based on the written description
+              and category selection, not the picture. Anime or illustration images cannot prove a civic issue.
+              Describe the real problem and verify the category before submitting.
+            </span>
+          </div>
+        </div>
+      `
+      : "";
+
+  const categoryReviewNote =
+    a.categoryNeedsReview
+      ? `
+        <div class="ai-warning ai-evidence-warning">
+          <i data-lucide="circle-alert"></i>
+          <div class="ai-warning-body">
+            <strong>Category needs review</strong>
+            <span>
+              The selected category is not supported by the written description, so this report is shown as
+              General Civic Issue instead of assuming a specific problem. Add details about the civic issue
+              or choose a category supported by your description.
+            </span>
+          </div>
+        </div>
+      `
+      : "";
+
   const duplicate =
     a.duplicate
       ? `
@@ -2554,6 +2619,8 @@ function renderAnalysis() {
       </div>
 
       ${note}
+      ${photoNote}
+      ${categoryReviewNote}
 
       <div class="ai-grid">
 
