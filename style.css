@@ -5953,3 +5953,83 @@ textarea::placeholder,
     transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
   }
 }
+
+
+/* =========================================================
+   ACCESSIBILITY FIX — make every button label easy to read
+   ========================================================= */
+button,
+.btn,
+.link-btn,
+.chip-btn,
+.icon-btn,
+.ai-suggestion,
+.skill-chip,
+.chip,
+.top-link,
+.nav-item,
+.civic-ai-upload {
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.btn-ghost,
+.link-btn,
+.chip-btn,
+.chip,
+.top-link,
+.nav-item,
+.skill-chip {
+  color: #173447;
+}
+
+.btn-ghost,
+.chip-btn,
+.chip {
+  background-color: #ffffff;
+  border-color: #a9bac5;
+}
+
+.btn-ghost:hover:not(:disabled),
+.chip-btn:hover:not(:disabled),
+.chip:hover {
+  color: #102c3c;
+  background-color: #eaf4f6;
+  border-color: #607f91;
+}
+
+.chip[aria-pressed="true"] {
+  color: #ffffff;
+  background-color: #075f49;
+  border-color: #075f49;
+}
+
+.ai-suggestion {
+  color: #f4fff8;
+  background-color: #243c48;
+  border-color: #617987;
+  font-size: 12px;
+}
+
+.ai-suggestion:hover,
+.ai-suggestion:focus-visible {
+  color: #ffffff;
+  background-color: #145d49;
+  border-color: #3ee08f;
+}
+
+button:focus-visible,
+.btn:focus-visible,
+.chip:focus-visible,
+.chip-btn:focus-visible,
+.ai-suggestion:focus-visible,
+.link-btn:focus-visible {
+  outline: 3px solid #087d60;
+  outline-offset: 3px;
+}
+
+button:disabled,
+.btn:disabled {
+  color: #526878;
+  opacity: 0.8;
+}
