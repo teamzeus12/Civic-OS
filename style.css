@@ -6676,3 +6676,28 @@ button:disabled,
 #actionDetailScreen .action-detail-description {
   text-shadow: 0 1px 4px rgba(0,0,0,.24);
 }
+
+
+/* =========================================================
+   HOME PAGE — LIGHT CIVIC AI RECOMMENDATION
+   ========================================================= */
+.signal-ai {
+  color: #23483a !important;
+  background: linear-gradient(135deg, #eaf8f0 0%, #f6fcf8 100%) !important;
+  border: 1px solid #b9e4ce !important;
+  box-shadow: 0 4px 14px rgba(8, 125, 96, .07) !important;
+}
+
+.signal-ai .signal-ai-label {
+  color: #087354 !important;
+  font-weight: 800;
+}
+
+.signal-ai .signal-ai-label svg {
+  color: #0f9f78 !important;
+}
+
+.signal-ai p {
+  color: #294b3e !important;
+  line-height: 1.6;
+}
