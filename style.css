@@ -5872,3 +5872,19 @@ label {
   .location-actions { flex-direction: column; align-items: stretch; }
   .location-actions .chip-btn { justify-content: center; width: 100%; }
 }
+
+
+/* Transparent, review-first demo analysis */
+.ai-disclaimer {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(62, 224, 143, .045);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+.ai-cell .ai-value {
+  overflow-wrap: anywhere;
+}
