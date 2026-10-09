@@ -4423,6 +4423,27 @@ function renderDashboard() {
 
     </div>
 
+    <section class="panel glass report-map-panel" aria-labelledby="reportMapTitle">
+      <div class="panel-head">
+        <div>
+          <h3 id="reportMapTitle" class="panel-title">Manipur report map</h3>
+          <p class="panel-sub">Select a pin to open its report details.</p>
+        </div>
+        <span class="demo-badge">Demo locations</span>
+      </div>
+      <p class="map-disclaimer">Demo pins show approximate locality centres, not verified GPS positions. Reports with no coordinates remain listed below until a location pin is available.</p>
+      <div id="civicReportsMap" class="civic-reports-map" role="application" aria-label="Interactive map of report locations in Manipur"></div>
+      <div class="map-legend">
+        <span><i class="map-dot high"></i> High priority</span>
+        <span><i class="map-dot medium"></i> Medium</span>
+        <span><i class="map-dot low"></i> Low</span>
+      </div>
+      <div class="unmapped-reports">
+        <h4>Reports without map coordinates <span id="unmappedReportCount">0</span></h4>
+        <div id="unmappedReportList"></div>
+      </div>
+    </section>
+
     <div class="dash-grid">
 
       <section
@@ -4874,6 +4895,92 @@ function renderDashboard() {
   `;
 
   refreshIcons();
+
+  renderReportMap();
+}
+
+
+let reportMapInstance = null;
+
+function renderReportMap() {
+  const mapElement = $("#civicReportsMap");
+  const unmappedList = $("#unmappedReportList");
+  const unmappedCount = $("#unmappedReportCount");
+  if (!mapElement || !unmappedList) return;
+
+  if (reportMapInstance) {
+    try { reportMapInstance.remove(); } catch (error) {}
+    reportMapInstance = null;
+  }
+
+  const mapped = issues.filter((issue) =>
+    Number.isFinite(issue.lat) &&
+    Number.isFinite(issue.lng) &&
+    issue.lat >= -90 && issue.lat <= 90 &&
+    issue.lng >= -180 && issue.lng <= 180
+  );
+  const unmapped = issues.filter((issue) => !mapped.includes(issue));
+
+  if (unmappedCount) unmappedCount.textContent = String(unmapped.length);
+  unmappedList.innerHTML = unmapped.length
+    ? unmapped.map((issue) => `
+        <button type="button" class="unmapped-report-row" data-issue-id="${escapeHtml(issue.id)}">
+          <span class="unmapped-report-title">${escapeHtml(issue.title)}</span>
+          <span class="unmapped-report-location">${escapeHtml(issue.location || issue.area || "Location not supplied")}</span>
+        </button>
+      `).join("")
+    : '<p class="map-empty-note">Every current report has coordinates.</p>';
+
+  unmappedList.querySelectorAll("[data-issue-id]").forEach((button) => {
+    button.addEventListener("click", () => openIssue(button.dataset.issueId));
+  });
+
+  if (!window.L || typeof window.L.map !== "function") {
+    mapElement.innerHTML = '<div class="map-fallback">Interactive map library did not load. Use the location list below to open reports.</div>';
+    return;
+  }
+
+  reportMapInstance = window.L.map(mapElement, {
+    scrollWheelZoom: false,
+    tap: true
+  }).setView([24.65, 93.85], 8);
+
+  window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+    maxZoom: 18
+  }).addTo(reportMapInstance);
+
+  const priorityColors = {
+    High: "#ff6868",
+    Medium: "#f4bd4f",
+    Low: "#3ee08f"
+  };
+
+  const markers = [];
+  mapped.forEach((issue) => {
+    const marker = window.L.circleMarker([issue.lat, issue.lng], {
+      radius: issue.priority === "High" ? 9 : 7,
+      color: "#07110c",
+      weight: 2,
+      fillColor: priorityColors[issue.priority] || "#3ee08f",
+      fillOpacity: 0.95
+    }).addTo(reportMapInstance);
+
+    marker.bindTooltip(escapeHtml(issue.title), { direction: "top", sticky: true });
+    marker.on("click", () => openIssue(issue.id));
+    markers.push(marker);
+  });
+
+  if (markers.length > 1) {
+    const group = window.L.featureGroup(markers);
+    reportMapInstance.fitBounds(group.getBounds().pad(0.18), { maxZoom: 11 });
+  } else if (markers.length === 1) {
+    reportMapInstance.setView(markers[0].getLatLng(), 11);
+  }
+
+  window.setTimeout(() => {
+    if (reportMapInstance) reportMapInstance.invalidateSize();
+  }, 120);
 }
 
 
