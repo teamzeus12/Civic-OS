@@ -6111,8 +6111,9 @@ button:disabled,
 }
 
 #actionsScreen .civic-action-card .action-card-image {
-  /* Lift the photo exposure without washing out its natural colours. */
-  filter: saturate(1.08) brightness(1.08);
+  /* Brighter photos sit more naturally against the white activity cards. */
+  filter: saturate(1.04) brightness(1.22);
+  box-shadow: none !important;
   position: relative;
 }
 
@@ -6120,8 +6121,8 @@ button:disabled,
   content: "";
   position: absolute;
   inset: 0;
-  /* Keep only a subtle lower fade so photos look brighter on white cards. */
-  background: linear-gradient(180deg, rgba(4,15,10,0) 40%, rgba(4,15,10,.14) 100%);
+  /* Use only a barely-there lower fade; the old shadow made photos look muddy. */
+  background: linear-gradient(180deg, rgba(4,15,10,0) 40%, rgba(4,15,10,.045) 100%);
   pointer-events: none;
 }
 
