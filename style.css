@@ -6041,14 +6041,14 @@ button:disabled,
    declarations and makes all action controls readable.
    ========================================================= */
 
+/* The Civic Actions page uses a light background, so page headings must be dark. */
 #actionsScreen .screen-head .screen-title,
-#actionsScreen .screen-head .screen-sub,
 #actionsScreen .block-title {
-  color: #f4fbf7 !important;
+  color: #172b3a !important;
 }
 
 #actionsScreen .screen-head .screen-sub {
-  color: #c1d0c9 !important;
+  color: #526878 !important;
   line-height: 1.7;
 }
 
