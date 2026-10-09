@@ -6111,7 +6111,8 @@ button:disabled,
 }
 
 #actionsScreen .civic-action-card .action-card-image {
-  filter: saturate(1.12) brightness(.9);
+  /* Lift the photo exposure without washing out its natural colours. */
+  filter: saturate(1.08) brightness(1.08);
   position: relative;
 }
 
@@ -6119,7 +6120,8 @@ button:disabled,
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(4,15,10,.02) 35%, rgba(4,15,10,.36) 100%);
+  /* Keep only a subtle lower fade so photos look brighter on white cards. */
+  background: linear-gradient(180deg, rgba(4,15,10,0) 40%, rgba(4,15,10,.14) 100%);
   pointer-events: none;
 }
 
