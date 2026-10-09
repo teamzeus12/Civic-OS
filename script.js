@@ -7600,7 +7600,7 @@ function renderCivicActions() {
       >
         <span
           class="action-card-image"
-          style="background-image: linear-gradient(90deg, rgba(4,12,9,.08), rgba(4,12,9,.18)), url('${action.image || ""}')"
+          style="background-image: linear-gradient(90deg, rgba(4,12,9,.01), rgba(4,12,9,.04)), url('${action.image || ""}')"
           aria-hidden="true"
         ></span>
 
@@ -7644,7 +7644,7 @@ function renderCivicActions() {
     >
       <span
         class="action-card-image"
-        style="background-image: linear-gradient(90deg, rgba(4,12,9,.08), rgba(4,12,9,.18)), url('${activity.image || ""}')"
+        style="background-image: linear-gradient(90deg, rgba(4,12,9,.01), rgba(4,12,9,.04)), url('${activity.image || ""}')"
         aria-hidden="true"
       ></span>
 
