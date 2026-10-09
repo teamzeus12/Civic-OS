@@ -6063,17 +6063,17 @@ button:disabled,
 }
 
 #actionsScreen .civic-action-card {
-  color: #f4fbf7 !important;
-  background: linear-gradient(145deg, #16392d 0%, #0d211a 58%, #091510 100%) !important;
-  border: 1px solid rgba(106, 239, 169, .32) !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255,255,255,.045) !important;
+  color: #f8fffb !important;
+  background: linear-gradient(145deg, #2b6149 0%, #214d39 58%, #193e2d 100%) !important;
+  border: 1px solid rgba(126, 245, 183, .48) !important;
+  box-shadow: 0 9px 24px rgba(13, 48, 33, .18), inset 0 1px 0 rgba(255,255,255,.12) !important;
 }
 
 #actionsScreen .civic-action-card:hover,
 #actionsScreen .civic-action-card:focus-visible {
-  background: linear-gradient(145deg, #1c4938 0%, #102a20 62%, #0a1912 100%) !important;
-  border-color: #55eda0 !important;
-  box-shadow: 0 16px 38px rgba(0, 0, 0, .36), 0 0 0 1px rgba(85,237,160,.12) !important;
+  background: linear-gradient(145deg, #347656 0%, #285e44 62%, #204b36 100%) !important;
+  border-color: #82f3b6 !important;
+  box-shadow: 0 12px 28px rgba(13, 48, 33, .23), 0 0 0 1px rgba(85,237,160,.16) !important;
 }
 
 #actionsScreen .civic-action-card .action-title {
@@ -6084,13 +6084,13 @@ button:disabled,
 }
 
 #actionsScreen .civic-action-card .action-desc {
-  color: #d0ded7 !important;
+  color: #e1eee7 !important;
   font-size: 13.5px;
   line-height: 1.55;
 }
 
 #actionsScreen .civic-action-card .action-meta {
-  color: #b9ccc2 !important;
+  color: #d4e6dc !important;
   font-size: 12px;
 }
 
