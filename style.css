@@ -5748,3 +5748,95 @@ label {
     flex-wrap: wrap;
   }
 }
+
+
+/* Interactive civic report map */
+.report-map-panel {
+  margin: 18px 0;
+  overflow: hidden;
+}
+.report-map-panel .panel-head {
+  align-items: flex-start;
+  gap: 12px;
+}
+.map-disclaimer {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.55;
+}
+.civic-reports-map {
+  width: 100%;
+  height: clamp(280px, 42vh, 440px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e7eee8;
+  z-index: 0;
+}
+.civic-reports-map .leaflet-container {
+  font: inherit;
+}
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 12px 2px 16px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.map-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.map-dot.high { background: #ff6868; }
+.map-dot.medium { background: #f4bd4f; }
+.map-dot.low { background: #3ee08f; }
+.unmapped-reports {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.unmapped-reports h4 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+  font-size: .92rem;
+}
+.unmapped-reports h4 span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.unmapped-report-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 11px 2px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.unmapped-report-row:hover { background: rgba(62, 224, 143, .06); }
+.unmapped-report-title { font-size: .86rem; font-weight: 650; }
+.unmapped-report-location { color: var(--muted); font-size: .78rem; }
+.map-empty-note, .map-fallback {
+  padding: 18px;
+  color: var(--muted);
+  font-size: .86rem;
+}
+@media (max-width: 540px) {
+  .civic-reports-map { height: 300px; }
+  .report-map-panel { padding: 14px; }
+}
