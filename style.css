@@ -6062,50 +6062,52 @@ button:disabled,
   background: #8af6bd !important;
 }
 
+/* White activity cards match the rest of Civic OS while retaining clear text contrast. */
 #actionsScreen .civic-action-card {
-  color: #f8fffb !important;
-  background: linear-gradient(145deg, #2b6149 0%, #214d39 58%, #193e2d 100%) !important;
-  border: 1px solid rgba(126, 245, 183, .48) !important;
-  box-shadow: 0 9px 24px rgba(13, 48, 33, .18), inset 0 1px 0 rgba(255,255,255,.12) !important;
+  color: #172b3a !important;
+  background: #ffffff !important;
+  border: 1px solid #dce7e5 !important;
+  box-shadow: 0 7px 22px rgba(24, 55, 72, .07) !important;
 }
 
 #actionsScreen .civic-action-card:hover,
 #actionsScreen .civic-action-card:focus-visible {
-  background: linear-gradient(145deg, #347656 0%, #285e44 62%, #204b36 100%) !important;
-  border-color: #82f3b6 !important;
-  box-shadow: 0 12px 28px rgba(13, 48, 33, .23), 0 0 0 1px rgba(85,237,160,.16) !important;
+  color: #172b3a !important;
+  background: #f5fbf8 !important;
+  border-color: #9dd9bd !important;
+  box-shadow: 0 11px 28px rgba(24, 55, 72, .11), 0 0 0 1px rgba(8, 125, 96, .08) !important;
 }
 
 #actionsScreen .civic-action-card .action-title {
-  color: #ffffff !important;
+  color: #172b3a !important;
   font-size: 16px;
   font-weight: 750;
   line-height: 1.35;
 }
 
 #actionsScreen .civic-action-card .action-desc {
-  color: #e1eee7 !important;
+  color: #526878 !important;
   font-size: 13.5px;
   line-height: 1.55;
 }
 
 #actionsScreen .civic-action-card .action-meta {
-  color: #d4e6dc !important;
+  color: #607785 !important;
   font-size: 12px;
 }
 
 #actionsScreen .civic-action-card .action-meta svg {
-  color: #65efa5 !important;
+  color: #087d60 !important;
 }
 
 #actionsScreen .civic-action-card .action-icon {
-  color: #74f5b0 !important;
-  background: #123e2b !important;
-  border: 1px solid rgba(116,245,176,.5) !important;
+  color: #087d60 !important;
+  background: #e7f6f0 !important;
+  border: 1px solid #bfe7d6 !important;
 }
 
 #actionsScreen .civic-action-card .action-arrow {
-  color: #b8f8d2 !important;
+  color: #087d60 !important;
 }
 
 #actionsScreen .civic-action-card .action-card-image {
@@ -6137,7 +6139,7 @@ button:disabled,
 
 #actionsScreen .civic-action-card:focus-visible,
 #actionsScreen button:focus-visible {
-  outline: 3px solid #8af6bd !important;
+  outline: 3px solid #087d60 !important;
   outline-offset: 4px !important;
 }
 
