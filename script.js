@@ -790,6 +790,8 @@ const SEED_ISSUES = [
     location: "Sekmai area, irrigation channel",
     description: "DEMO REPORT: Farmers report a blocked irrigation channel affecting nearby paddy fields. Confirm the responsible agriculture or irrigation office.",
     district: "Imphal West"
+    lat: 24.95,
+    lng: 93.88
   },
   {
     id: "CIV-1051",
@@ -803,6 +805,8 @@ const SEED_ISSUES = [
     location: "Khwairamband Keithel, market approach road",
     description: "DEMO REPORT: Vehicle queues are blocking the market approach road during busy hours. Confirm the correct traffic-management authority.",
     district: "Imphal West"
+    lat: 24.81,
+    lng: 93.94
   },
   {
     id: "CIV-1050",
@@ -816,6 +820,8 @@ const SEED_ISSUES = [
     location: "Thangal Bazar, near the main market road",
     description: "DEMO REPORT: A deep pothole is causing vehicles to swerve near the market. Confirm the responsible road-maintenance authority.",
     district: "Imphal West"
+    lat: 24.8105,
+    lng: 93.9405
   },
   {
     id: "CIV-1049",
@@ -829,6 +835,8 @@ const SEED_ISSUES = [
     location: "Ima Keithel, market-side collection point",
     description: "DEMO REPORT: Waste bins near the market-side collection point are overflowing. Request collection and review the pickup schedule.",
     district: "Imphal West"
+    lat: 24.81,
+    lng: 93.94
   },
   {
     id: "CIV-1048",
@@ -842,6 +850,8 @@ const SEED_ISSUES = [
     location: "Porompat, main road bus-stop area",
     description: "DEMO REPORT: Route and timetable information is missing at this bus-stop area. Confirm the relevant transport operator or authority.",
     district: "Imphal East"
+    lat: 24.82,
+    lng: 93.96
   },
   {
     id: "CIV-1047",
@@ -855,6 +865,8 @@ const SEED_ISSUES = [
     location: "Porompat, residential lane near the main road",
     description: "DEMO REPORT: Residents report repeated electricity interruptions. Verify the service area and refer it to the appropriate electricity team.",
     district: "Imphal East"
+    lat: 24.8205,
+    lng: 93.9605
   },
   {
     id: "CIV-1046",
@@ -868,6 +880,8 @@ const SEED_ISSUES = [
     location: "Government school area, Singjamei",
     description: "DEMO REPORT: A school reports insufficient classroom desks and learning materials. Route the request to the relevant education office.",
     district: "Imphal West"
+    lat: 24.78,
+    lng: 93.93
   },
   {
     id: "CIV-1045",
@@ -881,6 +895,8 @@ const SEED_ISSUES = [
     location: "Kangla Gate area, Imphal",
     description: "DEMO REPORT: Assistance is requested for an apparently injured stray animal. Refer to the appropriate local animal-care authority.",
     district: "Imphal West"
+    lat: 24.8,
+    lng: 93.94
   },
   {
     id: "CIV-1044",
@@ -894,6 +910,8 @@ const SEED_ISSUES = [
     location: "Khuman Lampak sports complex area",
     description: "DEMO REPORT: A request has been raised to inspect public sports equipment and identify damaged items. Confirm the responsible maintenance office.",
     district: "Imphal East"
+    lat: 24.82,
+    lng: 93.93
   },
   {
     id: "CIV-1043",
@@ -923,6 +941,8 @@ const PEOPLE = [
       "Data Analysis",
       "Photography"
     ]
+    lat: 24.8205,
+    lng: 93.96
   },
 
   {
@@ -1142,6 +1162,8 @@ const state = {
   screen: "homeScreen",
 
   draftPhotoUrl: null,
+
+  draftCoordinates: null,
 
   draft: null,
 
@@ -1422,6 +1444,10 @@ function createIssue(seed) {
     area: seed.area,
 
     district: seed.district || "",
+
+    lat: Number.isFinite(seed.lat) ? seed.lat : null,
+
+    lng: Number.isFinite(seed.lng) ? seed.lng : null,
 
     priority:
       seed.priority ??
@@ -2689,6 +2715,10 @@ function submitReport() {
       location:
         d.location,
 
+      lat: state.draftCoordinates?.lat,
+
+      lng: state.draftCoordinates?.lng,
+
       area:
         "Citizen report",
 
@@ -2818,6 +2848,8 @@ function submitReport() {
 }
 
 function resetReportForm() {
+  state.draftCoordinates = null;
+
   const form =
     $("#reportForm");
 
@@ -3018,6 +3050,11 @@ function useCurrentLocation() {
     (pos) => {
       const location =
         $("#location");
+
+      state.draftCoordinates = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
 
       if (location) {
         location.value =
@@ -6596,6 +6633,15 @@ function bindEvents() {
 
 
   /* ---------- Location ---------- */
+
+  const locationInput = $("#location");
+
+  if (locationInput) {
+    locationInput.addEventListener("input", () => {
+      state.draftCoordinates = null;
+    });
+  }
+
 
   const locateBtn =
     $("#locateBtn");
