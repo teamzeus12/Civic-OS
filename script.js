@@ -1289,6 +1289,8 @@ function statusCounts() {
 
 const SCREEN_HASH = {
   homeScreen: "home",
+  portalScreen: "portals",
+  governmentPortalScreen: "government",
   reportScreen: "report",
   issuesScreen: "issues",
   communityScreen: "community",
@@ -1301,6 +1303,12 @@ const SCREEN_HASH = {
 const SCREEN_TITLE = {
   homeScreen:
     "Civic OS — Report. Connect. Resolve.",
+
+  portalScreen:
+    "Choose a portal · Civic OS",
+
+  governmentPortalScreen:
+    "Government workspace · Civic OS",
 
   reportScreen:
     "Report a problem · Civic OS",
