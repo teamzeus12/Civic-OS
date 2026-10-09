@@ -718,6 +718,8 @@ const SEED_ISSUES = [
 
 let issues = [];
 let nextIssueNumber = 1043;
+let dashboardMapInstance = null;
+const dashboardMapMarkers = new Map();
 
 const PEOPLE = [
   {
@@ -1197,6 +1199,243 @@ function buildUpdates(
   }));
 }
 
+function parseIssueCoordinates(locationValue) {
+  const value = String(locationValue || "").trim();
+  // Accept only an explicit GPS prefix or a bare coordinate pair; never guess
+  // coordinates from a street address or ward name.
+  const match = value.match(/^(?:GPS\\s*)?(-?\\d{1,2}(?:\\.\\d+)?)\\s*,\\s*(-?\\d{1,3}(?:\\.\\d+)?)$/i);
+  if (!match) return null;
+
+  const latitude = Number(match[1]);
+  const longitude = Number(match[2]);
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 || latitude > 90 ||
+    longitude < -180 || longitude > 180
+  ) {
+    return null;
+  }
+
+  return { latitude, longitude };
+}
+
+function getIssueMapCoordinates(issue) {
+  if (
+    issue &&
+    issue.latitude !== null &&
+    issue.latitude !== undefined &&
+    issue.longitude !== null &&
+    issue.longitude !== undefined
+  ) {
+    const latitude = Number(issue.latitude);
+    const longitude = Number(issue.longitude);
+    if (
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      latitude >= -90 && latitude <= 90 &&
+      longitude >= -180 && longitude <= 180
+    ) {
+      return { latitude, longitude };
+    }
+  }
+
+  return parseIssueCoordinates(issue?.location);
+}
+
+function getIssueMapUrl(issue) {
+  const coords = getIssueMapCoordinates(issue);
+  const query = coords
+    ? `${coords.latitude},${coords.longitude}`
+    : String(issue?.location || "").trim();
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function renderDashboardMapIssue(issue) {
+  const panel = $("#dashboardMapSelection");
+  if (!panel || !issue) return;
+
+  const coords = getIssueMapCoordinates(issue);
+  const locationLabel = String(issue.location || "Location not supplied");
+  const categoryLabel = CATEGORIES[issue.category]?.label || "Other";
+  const locationNote = coords
+    ? `GPS pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
+    : "Address text only · exact map pin unavailable";
+
+  panel.innerHTML = `
+    <div class="dashboard-map-detail-top">
+      <span class="dashboard-map-issue-id">${escapeHtml(issue.id)}</span>
+      <span class="dashboard-map-reported-time">${escapeHtml(timeAgo(issue.reportedAt))}</span>
+    </div>
+    <h4 class="dashboard-map-detail-title">${escapeHtml(issue.title)}</h4>
+    <div class="dashboard-map-tags">
+      ${statusPill(issue.status)}
+      ${priorityPill(issue.priority)}
+      <span class="pill">${escapeHtml(categoryLabel)}</span>
+    </div>
+    <p class="dashboard-map-description">${escapeHtml(issue.description)}</p>
+    <div class="dashboard-map-location">
+      <i data-lucide="map-pin"></i>
+      <div>
+        <strong>${escapeHtml(locationLabel)}</strong>
+        <small>${escapeHtml(locationNote)}</small>
+      </div>
+    </div>
+    <div class="dashboard-map-facts">
+      <span><i data-lucide="building-2"></i>${escapeHtml(issue.department || "Municipal Helpdesk")}</span>
+      <span><i data-lucide="users"></i>${Number(issue.supporters) || 0} supporters</span>
+    </div>
+    <div class="dashboard-map-detail-actions">
+      <a
+        class="btn btn-primary btn-sm"
+        href="${escapeHtml(getIssueMapUrl(issue))}"
+        target="_blank"
+        rel="noopener noreferrer"
+      ><i data-lucide="external-link"></i> Open location</a>
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        data-issue="${escapeHtml(issue.id)}"
+      ><i data-lucide="file-text"></i> Full report</button>
+    </div>
+  `;
+
+  dashboardMapMarkers.forEach((entry, id) => {
+    const selected = id === issue.id;
+    entry.marker.setStyle({
+      radius: selected ? entry.baseRadius + 3 : entry.baseRadius,
+      weight: selected ? 4 : 2
+    });
+    if (selected && dashboardMapInstance) {
+      const coordsForMarker = getIssueMapCoordinates(issue);
+      if (coordsForMarker) {
+        dashboardMapInstance.panTo(
+          [coordsForMarker.latitude, coordsForMarker.longitude],
+          { animate: true }
+        );
+      }
+    }
+  });
+
+  refreshIcons();
+}
+
+function initDashboardMap() {
+  const mapElement = $("#dashboardMap");
+  const statusElement = $("#dashboardMapStatus");
+  const mappedIssues = issues.filter((issue) => getIssueMapCoordinates(issue));
+  const unpinnedIssues = issues.filter((issue) => !getIssueMapCoordinates(issue));
+
+  $("#dashboardMap [data-map-select]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const issue = getIssue(button.dataset.mapSelect);
+      if (issue) renderDashboardMapIssue(issue);
+    });
+  });
+
+  $("#dashboardUnpinnedList [data-map-select]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const issue = getIssue(button.dataset.mapSelect);
+      if (issue) renderDashboardMapIssue(issue);
+    });
+  });
+
+  if (statusElement) {
+    statusElement.textContent =
+      `${mappedIssues.length} of ${issues.length} reports have exact GPS pins. Address-only reports are listed beside the map.`;
+  }
+
+  if (!mapElement) return;
+  if (!window.L || typeof window.L.map !== "function") {
+    mapElement.innerHTML = `
+      <div class="dashboard-map-fallback">
+        <i data-lucide="map"></i>
+        <strong>Map could not be loaded</strong>
+        <span>Your reports are still listed in the side panel with location links.</span>
+      </div>
+    `;
+    refreshIcons();
+    return;
+  }
+
+  if (dashboardMapInstance) {
+    dashboardMapInstance.remove();
+    dashboardMapInstance = null;
+  }
+  dashboardMapMarkers.clear();
+
+  dashboardMapInstance = window.L.map(mapElement, {
+    scrollWheelZoom: false
+  }).setView([24.817, 93.9368], 12);
+
+  window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
+  }).addTo(dashboardMapInstance);
+
+  const statusColors = {
+    Reported: "#64748b",
+    Verified: "#2563eb",
+    "In Progress": "#b86c08",
+    Resolved: "#0f9f78"
+  };
+
+  const points = [];
+  mappedIssues.forEach((issue) => {
+    const coords = getIssueMapCoordinates(issue);
+    if (!coords) return;
+    const color = statusColors[issue.status] || "#0f766e";
+    const baseRadius = issue.priority === "High" ? 9 : 7;
+    const marker = window.L.circleMarker(
+      [coords.latitude, coords.longitude],
+      {
+        radius: baseRadius,
+        color: issue.priority === "High" ? "#b83243" : color,
+        weight: 2,
+        opacity: 1,
+        fillColor: color,
+        fillOpacity: 0.9
+      }
+    ).addTo(dashboardMapInstance);
+
+    marker.bindTooltip(
+      `${escapeHtml(issue.id)} · ${escapeHtml(issue.title)}`,
+      { direction: "top", offset: [0, -6] }
+    );
+    marker.on("click", () => renderDashboardMapIssue(issue));
+    dashboardMapMarkers.set(issue.id, { marker, baseRadius });
+    points.push([coords.latitude, coords.longitude]);
+  });
+
+  if (points.length === 1) {
+    dashboardMapInstance.setView(points[0], 15);
+  } else if (points.length > 1) {
+    dashboardMapInstance.fitBounds(points, { padding: [28, 28], maxZoom: 15 });
+  }
+
+  const emptySelection = $("#dashboardMapSelection");
+  if (emptySelection) {
+    emptySelection.innerHTML = mappedIssues.length
+      ? `
+        <div class="dashboard-map-empty-selection">
+          <span class="dashboard-map-empty-icon"><i data-lucide="mouse-pointer-click"></i></span>
+          <strong>Select a map pin</strong>
+          <p>Click any marker to see its report details, status, priority and location link here.</p>
+        </div>
+      `
+      : `
+        <div class="dashboard-map-empty-selection">
+          <span class="dashboard-map-empty-icon"><i data-lucide="map-pin"></i></span>
+          <strong>No exact GPS pins yet</strong>
+          <p>Reports with GPS coordinates will appear on the map. Select an address-only report below to see its details and open the address in Maps.</p>
+        </div>
+      `;
+
+    refreshIcons();
+  }
+}
+
 function createIssue(seed) {
   const analysis =
     analyzeReport({
@@ -1214,6 +1453,16 @@ function createIssue(seed) {
     CATEGORIES[seed.category]?.department ||
     "Municipal Helpdesk";
 
+  const coordinates =
+    Number.isFinite(Number(seed.latitude)) &&
+    seed.latitude !== null &&
+    seed.latitude !== undefined &&
+    Number.isFinite(Number(seed.longitude)) &&
+    seed.longitude !== null &&
+    seed.longitude !== undefined
+      ? { latitude: Number(seed.latitude), longitude: Number(seed.longitude) }
+      : parseIssueCoordinates(seed.location);
+
   return {
     id: seed.id,
 
@@ -1224,6 +1473,10 @@ function createIssue(seed) {
     description: seed.description,
 
     location: seed.location,
+
+    latitude: coordinates?.latitude ?? null,
+
+    longitude: coordinates?.longitude ?? null,
 
     area: seed.area,
 
@@ -3738,6 +3991,15 @@ function renderDashboard() {
 
   if (!body) return;
 
+  if (dashboardMapInstance) {
+    dashboardMapInstance.remove();
+    dashboardMapInstance = null;
+  }
+  dashboardMapMarkers.clear();
+
+  const mappedMapIssues = issues.filter((issue) => getIssueMapCoordinates(issue));
+  const unpinnedMapIssues = issues.filter((issue) => !getIssueMapCoordinates(issue));
+
   const total =
     issues.length;
 
@@ -4176,6 +4438,65 @@ function renderDashboard() {
       </div>
 
     </div>
+
+    <section
+      class="panel glass dashboard-map-panel"
+      aria-labelledby="dashboardMapTitle"
+    >
+      <div class="panel-head dashboard-map-panel-head">
+        <div>
+          <h3 id="dashboardMapTitle" class="panel-title">Report locations</h3>
+          <p class="panel-sub">Select a pin to inspect the issue and open its location.</p>
+        </div>
+        <span class="dashboard-map-count"><i data-lucide="map-pin"></i>${mappedMapIssues.length} pinned</span>
+      </div>
+
+      <div class="dashboard-map-layout">
+        <div class="dashboard-map-column">
+          <div id="dashboardMap" class="dashboard-map-canvas" role="application" aria-label="Interactive map of civic report locations"></div>
+          <p id="dashboardMapStatus" class="dashboard-map-status" aria-live="polite"></p>
+          <div class="dashboard-map-legend" aria-label="Map marker legend">
+            <span><i class="map-legend-dot is-reported"></i> Reported</span>
+            <span><i class="map-legend-dot is-verified"></i> Verified</span>
+            <span><i class="map-legend-dot is-progress"></i> In progress</span>
+            <span><i class="map-legend-dot is-resolved"></i> Resolved</span>
+            <span><i class="map-legend-dot is-high"></i> High priority outline</span>
+          </div>
+        </div>
+
+        <aside class="dashboard-map-side" aria-label="Selected report details">
+          <div id="dashboardMapSelection" class="dashboard-map-selection" aria-live="polite">
+            <div class="dashboard-map-empty-selection">
+              <span class="dashboard-map-empty-icon"><i data-lucide="mouse-pointer-click"></i></span>
+              <strong>Select a map pin</strong>
+              <p>Click a marker to see the report details and location link here.</p>
+            </div>
+          </div>
+
+          <section class="dashboard-unpinned-section" aria-labelledby="dashboardUnpinnedTitle">
+            <div class="dashboard-unpinned-head">
+              <h4 id="dashboardUnpinnedTitle">Reports without GPS pins</h4>
+              <span class="dashboard-map-count is-small">${unpinnedMapIssues.length}</span>
+            </div>
+            <p class="dashboard-unpinned-help">These reports have text addresses but no exact coordinates. Select one for details and a map search link.</p>
+            <div id="dashboardUnpinnedList" class="dashboard-unpinned-list">
+              ${unpinnedMapIssues.length
+                ? unpinnedMapIssues.map((issue) => `
+                  <button type="button" class="dashboard-unpinned-row" data-map-select="${escapeHtml(issue.id)}">
+                    <span class="dashboard-unpinned-copy">
+                      <strong>${escapeHtml(issue.id)} · ${escapeHtml(issue.title)}</strong>
+                      <small><i data-lucide="map-pin"></i>${escapeHtml(issue.location || "Location not supplied")}</small>
+                    </span>
+                    <i data-lucide="chevron-right" class="dashboard-unpinned-arrow"></i>
+                  </button>
+                `).join("")
+                : `<p class="dashboard-map-all-pinned">All reports have exact GPS coordinates.</p>`
+              }
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
 
     <div class="dash-grid">
 
@@ -4628,6 +4949,7 @@ function renderDashboard() {
   `;
 
   refreshIcons();
+  initDashboardMap();
 }
 
 
