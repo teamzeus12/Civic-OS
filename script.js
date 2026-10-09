@@ -2565,13 +2565,9 @@ function submitReport() {
         </h3>
 
         <p class="success-sub">
-          Your report is now live.
-          ${escapeHtml(
-            issue.department
-          )}
-          has been notified and
-          you will see every status
-          update here.
+          Your report has been added to this demo session.
+          No government department has been contacted, and
+          reports are not saved to a server.
         </p>
 
         <div class="success-actions">
@@ -2609,7 +2605,7 @@ function submitReport() {
   });
 
   toast(
-    `${id} submitted to ${issue.department}`
+    `${id} added to this demo session`
   );
 }
 
@@ -7197,7 +7193,7 @@ function joinCivicAction(actionId) {
 
   if (count) {
     count.textContent =
-      action.participants;
+      `${action.participants} joined`;
   }
 
 
@@ -7420,13 +7416,19 @@ function init() {
  * on mobile browsers when an external icon library is delayed or fails.
  */
 function bootCivicOS() {
+  let initialized = false;
+
   try {
     init();
+    initialized = true;
   } catch (error) {
     console.error("Civic OS boot error", error);
   }
 
-  // Guarantee basic navigation even if an earlier initialization step fails.
+  // The normal event delegation is already active after successful init.
+  // Add direct navigation listeners only as a recovery path if init throws.
+  if (initialized) return;
+
   document.querySelectorAll("[data-goto]").forEach((element) => {
     if (element.dataset.civicBound === "true") return;
     element.dataset.civicBound = "true";
