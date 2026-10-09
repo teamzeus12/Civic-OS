@@ -6701,3 +6701,39 @@ button:disabled,
   color: #294b3e !important;
   line-height: 1.6;
 }
+
+
+/* =========================================================
+   CREATE ACTIVITY FORM — BLACK LABELS AND LIGHT FIELDS
+   ========================================================= */
+#createActivityScreen #createActivityForm .form-field > label {
+  color: #000000 !important;
+  font-weight: 750 !important;
+}
+
+#createActivityScreen #createActivityForm input,
+#createActivityScreen #createActivityForm select,
+#createActivityScreen #createActivityForm textarea {
+  color: #000000 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd8df !important;
+}
+
+#createActivityScreen #createActivityForm select option {
+  color: #000000 !important;
+  background: #ffffff !important;
+}
+
+#createActivityScreen #createActivityForm input::placeholder,
+#createActivityScreen #createActivityForm textarea::placeholder {
+  color: #526878 !important;
+  opacity: 1 !important;
+}
+
+#createActivityScreen #createActivityForm input:focus,
+#createActivityScreen #createActivityForm select:focus,
+#createActivityScreen #createActivityForm textarea:focus {
+  border-color: #0f9f78 !important;
+  box-shadow: 0 0 0 3px rgba(15, 159, 120, .15) !important;
+  outline: none;
+}
