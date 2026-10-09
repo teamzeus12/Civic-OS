@@ -188,6 +188,7 @@
       user-select: none;
     }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 </head>
 
 <body>
@@ -376,6 +377,15 @@
               >
                 Explore Issues
                 <i data-lucide="arrow-right"></i>
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-ghost btn-lg"
+                data-goto="portalScreen"
+              >
+                <i data-lucide="panels-top-left"></i>
+                Choose Portal
               </button>
 
             </div>
@@ -966,17 +976,27 @@
 
             </div>
 
-            <button
-              type="button"
-              class="chip-btn"
-              id="locateBtn"
-            >
-              <i data-lucide="locate-fixed"></i>
+            <div class="location-actions">
+              <button
+                type="button"
+                class="chip-btn"
+                id="locateBtn"
+              >
+                <i data-lucide="locate-fixed"></i>
+                <span>Use my current location</span>
+              </button>
 
-              <span>
-                Use my current location
-              </span>
-            </button>
+              <button
+                type="button"
+                class="chip-btn"
+                id="geocodeBtn"
+              >
+                <i data-lucide="map-pin"></i>
+                <span>Find map pin from place</span>
+              </button>
+            </div>
+
+            <p id="locationStatus" class="location-status" role="status" aria-live="polite"></p>
 
           </div>
 
@@ -1927,6 +1947,107 @@
 
     
     <!-- ===================================================
+         PORTAL SELECTOR
+         =================================================== -->
+    <section
+      id="portalScreen"
+      class="screen"
+      aria-labelledby="portalTitle"
+    >
+      <div class="container portal-container">
+        <header class="screen-head">
+          <p class="kicker">Civic OS · Choose your workspace</p>
+          <h2 id="portalTitle" class="screen-title">How would you like to use Civic OS?</h2>
+          <p class="screen-sub">One shared civic system, with different tools for the public and government teams.</p>
+        </header>
+
+        <div class="portal-grid">
+          <article class="portal-card glass">
+            <div class="portal-icon"><i data-lucide="users"></i></div>
+            <p class="portal-label">FOR THE PUBLIC</p>
+            <h3>People Portal</h3>
+            <p>Report local problems, add a place and evidence, discover nearby reports, follow progress and connect with your community.</p>
+            <ul>
+              <li>Report any civic issue</li>
+              <li>Search reports by place</li>
+              <li>Track updates and join actions</li>
+            </ul>
+            <button type="button" class="btn btn-primary" data-goto="homeScreen">
+              Open People Portal <i data-lucide="arrow-right"></i>
+            </button>
+          </article>
+
+          <article class="portal-card glass portal-card-government">
+            <div class="portal-icon"><i data-lucide="landmark"></i></div>
+            <p class="portal-label">FOR PUBLIC OFFICIALS</p>
+            <h3>Government Portal</h3>
+            <p>Review incoming reports, inspect priority signals, route cases to the relevant department and monitor progress.</p>
+            <ul>
+              <li>Review and update reports</li>
+              <li>See priority and department summaries</li>
+              <li>Open the governance dashboard</li>
+            </ul>
+            <button type="button" class="btn btn-primary" data-goto="governmentPortalScreen">
+              Open Government Portal <i data-lucide="arrow-right"></i>
+            </button>
+            <p class="portal-note">Prototype workspace: official sign-in and role permissions are not connected yet.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================
+         GOVERNMENT PORTAL
+         =================================================== -->
+    <section
+      id="governmentPortalScreen"
+      class="screen"
+      aria-labelledby="governmentPortalTitle"
+    >
+      <div class="container portal-container">
+        <header class="screen-head">
+          <p class="kicker">AI + Digital Governance</p>
+          <h2 id="governmentPortalTitle" class="screen-title">Government workspace</h2>
+          <p class="screen-sub">A central place to review civic reports, understand priorities and follow resolution progress across Manipur.</p>
+        </header>
+
+        <div class="government-workspace-banner">
+          <i data-lucide="shield-check"></i>
+          <div>
+            <strong>Government operations · Demo mode</strong>
+            <p>This prototype uses shared demo data. Verified official accounts and permissions must be added before real government use.</p>
+          </div>
+        </div>
+
+        <div class="government-tools-grid">
+          <article class="portal-tool-card">
+            <i data-lucide="inbox"></i>
+            <h3>Incoming reports</h3>
+            <p>Review reports, open case details and move a case through its status workflow.</p>
+            <button type="button" class="btn btn-primary" data-goto="issuesScreen">Review reports <i data-lucide="arrow-right"></i></button>
+          </article>
+          <article class="portal-tool-card">
+            <i data-lucide="chart-no-axes-combined"></i>
+            <h3>Priority dashboard</h3>
+            <p>Review open issues, high-priority cases, department summaries and area hotspots.</p>
+            <button type="button" class="btn btn-primary" data-goto="dashboardScreen">Open dashboard <i data-lucide="arrow-right"></i></button>
+          </article>
+          <article class="portal-tool-card">
+            <i data-lucide="route"></i>
+            <h3>Department coordination</h3>
+            <p>Use each report’s current category and recommended department as a starting point for triage.</p>
+            <button type="button" class="btn btn-ghost" data-goto="issuesScreen">Explore cases <i data-lucide="arrow-right"></i></button>
+          </article>
+        </div>
+
+        <div class="portal-footer-actions">
+          <button type="button" class="btn btn-ghost" data-goto="portalScreen"><i data-lucide="arrow-left"></i> Switch portal</button>
+          <button type="button" class="btn btn-ghost" data-goto="homeScreen"><i data-lucide="house"></i> People home</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================
          DASHBOARD
          =================================================== -->
 
@@ -2479,6 +2600,8 @@
   <!-- =====================================================
        LIBRARIES
        ===================================================== -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 
   <script
     src="https://unpkg.com/lucide@1.51.0/dist/umd/lucide.min.js"

@@ -5603,3 +5603,288 @@ textarea,
 label {
   pointer-events: auto;
 }
+
+
+/* ---------- Portal foundation: functional layout, existing green theme ---------- */
+.portal-container {
+  padding-bottom: 28px;
+}
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 8px 0 28px;
+}
+.portal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid var(--border-strong);
+  border-radius: 24px;
+  background: var(--surface);
+}
+.portal-card-government {
+  border-color: rgba(62, 224, 143, 0.32);
+}
+.portal-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(62, 224, 143, 0.25);
+  border-radius: 15px;
+  background: rgba(62, 224, 143, 0.09);
+  color: var(--accent);
+}
+.portal-icon svg,
+.portal-tool-card > svg {
+  width: 24px;
+  height: 24px;
+}
+.portal-label {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font: 600 11px/1.4 var(--mono);
+  letter-spacing: .09em;
+}
+.portal-card h3,
+.portal-tool-card h3 {
+  margin: 0 0 10px;
+  font-size: 1.35rem;
+  letter-spacing: -.025em;
+}
+.portal-card > p:not(.portal-label):not(.portal-note),
+.portal-tool-card p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+.portal-card ul {
+  display: grid;
+  gap: 9px;
+  margin: 12px 0 24px;
+  padding-left: 19px;
+  color: var(--text);
+  font-size: 14px;
+}
+.portal-card > .btn {
+  margin-top: auto;
+}
+.portal-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.government-workspace-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 4px 0 22px;
+  padding: 18px;
+  border: 1px solid rgba(62, 224, 143, .24);
+  border-radius: 18px;
+  background: rgba(62, 224, 143, .06);
+}
+.government-workspace-banner > svg {
+  flex: 0 0 auto;
+  color: var(--accent);
+  width: 22px;
+  height: 22px;
+}
+.government-workspace-banner p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.government-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.portal-tool-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.portal-tool-card > svg {
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.portal-tool-card p {
+  flex: 1;
+  font-size: 13px;
+}
+.portal-tool-card .btn {
+  margin-top: 12px;
+  white-space: normal;
+}
+.portal-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+@media (max-width: 700px) {
+  .portal-grid,
+  .government-tools-grid {
+    grid-template-columns: 1fr;
+  }
+  .portal-card {
+    padding: 22px;
+  }
+  .portal-tool-card {
+    padding: 18px;
+  }
+  .hero-actions {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* Interactive civic report map */
+.report-map-panel {
+  margin: 18px 0;
+  overflow: hidden;
+}
+.report-map-panel .panel-head {
+  align-items: flex-start;
+  gap: 12px;
+}
+.map-disclaimer {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.55;
+}
+.civic-reports-map {
+  width: 100%;
+  height: clamp(280px, 42vh, 440px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e7eee8;
+  z-index: 0;
+}
+.civic-reports-map .leaflet-container {
+  font: inherit;
+}
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 12px 2px 16px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.map-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.map-dot.high { background: #ff6868; }
+.map-dot.medium { background: #f4bd4f; }
+.map-dot.low { background: #3ee08f; }
+.unmapped-reports {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.unmapped-reports h4 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+  font-size: .92rem;
+}
+.unmapped-reports h4 span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.unmapped-report-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 11px 2px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.unmapped-report-row:hover { background: rgba(62, 224, 143, .06); }
+.unmapped-report-title { font-size: .86rem; font-weight: 650; }
+.unmapped-report-location { color: var(--muted); font-size: .78rem; }
+.map-empty-note, .map-fallback {
+  padding: 18px;
+  color: var(--muted);
+  font-size: .86rem;
+}
+@media (max-width: 540px) {
+  .civic-reports-map { height: 300px; }
+  .report-map-panel { padding: 14px; }
+}
+
+
+/* Location lookup feedback */
+.location-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.location-actions .chip-btn {
+  margin-top: 0;
+  min-height: 36px;
+  cursor: pointer;
+}
+.location-actions .chip-btn:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+.location-status {
+  min-height: 0;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+.location-status:empty { display: none; }
+.location-status[data-kind="success"] { color: var(--accent); }
+.location-status[data-kind="error"] { color: #ff9b91; }
+@media (max-width: 440px) {
+  .location-actions { flex-direction: column; align-items: stretch; }
+  .location-actions .chip-btn { justify-content: center; width: 100%; }
+}
+
+
+/* Transparent, review-first demo analysis */
+.ai-disclaimer {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  background: rgba(62, 224, 143, .045);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+.ai-cell .ai-value {
+  overflow-wrap: anywhere;
+}

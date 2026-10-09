@@ -138,6 +138,70 @@ const CATEGORIES = {
     skills: ["Community Outreach", "Mapping"],
   },
 
+  agriculture: {
+    label: "Agriculture",
+    aiLabel: "Agriculture & Irrigation",
+    department: "Agriculture / Irrigation Office (suggested)",
+    icon: "sprout",
+    keywords: ["agriculture", "farmer", "farming", "crop", "seed", "fertilizer", "irrigation", "paddy", "harvest"],
+    action: "Review the agriculture or irrigation concern and confirm the responsible local office before assignment.",
+    skills: ["Environmental Science", "Data Analysis", "Community Outreach"],
+  },
+  traffic: {
+    label: "Traffic & congestion",
+    aiLabel: "Traffic Management",
+    department: "Traffic Police / Transport Office (suggested)",
+    icon: "traffic-cone",
+    keywords: ["traffic", "congestion", "jam", "rush hour", "signal", "junction", "parking", "blocked road"],
+    action: "Review the congestion and confirm whether traffic police, road engineering or local traffic management should handle it.",
+    skills: ["Mapping", "Data Analysis", "Community Outreach"],
+  },
+  transport: {
+    label: "Public transport",
+    aiLabel: "Public Transport",
+    department: "Transport Office (suggested)",
+    icon: "bus",
+    keywords: ["bus", "public transport", "bus stop", "route", "shared taxi", "timetable", "fare"],
+    action: "Check the affected route or stop and confirm the relevant transport operator or authority.",
+    skills: ["Mapping", "Data Analysis", "Community Outreach"],
+  },
+  electricity: {
+    label: "Electricity & power",
+    aiLabel: "Electricity Supply",
+    department: "Electricity Office (suggested)",
+    icon: "zap",
+    keywords: ["electricity", "power cut", "blackout", "transformer", "power supply", "voltage", "power line"],
+    action: "Refer the outage to the relevant electricity service team; keep away from exposed or sparking wires.",
+    skills: ["Electrical Repair", "Mapping", "Infrastructure Assessment"],
+  },
+  animals: {
+    label: "Animal welfare",
+    aiLabel: "Animal Welfare",
+    department: "Animal Husbandry / Local Authority (suggested)",
+    icon: "paw-print",
+    keywords: ["animal", "stray dog", "stray cattle", "injured dog", "injured animal", "livestock", "animal welfare", "dead animal"],
+    action: "Refer the concern to the appropriate local animal-care or public-health authority; do not approach an injured or aggressive animal.",
+    skills: ["Community Outreach", "Public Health", "Mapping"],
+  },
+  sports: {
+    label: "Sports & recreation",
+    aiLabel: "Sports and Recreation Facilities",
+    department: "Sports / Local Facilities Office (suggested)",
+    icon: "trophy",
+    keywords: ["sports", "playground", "sports ground", "stadium", "basketball court", "football field", "recreation", "playing field"],
+    action: "Request a facilities inspection and confirm the responsible sports or local authority.",
+    skills: ["Project Management", "Community Outreach", "Infrastructure Assessment"],
+  },
+  publicServices: {
+    label: "Public services",
+    aiLabel: "Public Service Access",
+    department: "Relevant Service Office (needs review)",
+    icon: "building-2",
+    keywords: ["public service", "ration", "certificate", "pension", "benefit", "government office", "service counter"],
+    action: "Route for human review to identify the correct public office before assignment.",
+    skills: ["Community Outreach", "Data Analysis"],
+  },
+
   other: {
     label: "Other",
     aiLabel: "General Civic Issue",
@@ -356,6 +420,37 @@ function analyzeReport({
     priority = "Low";
   }
 
+  const priorityReason =
+    highHits.length
+      ? `High priority: detected risk terms ${highHits.join(", ")}.`
+      : impactHits.length >= 2
+        ? `High priority: multiple impact signals detected (${impactHits.join(", ")}).`
+        : lowHits.length && !impactHits.length
+          ? `Low priority: the description includes lower-impact terms (${lowHits.join(", ")}) and no impact signals from the current demo rules.`
+          : `Medium priority: the current demo rules found no strong emergency signal. A human reviewer should confirm severity.`;
+
+  const routingStatus =
+    key === "other" || key === "publicServices" || key === "traffic" || key === "transport" || key === "agriculture" || key === "animals" || key === "sports" || key === "electricity"
+      ? "Needs human confirmation"
+      : "Suggested route — not submitted";
+
+  const routingNote =
+    key === "other"
+      ? "The report does not match a specific supported category strongly enough. A reviewer should choose the responsible department."
+      : key === "traffic" || key === "transport"
+        ? "Traffic and transport responsibilities can overlap. Confirm the road owner and local authority before assignment."
+        : key === "agriculture"
+          ? "Confirm whether the issue belongs to agriculture, irrigation, or another local office before assignment."
+          : key === "animals"
+            ? "Confirm the appropriate local animal-care or public-health contact before assignment."
+            : key === "sports"
+              ? "Confirm the facility owner and maintenance authority before assignment."
+              : key === "electricity"
+                ? "Confirm the local electricity service area and responsible service team before assignment."
+                : key === "publicServices"
+                  ? "Identify the exact public service and responsible office before assignment."
+                  : "This is a category-based suggestion only. Civic OS has not contacted or submitted anything to a government department.";
+
   const confidence = Math.min(
     97,
     62 +
@@ -408,6 +503,9 @@ function analyzeReport({
     categoryLabel: cat.aiLabel,
     department: cat.department,
     priority,
+    priorityReason,
+    routingStatus,
+    routingNote,
     confidence,
     summary,
     recommendation,
@@ -713,11 +811,161 @@ const SEED_ISSUES = [
       "Canal Walk, between bridges 2 and 3",
     description:
       "Almost all lamps on this walkway are out. It is completely dark at night and many people avoid walking home this way."
+  },
+  {
+    id: "CIV-1052",
+    title: "DEMO — Irrigation channel needs repair",
+    category: "agriculture",
+    priority: "Medium",
+    status: "Reported",
+    hoursAgo: 3,
+    supporters: 6,
+    area: "Imphal West district, Manipur",
+    location: "Sekmai area, irrigation channel",
+    description: "DEMO REPORT: Farmers report a blocked irrigation channel affecting nearby paddy fields. Confirm the responsible agriculture or irrigation office.",
+    district: "Imphal West",
+    lat: 24.95,
+    lng: 93.88
+  },
+  {
+    id: "CIV-1051",
+    title: "DEMO — Traffic congestion near Khwairamband Keithel",
+    category: "traffic",
+    priority: "High",
+    status: "Verified",
+    hoursAgo: 5,
+    supporters: 18,
+    area: "Imphal West district, Manipur",
+    location: "Khwairamband Keithel, market approach road",
+    description: "DEMO REPORT: Vehicle queues are blocking the market approach road during busy hours. Confirm the correct traffic-management authority.",
+    district: "Imphal West",
+    lat: 24.81,
+    lng: 93.94
+  },
+  {
+    id: "CIV-1050",
+    title: "DEMO — Pothole near Thangal Bazar",
+    category: "roads",
+    priority: "High",
+    status: "In Progress",
+    hoursAgo: 7,
+    supporters: 21,
+    area: "Imphal West district, Manipur",
+    location: "Thangal Bazar, near the main market road",
+    description: "DEMO REPORT: A deep pothole is causing vehicles to swerve near the market. Confirm the responsible road-maintenance authority.",
+    district: "Imphal West",
+    lat: 24.8105,
+    lng: 93.9405
+  },
+  {
+    id: "CIV-1049",
+    title: "DEMO — Waste collection near Ima Keithel",
+    category: "garbage",
+    priority: "Medium",
+    status: "Reported",
+    hoursAgo: 10,
+    supporters: 11,
+    area: "Imphal West district, Manipur",
+    location: "Ima Keithel, market-side collection point",
+    description: "DEMO REPORT: Waste bins near the market-side collection point are overflowing. Request collection and review the pickup schedule.",
+    district: "Imphal West",
+    lat: 24.81,
+    lng: 93.94
+  },
+  {
+    id: "CIV-1048",
+    title: "DEMO — Public transport stop information missing",
+    category: "transport",
+    priority: "Low",
+    status: "Reported",
+    hoursAgo: 12,
+    supporters: 4,
+    area: "Imphal East district, Manipur",
+    location: "Porompat, main road bus-stop area",
+    description: "DEMO REPORT: Route and timetable information is missing at this bus-stop area. Confirm the relevant transport operator or authority.",
+    district: "Imphal East",
+    lat: 24.82,
+    lng: 93.96
+  },
+  {
+    id: "CIV-1047",
+    title: "DEMO — Power supply interruption",
+    category: "electricity",
+    priority: "Medium",
+    status: "In Progress",
+    hoursAgo: 16,
+    supporters: 13,
+    area: "Imphal East district, Manipur",
+    location: "Porompat, residential lane near the main road",
+    description: "DEMO REPORT: Residents report repeated electricity interruptions. Verify the service area and refer it to the appropriate electricity team.",
+    district: "Imphal East",
+    lat: 24.8205,
+    lng: 93.9605
+  },
+  {
+    id: "CIV-1046",
+    title: "DEMO — Classroom resources needed",
+    category: "education",
+    priority: "Medium",
+    status: "Reported",
+    hoursAgo: 21,
+    supporters: 9,
+    area: "Imphal West district, Manipur",
+    location: "Government school area, Singjamei",
+    description: "DEMO REPORT: A school reports insufficient classroom desks and learning materials. Route the request to the relevant education office.",
+    district: "Imphal West",
+    lat: 24.78,
+    lng: 93.93
+  },
+  {
+    id: "CIV-1045",
+    title: "DEMO — Animal welfare assistance requested",
+    category: "animals",
+    priority: "Medium",
+    status: "Verified",
+    hoursAgo: 28,
+    supporters: 7,
+    area: "Imphal West district, Manipur",
+    location: "Kangla Gate area, Imphal",
+    description: "DEMO REPORT: Assistance is requested for an apparently injured stray animal. Refer to the appropriate local animal-care authority.",
+    district: "Imphal West",
+    lat: 24.8,
+    lng: 93.94
+  },
+  {
+    id: "CIV-1044",
+    title: "DEMO — Sports ground equipment inspection",
+    category: "sports",
+    priority: "Low",
+    status: "Reported",
+    hoursAgo: 34,
+    supporters: 5,
+    area: "Imphal East district, Manipur",
+    location: "Khuman Lampak sports complex area",
+    description: "DEMO REPORT: A request has been raised to inspect public sports equipment and identify damaged items. Confirm the responsible maintenance office.",
+    district: "Imphal East",
+    lat: 24.82,
+    lng: 93.93
+  },
+  {
+    id: "CIV-1043",
+    title: "DEMO — Drinking-water supply concern",
+    category: "water",
+    priority: "High",
+    status: "In Progress",
+    hoursAgo: 42,
+    supporters: 16,
+    area: "Imphal East district, Manipur",
+    location: "Porompat, community water point",
+    description: "DEMO REPORT: Residents report an interrupted community water supply. Verify the location and refer the case to the appropriate water-supply office.",
+    district: "Imphal East",
+    lat: 24.8205,
+    lng: 93.96
   }
 ];
 
 let issues = [];
-let nextIssueNumber = 1043;
+let nextIssueNumber = 1053;
 
 const PEOPLE = [
   {
@@ -948,6 +1196,8 @@ const state = {
   screen: "homeScreen",
 
   draftPhotoUrl: null,
+
+  draftCoordinates: null,
 
   draft: null,
 
@@ -1227,6 +1477,12 @@ function createIssue(seed) {
 
     area: seed.area,
 
+    district: seed.district || "",
+
+    lat: Number.isFinite(seed.lat) ? seed.lat : null,
+
+    lng: Number.isFinite(seed.lng) ? seed.lng : null,
+
     priority:
       seed.priority ??
       analysis.priority,
@@ -1289,6 +1545,8 @@ function statusCounts() {
 
 const SCREEN_HASH = {
   homeScreen: "home",
+  portalScreen: "portals",
+  governmentPortalScreen: "government",
   reportScreen: "report",
   issuesScreen: "issues",
   communityScreen: "community",
@@ -1301,6 +1559,12 @@ const SCREEN_HASH = {
 const SCREEN_TITLE = {
   homeScreen:
     "Civic OS — Report. Connect. Resolve.",
+
+  portalScreen:
+    "Choose a portal · Civic OS",
+
+  governmentPortalScreen:
+    "Government workspace · Civic OS",
 
   reportScreen:
     "Report a problem · Civic OS",
@@ -2302,6 +2566,8 @@ function renderAnalysis() {
 
       ${note}
 
+      <p class="ai-disclaimer">This prototype uses transparent keyword rules, not a connected AI model. Its score is not calibrated accuracy. Priority and department suggestions must be checked by a human; no authority is contacted automatically.</p>
+
       <div class="ai-grid">
 
         <div class="ai-cell">
@@ -2344,6 +2610,33 @@ function renderAnalysis() {
 
         <div class="ai-cell">
           <span class="ai-label">
+            Routing status
+          </span>
+          <span class="ai-value">
+            ${escapeHtml(a.routingStatus)}
+          </span>
+        </div>
+
+        <div class="ai-cell wide">
+          <span class="ai-label">
+            Why this priority?
+          </span>
+          <p class="ai-text">
+            ${escapeHtml(a.priorityReason)}
+          </p>
+        </div>
+
+        <div class="ai-cell wide">
+          <span class="ai-label">
+            Routing explanation
+          </span>
+          <p class="ai-text">
+            ${escapeHtml(a.routingNote)}
+          </p>
+        </div>
+
+        <div class="ai-cell">
+          <span class="ai-label">
             Location
           </span>
 
@@ -2369,7 +2662,7 @@ function renderAnalysis() {
         <div class="ai-cell">
 
           <span class="ai-label">
-            Confidence
+            Heuristic score (demo)
           </span>
 
           <div class="confidence">
@@ -2484,6 +2777,10 @@ function submitReport() {
 
       location:
         d.location,
+
+      lat: state.draftCoordinates?.lat,
+
+      lng: state.draftCoordinates?.lng,
 
       area:
         "Citizen report",
@@ -2614,6 +2911,8 @@ function submitReport() {
 }
 
 function resetReportForm() {
+  state.draftCoordinates = null;
+
   const form =
     $("#reportForm");
 
@@ -2815,6 +3114,11 @@ function useCurrentLocation() {
       const location =
         $("#location");
 
+      state.draftCoordinates = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+
       if (location) {
         location.value =
           `GPS ${pos.coords.latitude.toFixed(
@@ -2823,6 +3127,15 @@ function useCurrentLocation() {
             5
           )}`;
       }
+
+      setLocationStatus(
+        `Device coordinates captured (estimated accuracy ±${Math.round(pos.coords.accuracy || 0)} m). Looking up the place name…`,
+        "success"
+      );
+      reverseGeocodeReportLocation(
+        pos.coords.latitude,
+        pos.coords.longitude
+      );
 
       if (btn) {
         btn.disabled = false;
@@ -2874,6 +3187,96 @@ function useCurrentLocation() {
     }
   );
 }
+
+function setLocationStatus(message, kind = "info") {
+  const status = $("#locationStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.kind = kind;
+}
+
+async function geocodeReportLocation() {
+  const input = $("#location");
+  const button = $("#geocodeBtn");
+  const place = input?.value.trim();
+
+  if (!place) {
+    setLocationStatus("Enter a place or landmark first.", "error");
+    input?.focus();
+    return;
+  }
+
+  if (/^GPS\s+-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?$/i.test(place) && state.draftCoordinates) {
+    setLocationStatus("Device coordinates are already attached to this report.", "success");
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+    const label = button.querySelector("span");
+    if (label) label.textContent = "Finding place…";
+  }
+  setLocationStatus("Searching for a map location in Manipur…");
+
+  try {
+    const query = encodeURIComponent(`${place}, Manipur, India`);
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=in&viewbox=92.6,26.1,94.8,23.4&bounded=1&q=${query}`;
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error("Place lookup is temporarily unavailable.");
+    const results = await response.json();
+    const result = Array.isArray(results) ? results[0] : null;
+    if (!result || !Number.isFinite(Number(result.lat)) || !Number.isFinite(Number(result.lon))) {
+      state.draftCoordinates = null;
+      setLocationStatus("No map match found. Keep the place name and submit; the report will remain searchable without a pin.", "error");
+      return;
+    }
+
+    state.draftCoordinates = {
+      lat: Number(result.lat),
+      lng: Number(result.lon)
+    };
+
+    const readablePlace = result.display_name
+      ? result.display_name.split(",").slice(0, 4).join(",").trim()
+      : place;
+    if (input) input.value = readablePlace;
+    setLocationStatus("Map pin found for this place. The pin is approximate; check the location text before submitting.", "success");
+    invalidateAnalysis();
+    updateStepper();
+  } catch (error) {
+    setLocationStatus("Place lookup failed right now. You can still submit the written location, or use device location.", "error");
+  } finally {
+    if (button) {
+      button.disabled = false;
+      const label = button.querySelector("span");
+      if (label) label.textContent = "Find map pin from place";
+    }
+  }
+}
+
+async function reverseGeocodeReportLocation(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`;
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error("Reverse lookup unavailable.");
+    const result = await response.json();
+    const location = $("#location");
+    if (!result?.display_name || !location) return;
+    // Do not overwrite a place the user has started typing while the lookup runs.
+    if (!/^GPS\s+-?\d+(?:\.\d+)?,\s*-?\d+(?:\.\d+)?$/i.test(location.value.trim())) return;
+    location.value = result.display_name.split(",").slice(0, 4).join(",").trim();
+    setLocationStatus("Place name found from device location. Its map pin uses your device coordinates.", "success");
+    invalidateAnalysis();
+    updateStepper();
+  } catch (error) {
+    // Keep the GPS coordinates in the location field if reverse lookup is unavailable.
+  }
+}
+
 
 
 /* =========================================================
@@ -3034,6 +3437,7 @@ function getFilteredIssues() {
         i.title,
         i.location,
         i.area,
+        i.district,
         i.department,
         i.description,
         cat.label
@@ -4181,6 +4585,27 @@ function renderDashboard() {
 
     </div>
 
+    <section class="panel glass report-map-panel" aria-labelledby="reportMapTitle">
+      <div class="panel-head">
+        <div>
+          <h3 id="reportMapTitle" class="panel-title">Manipur report map</h3>
+          <p class="panel-sub">Select a pin to open its report details.</p>
+        </div>
+        <span class="demo-badge">Demo locations</span>
+      </div>
+      <p class="map-disclaimer">Demo pins show approximate locality centres, not verified GPS positions. Reports with no coordinates remain listed below until a location pin is available.</p>
+      <div id="civicReportsMap" class="civic-reports-map" role="application" aria-label="Interactive map of report locations in Manipur"></div>
+      <div class="map-legend">
+        <span><i class="map-dot high"></i> High priority</span>
+        <span><i class="map-dot medium"></i> Medium</span>
+        <span><i class="map-dot low"></i> Low</span>
+      </div>
+      <div class="unmapped-reports">
+        <h4>Reports without map coordinates <span id="unmappedReportCount">0</span></h4>
+        <div id="unmappedReportList"></div>
+      </div>
+    </section>
+
     <div class="dash-grid">
 
       <section
@@ -4632,6 +5057,92 @@ function renderDashboard() {
   `;
 
   refreshIcons();
+
+  renderReportMap();
+}
+
+
+let reportMapInstance = null;
+
+function renderReportMap() {
+  const mapElement = $("#civicReportsMap");
+  const unmappedList = $("#unmappedReportList");
+  const unmappedCount = $("#unmappedReportCount");
+  if (!mapElement || !unmappedList) return;
+
+  if (reportMapInstance) {
+    try { reportMapInstance.remove(); } catch (error) {}
+    reportMapInstance = null;
+  }
+
+  const mapped = issues.filter((issue) =>
+    Number.isFinite(issue.lat) &&
+    Number.isFinite(issue.lng) &&
+    issue.lat >= -90 && issue.lat <= 90 &&
+    issue.lng >= -180 && issue.lng <= 180
+  );
+  const unmapped = issues.filter((issue) => !mapped.includes(issue));
+
+  if (unmappedCount) unmappedCount.textContent = String(unmapped.length);
+  unmappedList.innerHTML = unmapped.length
+    ? unmapped.map((issue) => `
+        <button type="button" class="unmapped-report-row" data-issue-id="${escapeHtml(issue.id)}">
+          <span class="unmapped-report-title">${escapeHtml(issue.title)}</span>
+          <span class="unmapped-report-location">${escapeHtml(issue.location || issue.area || "Location not supplied")}</span>
+        </button>
+      `).join("")
+    : '<p class="map-empty-note">Every current report has coordinates.</p>';
+
+  unmappedList.querySelectorAll("[data-issue-id]").forEach((button) => {
+    button.addEventListener("click", () => openIssue(button.dataset.issueId));
+  });
+
+  if (!window.L || typeof window.L.map !== "function") {
+    mapElement.innerHTML = '<div class="map-fallback">Interactive map library did not load. Use the location list below to open reports.</div>';
+    return;
+  }
+
+  reportMapInstance = window.L.map(mapElement, {
+    scrollWheelZoom: false,
+    tap: true
+  }).setView([24.65, 93.85], 8);
+
+  window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+    maxZoom: 18
+  }).addTo(reportMapInstance);
+
+  const priorityColors = {
+    High: "#ff6868",
+    Medium: "#f4bd4f",
+    Low: "#3ee08f"
+  };
+
+  const markers = [];
+  mapped.forEach((issue) => {
+    const marker = window.L.circleMarker([issue.lat, issue.lng], {
+      radius: issue.priority === "High" ? 9 : 7,
+      color: "#07110c",
+      weight: 2,
+      fillColor: priorityColors[issue.priority] || "#3ee08f",
+      fillOpacity: 0.95
+    }).addTo(reportMapInstance);
+
+    marker.bindTooltip(escapeHtml(issue.title), { direction: "top", sticky: true });
+    marker.on("click", () => openIssue(issue.id));
+    markers.push(marker);
+  });
+
+  if (markers.length > 1) {
+    const group = window.L.featureGroup(markers);
+    reportMapInstance.fitBounds(group.getBounds().pad(0.18), { maxZoom: 11 });
+  } else if (markers.length === 1) {
+    reportMapInstance.setView(markers[0].getLatLng(), 11);
+  }
+
+  window.setTimeout(() => {
+    if (reportMapInstance) reportMapInstance.invalidateSize();
+  }, 120);
 }
 
 
@@ -6392,14 +6903,25 @@ function bindEvents() {
 
   /* ---------- Location ---------- */
 
-  const locateBtn =
-    $("#locateBtn");
+  const locationInput = $("#location");
+  const geocodeBtn = $("#geocodeBtn");
+
+  if (locationInput) {
+    locationInput.addEventListener("input", () => {
+      state.draftCoordinates = null;
+      const status = $("#locationStatus");
+      if (status) status.textContent = "";
+    });
+  }
+
+  if (geocodeBtn) {
+    geocodeBtn.addEventListener("click", geocodeReportLocation);
+  }
+
+  const locateBtn = $("#locateBtn");
 
   if (locateBtn) {
-    locateBtn.addEventListener(
-      "click",
-      useCurrentLocation
-    );
+    locateBtn.addEventListener("click", useCurrentLocation);
   }
 
 
