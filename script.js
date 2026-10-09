@@ -5671,6 +5671,45 @@ function civicAiText(value) {
     );
 }
 
+
+function isCivicAiImageFile(file) {
+  return Boolean(
+    file &&
+    /^image\/(png|jpe?g|gif|webp|bmp|avif)$/i.test(
+      String(file.type || "")
+    )
+  );
+}
+
+function readCivicAiFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("The selected image could not be read."));
+      }
+    };
+
+    reader.onerror = () => {
+      reject(
+        reader.error ||
+        new Error("The selected image could not be read.")
+      );
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatCivicAiFileSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 function detectCivicCategory(
   text
 ) {
@@ -6828,6 +6867,8 @@ function bindEvents() {
 
   /* =======================================================
      CIVIC AI FILE UPLOAD
+     Keep the local preview in sync with the selected file.
+     The real attachment is added to the sent chat message.
      ======================================================= */
 
   const civicAiFileInput =
@@ -6844,49 +6885,56 @@ function bindEvents() {
     civicAiFileInput &&
     civicAiFilePreview
   ) {
-
     civicAiFileInput.addEventListener(
       "change",
       () => {
-
         const file =
-          civicAiFileInput.files[0];
+          civicAiFileInput.files?.[0];
+
+        const previousPreviewUrl =
+          civicAiFilePreview.dataset.previewUrl;
+
+        if (previousPreviewUrl) {
+          try {
+            URL.revokeObjectURL(previousPreviewUrl);
+          } catch {}
+        }
+
+        delete civicAiFilePreview.dataset.previewUrl;
+        civicAiFilePreview.innerHTML = "";
 
         if (!file) return;
 
         const isImage =
-          file.type.startsWith(
-            "image/"
-          );
+          isCivicAiImageFile(file);
 
         const previewUrl =
           isImage
-            ? URL.createObjectURL(
-                file
-              )
+            ? URL.createObjectURL(file)
             : "";
+
+        if (previewUrl) {
+          civicAiFilePreview.dataset.previewUrl = previewUrl;
+        }
 
         civicAiFilePreview.innerHTML = `
           <div class="civic-ai-file">
-
             ${
               isImage
                 ? `
                   <img
                     src="${previewUrl}"
                     class="civic-ai-file-image"
-                    alt="Uploaded civic evidence"
+                    alt="Selected image attachment"
                   />
                 `
                 : `
-                  <i data-lucide="file"></i>
+                  <i data-lucide="file-text"></i>
                 `
             }
 
             <span>
-              ${civicAiText(
-                file.name
-              )}
+              ${civicAiText(file.name)}
             </span>
 
             <button
@@ -6896,7 +6944,6 @@ function bindEvents() {
             >
               <i data-lucide="x"></i>
             </button>
-
           </div>
         `;
 
@@ -6908,30 +6955,24 @@ function bindEvents() {
           );
 
         if (removeButton) {
-
           removeButton.addEventListener(
             "click",
             () => {
+              const activePreviewUrl =
+                civicAiFilePreview.dataset.previewUrl;
 
-              if (
-                previewUrl
-              ) {
+              if (activePreviewUrl) {
                 try {
-                  URL.revokeObjectURL(
-                    previewUrl
-                  );
+                  URL.revokeObjectURL(activePreviewUrl);
                 } catch {}
               }
 
-              civicAiFileInput.value =
-                "";
-
-              civicAiFilePreview.innerHTML =
-                "";
+              delete civicAiFilePreview.dataset.previewUrl;
+              civicAiFileInput.value = "";
+              civicAiFilePreview.innerHTML = "";
             }
           );
         }
-
       }
     );
   }
@@ -6988,11 +7029,9 @@ function bindEvents() {
     civicAiForm &&
     civicAiInput
   ) {
-
     civicAiForm.addEventListener(
       "submit",
-      (event) => {
-
+      async (event) => {
         event.preventDefault();
 
         const prompt =
@@ -7004,60 +7043,184 @@ function bindEvents() {
           );
 
         const file =
-          fileInput?.files[0];
+          fileInput?.files?.[0] || null;
 
-        if (
-          !prompt &&
-          !file
-        ) {
+        if (!prompt && !file) {
           return;
         }
 
-        if (file) {
-
-          addCivicAiMessage(
-            "user",
-            `${civicAiText(
-              prompt ||
-                "Please check this file."
-            )}<br>
-            <small>
-              📎 Attached:
-              ${civicAiText(
-                file.name
-              )}
-            </small>`
+        const sendButton =
+          civicAiForm.querySelector(
+            'button[type="submit"]'
           );
 
-        } else {
+        if (sendButton?.disabled) return;
 
-          addCivicAiMessage(
-            "user",
-            civicAiText(
-              prompt
-            )
-          );
+        if (sendButton) {
+          sendButton.disabled = true;
+          sendButton.setAttribute("aria-busy", "true");
         }
 
-        civicAiInput.value =
-          "";
+        try {
+          let attachmentMarkup = "";
+          let attachmentNotice = "";
+          let responsePrompt = prompt;
 
-        setTimeout(
-          () => {
+          if (file) {
+            const maxBytes = 8 * 1024 * 1024;
 
-            const response =
-              generateCivicAiResponse(
-                prompt
+            if (file.size > maxBytes) {
+              toast(
+                "Please attach a file smaller than 8 MB.",
+                "triangle-alert"
+              );
+              return;
+            }
+
+            const safeFileName =
+              civicAiText(file.name);
+
+            const fileSize =
+              civicAiText(
+                formatCivicAiFileSize(file.size)
               );
 
-            addCivicAiMessage(
-              "ai",
-              response
-            );
+            if (isCivicAiImageFile(file)) {
+              // Read the selected image into the actual outgoing message,
+              // rather than leaving it only in the local preview.
+              const imageDataUrl =
+                await readCivicAiFileAsDataUrl(file);
 
-          },
-          350
-        );
+              attachmentMarkup = `
+                <div class="civic-ai-message-attachment civic-ai-image-attachment">
+                  <img
+                    src="${imageDataUrl}"
+                    alt="Attached image: ${safeFileName}"
+                    loading="lazy"
+                  />
+                  <div class="civic-ai-attachment-copy">
+                    <strong>Image attached</strong>
+                    <small>${safeFileName} · ${fileSize}</small>
+                  </div>
+                </div>
+              `;
+
+              attachmentNotice = `
+                <p class="civic-ai-attachment-note">
+                  Image received: <strong>${safeFileName}</strong>.
+                  This demo assistant does not yet inspect image pixels automatically.
+                  Include a written description of what the image shows for a targeted assessment.
+                </p>
+              `;
+            } else {
+              attachmentMarkup = `
+                <div class="civic-ai-message-attachment civic-ai-file-attachment">
+                  <i data-lucide="file-text"></i>
+                  <div class="civic-ai-attachment-copy">
+                    <strong>File attached</strong>
+                    <small>${safeFileName} · ${fileSize}</small>
+                  </div>
+                </div>
+              `;
+
+              if (
+                file.type === "text/plain" ||
+                /\.txt$/i.test(file.name)
+              ) {
+                let textContents = "";
+
+                try {
+                  textContents = await file.text();
+                } catch {
+                  textContents = "";
+                }
+
+                if (textContents) {
+                  const truncated =
+                    textContents.length > 5000;
+
+                  responsePrompt = [
+                    prompt,
+                    `Text from attached file "${file.name}":`,
+                    textContents.slice(0, 5000),
+                    truncated
+                      ? "(File text truncated to the first 5,000 characters.)"
+                      : ""
+                  ].filter(Boolean).join("\n\n");
+
+                  attachmentNotice = `
+                    <p class="civic-ai-attachment-note">
+                      The text file <strong>${safeFileName}</strong> was attached and its first
+                      ${truncated ? "5,000 characters were" : "contents were"} included for this demo response.
+                    </p>
+                  `;
+                }
+              } else {
+                attachmentNotice = `
+                  <p class="civic-ai-attachment-note">
+                    File received: <strong>${safeFileName}</strong>.
+                    PDF text extraction is not connected in this demo; paste relevant text
+                    into your message if you need it reviewed.
+                  </p>
+                `;
+              }
+            }
+          }
+
+          const messageText = prompt
+            ? `<p class="civic-ai-user-copy">${civicAiText(prompt)}</p>`
+            : `<p class="civic-ai-user-copy">Please review the attached ${file && isCivicAiImageFile(file) ? "image" : "file"}.</p>`;
+
+          addCivicAiMessage(
+            "user",
+            `${messageText}${attachmentMarkup}`
+          );
+
+          civicAiInput.value = "";
+
+          // Clear the upload tray only after the attachment has been added
+          // to the message history.
+          const previewUrl =
+            civicAiFilePreview?.dataset.previewUrl;
+
+          if (previewUrl) {
+            try {
+              URL.revokeObjectURL(previewUrl);
+            } catch {}
+          }
+
+          if (civicAiFilePreview) {
+            delete civicAiFilePreview.dataset.previewUrl;
+            civicAiFilePreview.innerHTML = "";
+          }
+
+          if (fileInput) {
+            fileInput.value = "";
+          }
+
+          setTimeout(
+            () => {
+              const response =
+                generateCivicAiResponse(responsePrompt);
+
+              addCivicAiMessage(
+                "ai",
+                `${attachmentNotice}${response}`
+              );
+            },
+            350
+          );
+        } catch (error) {
+          toast(
+            "The attachment could not be added. Please try again.",
+            "triangle-alert"
+          );
+        } finally {
+          if (sendButton) {
+            sendButton.disabled = false;
+            sendButton.removeAttribute("aria-busy");
+          }
+        }
       }
     );
   }
