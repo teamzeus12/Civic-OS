@@ -2918,10 +2918,7 @@ async function loadPersistentCivicReports() {
   if (!window.civicSupabase) return;
   try {
     const { data, error } = await window.civicSupabase
-      .from("public_issue_map")
-      .select("id,public_id,title,category,status,priority,public_impact,location,reported_at,resolved_at")
-      .order("reported_at", { ascending: false })
-      .limit(200);
+      .rpc("get_public_issue_map");
     if (error) throw error;
     const existing = new Set(issues.map((issue) => issue.id));
     for (const row of (data || []).reverse()) {
