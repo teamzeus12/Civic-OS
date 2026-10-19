@@ -80,6 +80,14 @@
             <button class="primary-button" id="governmentSubmit" type="submit">Send secure sign-in code <span aria-hidden="true">→</span></button>
             <p class="security-note">Government access is limited to accounts provisioned by the Civic OS administrator. A code alone does not grant official permissions.</p>
           </form>
+          <form id="recoveryForm" hidden>
+            <label for="newPassword">New password</label>
+            <input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
+            <label for="confirmPassword">Confirm new password</label>
+            <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Re-enter your password" required>
+            <p class="form-message" id="recoveryMessage" role="status" aria-live="polite"></p>
+            <button class="primary-button" id="recoverySubmit" type="submit">Update password <span aria-hidden="true">→</span></button>
+          </form>
           <p class="form-footnote" id="formFootnote">By continuing, you agree to use Civic OS responsibly.</p>
         </section>
         <a class="back-link" href="./index.html">← Back to Civic OS</a>
