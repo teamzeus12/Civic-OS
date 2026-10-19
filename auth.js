@@ -32,6 +32,7 @@
     });
     $("citizenForm").hidden = portal !== "people";
     $("governmentForm").hidden = portal !== "government";
+    $("governmentPreviewLink").hidden = portal !== "government";
     $("peopleModes").hidden = portal !== "people";
     $("formEyebrow").textContent = portal === "people" ? "PEOPLE’S PORTAL" : "GOVERNMENT PORTAL";
     $("formTitle").textContent = portal === "people" ? (mode === "signup" ? "Create your account" : "Welcome back") : "Official sign-in";
