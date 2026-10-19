@@ -136,7 +136,7 @@
     button.disabled = true;
     try {
       const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: new URL("./index.html", window.location.href).href
+        redirectTo: new URL("./auth.html", window.location.href).href
       });
       if (error) throw error;
       setMessage("citizenMessage", "If password recovery is enabled for this account, a reset link will arrive by email.");
@@ -181,18 +181,60 @@
   document.querySelectorAll(".portal-tab").forEach((tab) => tab.addEventListener("click", () => choosePortal(tab.dataset.portal)));
   document.querySelectorAll(".mode-button").forEach((button) => button.addEventListener("click", () => chooseMode(button.dataset.mode)));
 
-  if (window.location.hash.includes("access_token") || window.location.search.includes("code=")) {
+  $("recoveryForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!client) return setMessage("recoveryMessage", "Secure sign-in could not load. Refresh and try again.", true);
+    const password = $("newPassword").value;
+    if (password !== $("confirmPassword").value) return setMessage("recoveryMessage", "The passwords do not match.", true);
+    const button = $("recoverySubmit");
+    setBusy(button, true);
+    setMessage("recoveryMessage", "");
+    try {
+      const { error } = await client.auth.updateUser({ password });
+      if (error) throw error;
+      setMessage("recoveryMessage", "Password updated. You can now return to Civic OS and sign in.");
+      $("recoveryForm").reset();
+    } catch (error) {
+      setMessage("recoveryMessage", error?.message || "Could not update the password.", true);
+    } finally { setBusy(button, false); }
+  });
+
+  const isRecovery = window.location.hash.includes("type=recovery");
+  if (isRecovery) {
+    $("citizenForm").hidden = true;
+    $("governmentForm").hidden = true;
+    $("peopleModes").hidden = true;
+    $("recoveryForm").hidden = false;
+    $("formTitle").textContent = "Choose a new password";
+    $("formDescription").textContent = "Use at least 8 characters and keep it private.";
+    $("formEyebrow").textContent = "ACCOUNT RECOVERY";
+    $("featureKicker").textContent = "ACCOUNT RECOVERY";
+    $("featureTitle").innerHTML = "Back in control.<br>Securely.";
+    $("featureCopy").textContent = "Set a new password to restore access to your citizen account.";
+  } else if (window.location.hash.includes("access_token") || window.location.search.includes("code=")) {
     client?.auth.getSession().then(async ({ data, error }) => {
       if (error || !data.session?.user) return;
       try {
-        await checkGovernmentRole(data.session.user);
-        redirectHome();
+        const { data: profile, error: profileError } = await client.from("profiles").select("role").eq("id", data.session.user.id).maybeSingle();
+        if (profileError) throw profileError;
+        if (profile && ["government", "admin"].includes(profile.role)) {
+          redirectHome();
+        } else {
+          choosePortal("people");
+          setMessage("citizenMessage", "Email verified. You can now sign in to your citizen account.");
+        }
       } catch (err) {
         choosePortal("government");
-        setMessage("governmentMessage", err?.message || "This account is not authorised.", true);
+        setMessage("governmentMessage", err?.message || "This account could not be verified.", true);
       }
     });
   }
   choosePortal("people");
   chooseMode("signin");
+  if (isRecovery) {
+    $("citizenForm").hidden = true;
+    $("governmentForm").hidden = true;
+    $("peopleModes").hidden = true;
+    $("recoveryForm").hidden = false;
+  }
 })();
