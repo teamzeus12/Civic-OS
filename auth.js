@@ -25,14 +25,9 @@
 
   function choosePortal(next) {
     portal = next === "government" ? "government" : "people";
-    document.querySelectorAll(".portal-tab").forEach((tab) => {
-      const active = tab.dataset.portal === portal;
-      tab.classList.toggle("active", active);
-      tab.setAttribute("aria-selected", String(active));
-    });
+
     $("citizenForm").hidden = portal !== "people";
     $("governmentForm").hidden = portal !== "government";
-    $("governmentPreviewLink").hidden = portal !== "government";
     $("peopleModes").hidden = portal !== "people";
     $("formEyebrow").textContent = portal === "people" ? "PEOPLE’S PORTAL" : "GOVERNMENT PORTAL";
     $("formTitle").textContent = portal === "people" ? (mode === "signup" ? "Create your account" : "Welcome back") : "Official sign-in";
@@ -231,8 +226,13 @@
     });
   }
   const requestedPortal = new URLSearchParams(window.location.search).get("portal");
-  choosePortal(requestedPortal === "government" ? "government" : "people");
+  const portalFromUrl = requestedPortal === "government" ? "government" : "people";
+  choosePortal(portalFromUrl);
   chooseMode("signin");
+  $("formTitle").textContent = portalFromUrl === "government" ? "Official sign-in" : "Welcome back";
+  $("formDescription").textContent = portalFromUrl === "government"
+    ? "Sign in with your authorised government account."
+    : "Sign in to submit civic reports and track updates.";
   if (isRecovery) {
     $("citizenForm").hidden = true;
     $("governmentForm").hidden = true;
