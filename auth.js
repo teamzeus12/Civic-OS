@@ -32,7 +32,6 @@
     });
     $("citizenForm").hidden = portal !== "people";
     $("governmentForm").hidden = portal !== "government";
-    $("governmentPreviewLink").hidden = portal !== "government";
     $("peopleModes").hidden = portal !== "people";
     $("formEyebrow").textContent = portal === "people" ? "PEOPLE’S PORTAL" : "GOVERNMENT PORTAL";
     $("formTitle").textContent = portal === "people" ? (mode === "signup" ? "Create your account" : "Welcome back") : "Official sign-in";
@@ -231,8 +230,16 @@
     });
   }
   const requestedPortal = new URLSearchParams(window.location.search).get("portal");
-  choosePortal(requestedPortal === "government" ? "government" : "people");
+  const portalFromUrl = requestedPortal === "government" ? "government" : "people";
+  choosePortal(portalFromUrl);
   chooseMode("signin");
+  // The portal is fixed on this page; portal selection happens before arriving here.
+  document.querySelectorAll(".portal-tab").forEach((tab) => tab.remove());
+  document.querySelector(".auth-layout")?.classList.add("single-portal");
+  $("formTitle").textContent = portalFromUrl === "government" ? "Official sign-in" : "Welcome back";
+  $("formDescription").textContent = portalFromUrl === "government"
+    ? "Sign in with your authorised government account."
+    : "Sign in to submit civic reports and track updates.";
   if (isRecovery) {
     $("citizenForm").hidden = true;
     $("governmentForm").hidden = true;
