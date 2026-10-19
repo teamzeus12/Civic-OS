@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f6faf8">
   <meta name="description" content="Sign in to Civic OS — People's Portal and Government Portal.">
-  <title>Portal access — Civic OS</title>
+  <title>Sign in — Civic OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,24 +21,11 @@
       <span>Civic <b>OS</b><small>REPORT. CONNECT. RESOLVE.</small></span>
     </a>
 
-    <div class="auth-layout">
+    <div class="auth-layout single-portal">
       <section class="auth-side" aria-labelledby="authHeading">
         <p class="eyebrow"><span class="status-dot"></span> YOUR CIVIC SPACE</p>
         <h1 id="authHeading">Good governance<br><span>starts with access.</span></h1>
         <p class="intro">Choose the portal that matches your role. Each portal has a separate sign-in flow.</p>
-
-        <div class="portal-switch" role="tablist" aria-label="Choose a portal">
-          <button class="portal-tab active" type="button" role="tab" aria-selected="true" data-portal="people">
-            <span class="portal-icon people-icon" aria-hidden="true">P</span>
-            <span><strong>People’s Portal</strong><small>For citizens and community members</small></span>
-            <span class="tab-arrow" aria-hidden="true">↗</span>
-          </button>
-          <button class="portal-tab" type="button" role="tab" aria-selected="false" data-portal="government">
-            <span class="portal-icon government-icon" aria-hidden="true">G</span>
-            <span><strong>Government Portal</strong><small>For authorised officials only</small></span>
-            <span class="tab-arrow" aria-hidden="true">↗</span>
-          </button>
-        </div>
 
         <section class="form-panel" aria-live="polite">
           <div class="form-heading">
@@ -80,7 +67,7 @@
             <button class="primary-button" id="governmentSubmit" type="submit">Send secure sign-in code <span aria-hidden="true">→</span></button>
             <p class="security-note">Government access is limited to accounts provisioned by the Civic OS administrator. A code alone does not grant official permissions.</p>
           </form>
-          <a class="primary-button government-preview-link" id="governmentPreviewLink" href="./government-preview.html" hidden>Preview Government Dashboard <span aria-hidden="true">↗</span></a>
+
           <form id="recoveryForm" hidden>
             <label for="newPassword">New password</label>
             <input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
@@ -94,23 +81,7 @@
         <a class="back-link" href="./portals.html">← Back to portal selection</a>
       </section>
 
-      <aside class="feature-side" aria-label="Civic OS portal information">
-        <div class="feature-card">
-          <div class="card-topline"><span class="mini-mark">C</span><span>BUILT FOR EVERY COMMUNITY</span></div>
-          <div class="illustration-card" aria-hidden="true">
-            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-            <div class="illustration-core"><span class="core-mark">C</span><span class="core-caption">CIVIC<br>OS</span></div>
-            <div class="float-card float-report"><span class="float-icon">↗</span><span><b>Report an issue</b><small>Make your voice count</small></span></div>
-            <div class="float-card float-community"><span class="people-dots">● ● ●</span><span><b>One community</b><small>Shared progress</small></span></div>
-            <span class="spark spark-one">✳</span><span class="spark spark-two">✦</span>
-          </div>
-          <p class="feature-kicker" id="featureKicker">PEOPLE’S PORTAL</p>
-          <h2 id="featureTitle">Your voice.<br>Visible progress.</h2>
-          <p class="feature-copy" id="featureCopy">Report local issues, follow their progress, and take part in making your community better.</p>
-          <div class="feature-footer"><span class="footer-line"></span><span id="featureFooter">CITIZENS · COMMUNITIES · ACTION</span></div>
-        </div>
-        <p class="privacy-note"><span aria-hidden="true">◇</span> Your portal access is handled through the Civic OS authentication service.</p>
-      </aside>
+
     </div>
     <footer class="page-footer"><span>© Civic OS</span><span>Designed for accountable civic action</span></footer>
   </main>
