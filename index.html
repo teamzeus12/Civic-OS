@@ -2495,6 +2495,34 @@
     defer
     crossorigin=""
   ></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <!-- Supabase account dialog: preserves the existing Civic OS design -->
+  <section id="civicAuthDialog" class="civic-auth-backdrop" hidden aria-labelledby="civicAuthTitle">
+    <div class="civic-auth-card glass" role="dialog" aria-modal="true" aria-labelledby="civicAuthTitle">
+      <button type="button" class="civic-auth-close" id="civicAuthClose" aria-label="Close sign in">×</button>
+      <p class="kicker">People's Portal · Citizen account</p>
+      <h2 id="civicAuthTitle" class="block-title">Save your civic report</h2>
+      <p class="civic-auth-copy">Sign in or create a free account to submit this report and track it later. Your draft stays open while you sign in.</p>
+      <div class="civic-auth-tabs" role="group" aria-label="Account action">
+        <button type="button" id="civicAuthSignInTab" class="btn btn-primary">Sign in</button>
+        <button type="button" id="civicAuthSignUpTab" class="btn btn-ghost">Create account</button>
+      </div>
+      <form id="civicAuthForm">
+        <label class="civic-auth-label" for="civicAuthName" id="civicAuthNameLabel" hidden>Full name</label>
+        <input id="civicAuthName" name="fullName" autocomplete="name" placeholder="Full name" hidden />
+        <label class="civic-auth-label" for="civicAuthEmail">Email address</label>
+        <input id="civicAuthEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+        <label class="civic-auth-label" for="civicAuthPassword">Password</label>
+        <input id="civicAuthPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters" />
+        <p id="civicAuthMessage" class="civic-auth-message" role="status" aria-live="polite"></p>
+        <button id="civicAuthSubmit" type="submit" class="btn btn-primary btn-lg btn-block">Sign in and continue</button>
+      </form>
+      <p class="civic-auth-footnote">Use an email you can access. Never share your password with anyone.</p>
+    </div>
+  </section>
+
   <script
     src="script.js"
     defer
