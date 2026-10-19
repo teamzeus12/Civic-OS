@@ -2775,158 +2775,300 @@ function renderAnalysis() {
   updateStepper();
 }
 
-function submitReport() {
-  const a =
-    state.analysis;
 
-  const d =
-    state.draft;
+let civicAuthMode = "signin";
+let civicPendingSubmit = false;
 
+function civicAuthMessage(message, isError = false) {
+  const target = document.getElementById("civicAuthMessage");
+  if (!target) return;
+  target.textContent = message || "";
+  target.classList.toggle("is-error", Boolean(isError));
+}
+
+function openCivicAuth() {
+  const dialog = document.getElementById("civicAuthDialog");
+  if (!dialog) return;
+  dialog.hidden = false;
+  document.body.classList.add("civic-auth-open");
+  civicAuthMessage("");
+  document.getElementById("civicAuthEmail")?.focus();
+}
+
+function closeCivicAuth() {
+  const dialog = document.getElementById("civicAuthDialog");
+  if (dialog) dialog.hidden = true;
+  document.body.classList.remove("civic-auth-open");
+}
+
+function setCivicAuthMode(mode) {
+  civicAuthMode = mode === "signup" ? "signup" : "signin";
+  const signup = civicAuthMode === "signup";
+  const name = document.getElementById("civicAuthName");
+  const nameLabel = document.getElementById("civicAuthNameLabel");
+  const password = document.getElementById("civicAuthPassword");
+  const signInTab = document.getElementById("civicAuthSignInTab");
+  const signUpTab = document.getElementById("civicAuthSignUpTab");
+  const submit = document.getElementById("civicAuthSubmit");
+  if (name) { name.hidden = !signup; name.required = signup; }
+  if (nameLabel) nameLabel.hidden = !signup;
+  if (password) password.autocomplete = signup ? "new-password" : "current-password";
+  if (signInTab) signInTab.className = signup ? "btn btn-ghost" : "btn btn-primary";
+  if (signUpTab) signUpTab.className = signup ? "btn btn-primary" : "btn btn-ghost";
+  if (submit) submit.textContent = signup ? "Create account and continue" : "Sign in and continue";
+  civicAuthMessage("");
+}
+
+async function ensureCivicProfile(user) {
+  if (!user || !window.civicSupabase) return;
+  const client = window.civicSupabase;
+  const { data, error } = await client.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  if (error) throw error;
+  if (!data) {
+    const fullName = (user.user_metadata?.full_name || "").trim() || null;
+    const result = await client.from("profiles").insert({ id: user.id, full_name: fullName });
+    if (result.error) throw result.error;
+  }
+}
+
+async function handleCivicAuth(event) {
+  event.preventDefault();
+  if (!window.civicSupabase) {
+    civicAuthMessage("The secure database client did not load. Refresh the page and try again.", true);
+    return;
+  }
+  const email = document.getElementById("civicAuthEmail")?.value.trim();
+  const password = document.getElementById("civicAuthPassword")?.value || "";
+  const fullName = document.getElementById("civicAuthName")?.value.trim();
+  const submit = document.getElementById("civicAuthSubmit");
+  if (submit) { submit.disabled = true; submit.textContent = "Please wait…"; }
+  civicAuthMessage("");
+  try {
+    const client = window.civicSupabase;
+    if (civicAuthMode === "signup") {
+      const { data, error } = await client.auth.signUp({
+        email, password, options: { data: { full_name: fullName || "" } }
+      });
+      if (error) throw error;
+      if (!data.session) {
+        civicAuthMessage("Account created. Check your email for the confirmation link, then return and sign in. Your report draft has not been submitted yet.");
+        setCivicAuthMode("signin");
+        return;
+      }
+    } else {
+      const { error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) {
+      civicAuthMessage("Please confirm your email first, then sign in to continue.", true);
+      return;
+    }
+    await ensureCivicProfile(sessionData.session.user);
+    closeCivicAuth();
+    if (civicPendingSubmit) {
+      civicPendingSubmit = false;
+      await submitReport();
+    }
+  } catch (error) {
+    console.error("Civic OS account action failed:", error);
+    civicAuthMessage(error?.message || "Account action failed. Please try again.", true);
+  } finally {
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = civicAuthMode === "signup" ? "Create account and continue" : "Sign in and continue";
+    }
+  }
+}
+
+function setupCivicBackend() {
+  const config = window.CIVIC_SUPABASE_CONFIG;
+  if (window.supabase?.createClient && config?.url && config?.publishableKey) {
+    window.civicSupabase = window.supabase.createClient(config.url, config.publishableKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+  } else {
+    console.warn("Civic OS Supabase config or client is missing.");
+  }
+  document.getElementById("civicAuthForm")?.addEventListener("submit", handleCivicAuth);
+  document.getElementById("civicAuthSignInTab")?.addEventListener("click", () => setCivicAuthMode("signin"));
+  document.getElementById("civicAuthSignUpTab")?.addEventListener("click", () => setCivicAuthMode("signup"));
+  document.getElementById("civicAuthClose")?.addEventListener("click", () => {
+    civicPendingSubmit = false;
+    closeCivicAuth();
+  });
+  document.getElementById("civicAuthDialog")?.addEventListener("click", (event) => {
+    if (event.target.id === "civicAuthDialog") {
+      civicPendingSubmit = false;
+      closeCivicAuth();
+    }
+  });
+  if (window.civicSupabase) {
+    window.civicSupabase.auth.onAuthStateChange((event, session) => {
+      const user = session?.user;
+      const label = document.getElementById("civicAccountButton");
+      if (label) label.textContent = user ? "Account: " + (user.email || "signed in") : "Sign in";
+    });
+    loadPersistentCivicReports();
+  }
+}
+
+async function loadPersistentCivicReports() {
+  if (!window.civicSupabase) return;
+  try {
+    const { data, error } = await window.civicSupabase
+      .from("public_issue_map")
+      .select("id,public_id,title,category,status,priority,public_impact,location,reported_at,resolved_at")
+      .order("reported_at", { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    const existing = new Set(issues.map((issue) => issue.id));
+    for (const row of (data || []).reverse()) {
+      if (!row.public_id || existing.has(row.public_id)) continue;
+      const place = typeof row.location === "string"
+        ? row.location
+        : row.location?.address || row.location?.label || row.location?.name || "Location not specified";
+      const issue = createIssue({
+        id: row.public_id,
+        title: row.title,
+        category: row.category,
+        description: row.public_impact || row.title,
+        location: place,
+        area: "Saved citizen report",
+        priority: row.priority || "Medium",
+        status: row.status || "Reported",
+        supporters: 1,
+        reportedAt: row.reported_at ? new Date(row.reported_at).getTime() : Date.now()
+      });
+      issue.databaseId = row.id;
+      issue.persisted = true;
+      if (row.resolved_at) issue.resolvedAt = new Date(row.resolved_at).getTime();
+      issues.unshift(issue);
+      existing.add(row.public_id);
+    }
+    renderHome();
+    renderIssues();
+    renderDashboard();
+  } catch (error) {
+    console.error("Could not load saved Civic OS reports:", error);
+    toast("Saved reports could not be loaded. Demo reports are still available.", "triangle-alert");
+  }
+}
+
+async function submitReport() {
+  const a = state.analysis;
+  const d = state.draft;
   if (!a || !d) return;
 
-  const id =
-    `CIV-${nextIssueNumber++}`;
+  if (!window.civicSupabase) {
+    toast("Secure reporting is unavailable right now. Please refresh and try again.", "triangle-alert");
+    return;
+  }
 
-  const issue =
-    createIssue({
-      id,
+  const { data: sessionData, error: sessionError } = await window.civicSupabase.auth.getSession();
+  if (sessionError) {
+    toast("Could not check your account. Please try again.", "triangle-alert");
+    return;
+  }
+  if (!sessionData.session?.user) {
+    civicPendingSubmit = true;
+    setCivicAuthMode("signin");
+    openCivicAuth();
+    civicAuthMessage("Sign in or create an account to save this report. Your draft is preserved.");
+    return;
+  }
 
-      title:
-        makeTitle(
-          d.description
-        ),
+  const user = sessionData.session.user;
+  const publicId = `CIV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  const title = makeTitle(d.description);
+  const priorityScores = { Critical: 95, High: 75, Medium: 50, Low: 25 };
+  const priorityScore = priorityScores[a.priority] || 50;
+  const insertRow = {
+    public_id: publicId,
+    title,
+    category: a.categoryKey,
+    description: d.description,
+    location: { address: d.location, precision: "citizen-entered" },
+    reported_by: user.id,
+    priority: a.priority || "Medium",
+    priority_score: priorityScore,
+    severity_score: priorityScore,
+    public_impact: a.summary || title,
+    ai_confidence: a.confidence || 35,
+    routing_reason: "Initial prototype keyword analysis; department routing requires review.",
+    verification_required: true
+  };
 
-      category:
-        a.categoryKey,
+  const submitButton = document.querySelector('[data-action="submit-report"]');
+  if (submitButton) { submitButton.disabled = true; submitButton.setAttribute("aria-busy", "true"); }
+  try {
+    const { data: saved, error } = await window.civicSupabase
+      .from("reports")
+      .insert(insertRow)
+      .select("id,public_id,status,priority,reported_at")
+      .single();
+    if (error) throw error;
 
-      description:
-        d.description,
-
-      location:
-        d.location,
-
-      area:
-        "Citizen report",
-
-      priority:
-        a.priority,
-
-      status:
-        "Reported",
-
-      supporters:
-        1,
-
-      photo:
-        state.draftPhotoUrl,
-
-      reportedAt:
-        Date.now()
+    const issue = createIssue({
+      id: saved.public_id,
+      title,
+      category: a.categoryKey,
+      description: d.description,
+      location: d.location,
+      area: "Saved citizen report",
+      priority: saved.priority || a.priority,
+      status: saved.status || "Reported",
+      supporters: 1,
+      photo: null,
+      reportedAt: saved.reported_at ? new Date(saved.reported_at).getTime() : Date.now()
     });
+    issue.summary = a.summary;
+    issue.recommendation = a.recommendation;
+    issue.databaseId = saved.id;
+    issue.persisted = true;
+    issues.unshift(issue);
+    state.supported.add(saved.public_id);
 
-  issue.summary =
-    a.summary;
+    const oldPhoto = state.draftPhotoUrl;
+    state.draftPhotoUrl = null;
+    resetReportForm();
+    if (oldPhoto) {
+      try { URL.revokeObjectURL(oldPhoto); } catch {}
+    }
+    const reportForm = $("#reportForm");
+    if (reportForm) reportForm.hidden = true;
+    state.analysis = null;
 
-  issue.recommendation =
-    a.recommendation;
-
-  issues.unshift(issue);
-
-  state.supported.add(id);
-
-  const oldPhoto =
-    state.draftPhotoUrl;
-
-  state.draftPhotoUrl =
-    null;
-
-  resetReportForm();
-
-  if (oldPhoto) {
-    try {
-      URL.revokeObjectURL(
-        oldPhoto
-      );
-    } catch {}
+    const panel = $("#aiPanel");
+    if (panel) {
+      panel.innerHTML = `
+        <div class="ai-card success-card">
+          <span class="success-icon"><i data-lucide="check"></i></span>
+          <p class="kicker">${escapeHtml(saved.public_id)} · ${escapeHtml(issue.department)}</p>
+          <h3 class="success-title">Report saved</h3>
+          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. Its initial category and priority are prototype AI suggestions and still require human verification. Photos are not uploaded yet.</p>
+          <div class="success-actions">
+            <button type="button" class="btn btn-primary" data-issue="${escapeHtml(saved.public_id)}"><i data-lucide="activity"></i>Track this issue</button>
+            <button type="button" class="btn btn-ghost" data-action="report-another">Report another</button>
+          </div>
+        </div>`;
+      refreshIcons();
+    }
+    updateStepper();
+    renderHome();
+    renderIssues();
+    renderDashboard();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast(`${saved.public_id} saved successfully`);
+  } catch (error) {
+    console.error("Civic OS report save failed:", error);
+    toast(error?.message?.includes("row-level security")
+      ? "Your account could not submit this report. Please sign out and sign in again."
+      : "Report was not saved. Check your connection and try again.", "triangle-alert");
+  } finally {
+    if (submitButton) { submitButton.disabled = false; submitButton.removeAttribute("aria-busy"); }
   }
-
-  const reportForm =
-    $("#reportForm");
-
-  if (reportForm) {
-    reportForm.hidden =
-      true;
-  }
-
-  state.analysis =
-    null;
-
-  const panel =
-    $("#aiPanel");
-
-  if (panel) {
-    panel.innerHTML = `
-      <div class="ai-card success-card">
-
-        <span class="success-icon">
-          <i data-lucide="check"></i>
-        </span>
-
-        <p class="kicker">
-          ${escapeHtml(id)}
-          ·
-          ${escapeHtml(
-            issue.department
-          )}
-        </p>
-
-        <h3 class="success-title">
-          Report submitted
-        </h3>
-
-        <p class="success-sub">
-          Your report has been added to this demo session.
-          No government department has been contacted, and
-          reports are not saved to a server.
-        </p>
-
-        <div class="success-actions">
-
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-issue="${escapeHtml(id)}"
-          >
-            <i data-lucide="activity"></i>
-            Track this issue
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-ghost"
-            data-action="report-another"
-          >
-            Report another
-          </button>
-
-        </div>
-
-      </div>
-    `;
-
-    refreshIcons();
-  }
-
-  updateStepper();
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
-  toast(
-    `${id} added to this demo session`
-  );
 }
 
 function resetReportForm() {
@@ -7944,6 +8086,8 @@ function runInitStep(name, fn) {
 }
 
 function init() {
+
+  runInitStep("backend", setupCivicBackend);
 
   runInitStep("demo data", () => {
     issues = SEED_ISSUES.map(createIssue);
