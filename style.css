@@ -6878,3 +6878,66 @@ button:disabled,
   cursor: progress;
   transform: none;
 }
+
+
+/* Civic OS account dialog — matches the existing component styling */
+.civic-auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 9, 6, .76);
+  backdrop-filter: blur(10px);
+}
+.civic-auth-backdrop[hidden] { display: none !important; }
+.civic-auth-card {
+  position: relative;
+  width: min(100%, 460px);
+  max-height: min(88dvh, 760px);
+  overflow-y: auto;
+  padding: clamp(22px, 5vw, 32px);
+  border: 1px solid rgba(62, 224, 143, .24);
+  border-radius: 22px;
+  background: #0c1912;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, .48);
+}
+.civic-auth-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,.05);
+  color: #effff5;
+  font-size: 25px;
+  cursor: pointer;
+}
+.civic-auth-copy, .civic-auth-footnote {
+  color: rgba(235, 246, 239, .76);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.civic-auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
+.civic-auth-label { display: block; margin: 13px 0 6px; color: #e8f6ed; font-size: 12px; font-weight: 600; }
+.civic-auth-card input {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  background: rgba(255,255,255,.055);
+  color: #f3fff7;
+  font: inherit;
+}
+.civic-auth-card input::placeholder { color: rgba(235,246,239,.48); }
+.civic-auth-card input:focus { outline: 2px solid rgba(62,224,143,.65); outline-offset: 1px; }
+.civic-auth-message { min-height: 18px; margin: 12px 0; color: #8bf0b8; font-size: 12px; line-height: 1.5; }
+.civic-auth-message.is-error { color: #ff9d9d; }
+.civic-auth-footnote { margin: 15px 0 0; font-size: 11px; }
+body.civic-auth-open { overflow: hidden; }
