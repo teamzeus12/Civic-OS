@@ -21,7 +21,7 @@
     if (busy) { button.dataset.originalText = button.textContent; button.textContent = label || "Please wait…"; }
     else if (button.dataset.originalText) { button.textContent = button.dataset.originalText; delete button.dataset.originalText; }
   };
-  const redirectHome = () => { window.location.href = "./index.html"; };
+  const redirectHome = () => { window.location.href = "./home.html"; };
 
   function choosePortal(next) {
     portal = next === "government" ? "government" : "people";
@@ -230,7 +230,8 @@
       }
     });
   }
-  choosePortal("people");
+  const requestedPortal = new URLSearchParams(window.location.search).get("portal");
+  choosePortal(requestedPortal === "government" ? "government" : "people");
   chooseMode("signin");
   if (isRecovery) {
     $("citizenForm").hidden = true;
