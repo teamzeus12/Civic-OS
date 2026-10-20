@@ -99,7 +99,10 @@
       if (mode === "signup") {
         const fullName = $("citizenName").value.trim();
         const { data, error } = await client.auth.signUp({
-          email, password, options: { data: { full_name: fullName } }
+          email, password, options: {
+            data: { full_name: fullName },
+            emailRedirectTo: new URL("./auth.html?portal=people", window.location.href).href
+          }
         });
         if (error) throw error;
         if (!data.session) {
