@@ -32,7 +32,7 @@
       bottomNav.appendChild(button);
       const navStyle = document.createElement("style");
       navStyle.id = "profile-nav-layout";
-      navStyle.textContent = ".bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}.bottom-nav .nav-report{grid-column:3!important}";
+      navStyle.textContent = ".bottom-nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}.bottom-nav [data-goto="actionsScreen"]{grid-column:3!important}";
       document.head.appendChild(navStyle);
     }
 
