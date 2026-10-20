@@ -69,6 +69,56 @@
       </div>
     </section>
 
+ 
+    <nav class="demo-nav" aria-label="Demo dashboard sections">
+      <button type="button" class="demo-nav-btn active" data-view="overview">Overview</button>
+      <button type="button" class="demo-nav-btn" data-view="reports">Report management</button>
+      <button type="button" class="demo-nav-btn" data-view="map">Issue map</button>
+      <button type="button" class="demo-nav-btn" data-view="announcements">Announcements</button>
+      <button type="button" class="demo-nav-btn" data-view="analytics">Analytics</button>
+    </nav>
+    <section class="demo-view" data-demo-view="overview">
+      <div class="demo-columns">
+        <article class="gov-panel demo-panel"><p class="eyebrow">RESPONSE WORKFLOW</p><h2>Sample response pipeline</h2>
+          <div class="pipeline-row"><span>New reports</span><b>24</b><div><i style="width:38%"></i></div></div>
+          <div class="pipeline-row"><span>Under review</span><b>18</b><div><i style="width:29%"></i></div></div>
+          <div class="pipeline-row"><span>Assigned to department</span><b>21</b><div><i style="width:33%"></i></div></div>
+          <div class="pipeline-row"><span>Resolved this month</span><b>65</b><div><i style="width:82%"></i></div></div>
+        </article>
+        <article class="gov-panel demo-panel"><p class="eyebrow">ATTENTION REQUIRED</p><h2>Priority queue</h2>
+          <div class="queue-item"><span class="priority high">High</span><div><strong>Unsafe road damage</strong><small>Sample · Imphal West</small></div><span class="status new">New</span></div>
+          <div class="queue-item"><span class="priority high">High</span><div><strong>School water supply</strong><small>Sample · Imphal East</small></div><span class="status review">In review</span></div>
+          <div class="queue-item"><span class="priority medium">Medium</span><div><strong>Streetlight outage</strong><small>Sample · Thoubal</small></div><span class="status progress">In progress</span></div>
+        </article>
+      </div>
+    </section>
+    <section class="demo-view" data-demo-view="reports" hidden>
+      <article class="gov-panel demo-panel"><p class="eyebrow">DEMO WORKFLOW</p><h2>Report management tools</h2>
+        <p class="demo-copy">In a connected official portal, authorised staff would review evidence, assign a responsible department, update progress and add a resolution note. This preview demonstrates the layout with sample records only.</p>
+        <div class="demo-tools"><label for="demoDepartment">Department view</label><select id="demoDepartment"><option>All departments</option><option>Public Works</option><option>Sanitation</option><option>Education</option><option>Electricity</option></select>
+        <label for="demoPriority">Priority</label><select id="demoPriority"><option>All priorities</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+        <p id="demoToolMessage" class="demo-copy" aria-live="polite">Choose filters to preview how staff could narrow a work queue. No changes are saved.</p>
+      </article>
+    </section>
+    <section class="demo-view" data-demo-view="map" hidden>
+      <article class="gov-panel demo-panel"><p class="eyebrow">SAMPLE GEOGRAPHIC OVERVIEW</p><h2>Issue distribution</h2>
+        <div class="mock-map" role="img" aria-label="Illustrative map with sample issue markers, not a real map"><span class="map-road road-one"></span><span class="map-road road-two"></span><span class="map-road road-three"></span><button class="map-pin pin-one" type="button" data-map-label="Imphal West · 12 sample reports">12</button><button class="map-pin pin-two" type="button" data-map-label="Imphal East · 8 sample reports">8</button><button class="map-pin pin-three" type="button" data-map-label="Thoubal · 6 sample reports">6</button><button class="map-pin pin-four" type="button" data-map-label="Bishnupur · 5 sample reports">5</button></div>
+        <p id="mapDemoMessage" class="demo-copy" aria-live="polite">Select a marker to see illustrative sample counts. This is not a live or geographically accurate map.</p>
+      </article>
+    </section>
+    <section class="demo-view" data-demo-view="announcements" hidden>
+      <article class="gov-panel demo-panel"><p class="eyebrow">PUBLIC COMMUNICATIONS</p><h2>Announcements preview</h2>
+        <div class="announcement"><span class="announcement-tag">SAMPLE DRAFT</span><strong>Community road repair update</strong><p>Public Works update for a fictional demonstration area. No public notification will be sent.</p><small>Draft · Demo content</small></div>
+        <div class="announcement"><span class="announcement-tag">SAMPLE PUBLISHED</span><strong>Waste collection schedule reminder</strong><p>Illustrative public-service reminder used to preview announcement cards.</p><small>Published in demo only · Not sent to citizens</small></div>
+        <button id="demoAnnouncementButton" class="demo-action" type="button">Preview announcement confirmation</button><p id="announcementDemoMessage" class="demo-copy" aria-live="polite"></p>
+      </article>
+    </section>
+    <section class="demo-view" data-demo-view="analytics" hidden>
+      <div class="demo-columns">
+        <article class="gov-panel demo-panel"><p class="eyebrow">SAMPLE PERFORMANCE</p><h2>Resolution trend</h2><div class="trend-bars"><div><i style="height:42%"></i><small>May</small></div><div><i style="height:57%"></i><small>Jun</small></div><div><i style="height:49%"></i><small>Jul</small></div><div><i style="height:73%"></i><small>Aug</small></div><div><i style="height:66%"></i><small>Sep</small></div><div><i style="height:88%"></i><small>Oct</small></div></div><p class="demo-copy">Illustrative monthly resolution index; not official performance data.</p></article>
+        <article class="gov-panel demo-panel"><p class="eyebrow">SAMPLE CATEGORY MIX</p><h2>Report categories</h2><div class="category-row"><span>Roads & transport</span><b>34%</b></div><div class="category-row"><span>Sanitation</span><b>24%</b></div><div class="category-row"><span>Education</span><b>18%</b></div><div class="category-row"><span>Electricity</span><b>14%</b></div><div class="category-row"><span>Other</span><b>10%</b></div></article>
+      </div>
+    </section>
     <footer class="gov-footer"><span>© Civic OS</span><span>Preview only · No official access granted</span></footer>
   </main>
 </body>
