@@ -2452,16 +2452,29 @@ async function handleAnalyze(event) {
       return;
     }
 
-    state.analysis =
-      analyzeReport(draft);
-
-    state.analyzing = false;
-
-    if (analyzeBtn) {
-      analyzeBtn.disabled =
-        false;
+    let modelAnalysis = null;
+    let modelUnavailableReason = '';
+    try {
+      const client = window.civicSupabase;
+      if (!client) throw new Error('Secure Civic AI client is unavailable.');
+      const evidenceTypes = state.draftEvidenceFiles.map((file) =>
+        file.type.startsWith('video/') ? 'video' :
+        file.type.startsWith('audio/') ? 'audio' : 'image'
+      );
+      const { data, error } = await client.functions.invoke('civic-ai-analyze', {
+        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes }
+      });
+      if (error) throw error;
+      if (!data || !data.categoryKey || !data.priority) throw new Error('The AI service returned an incomplete result.');
+      modelAnalysis = { ...data, engine: data.engine || 'groq' };
+    } catch (error) {
+      console.warn('Real Civic AI unavailable; using clearly labelled prototype analysis:', error);
+      modelUnavailableReason = 'Real AI is not configured or temporarily unavailable. This result uses the local keyword prototype.';
     }
 
+    state.analysis = modelAnalysis || { ...analyzeReport(draft), engine: 'prototype', modelUnavailableReason };
+    state.analyzing = false;
+    if (analyzeBtn) analyzeBtn.disabled = false;
     renderAnalysis();
   };
 
@@ -2650,11 +2663,20 @@ function renderAnalysis() {
         </span>
 
         <span class="demo-badge">
-          Demo AI
+          ${a.engine === "groq" ? "Real model" : "Prototype"}
         </span>
 
       </div>
 
+      ${a.modelUnavailableReason ? `
+        <div class="ai-warning ai-evidence-warning">
+          <i data-lucide="info"></i>
+          <div class="ai-warning-body">
+            <strong>Prototype analysis only</strong>
+            <span>${escapeHtml(a.modelUnavailableReason)} Configure the server-side GROQ_API_KEY to enable real-model analysis. Do not put that key in website files.</span>
+          </div>
+        </div>
+      ` : ""}
       ${note}
       ${photoNote}
       ${categoryReviewNote}
