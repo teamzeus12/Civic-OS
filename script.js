@@ -2557,6 +2557,64 @@ async function civicImageToDataUrl(file) {
   });
 }
 
+async function generateImprovementPreview() {
+  const imageFile = state.draftEvidenceFiles.find((file) => file.type.startsWith("image/"));
+  if (!imageFile) {
+    toast("Add a clear photo of the place first, then generate an improvement preview.", "image-plus");
+    document.querySelector("#photo")?.click();
+    return;
+  }
+
+  const button = document.querySelector('[data-action="generate-improvement"]');
+  const preview = document.getElementById("improvementPreview");
+  if (!button || !preview) return;
+
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  button.innerHTML = '<i data-lucide="loader-circle"></i> Generating preview…';
+  preview.hidden = false;
+  preview.innerHTML = '<div class="improvement-loading"><i data-lucide="loader-circle"></i><strong>Creating an improved-place concept…</strong><span>This may take a little while. Keep this page open.</span></div>';
+  refreshIcons();
+
+  try {
+    const client = window.civicSupabase;
+    if (!client) throw new Error("Secure Civic OS connection is unavailable.");
+    const imageDataUrl = await civicImageToDataUrl(imageFile);
+    const draft = state.draft || {};
+    const { data, error } = await client.functions.invoke("civic-generate-improvement", {
+      body: {
+        imageDataUrl,
+        categoryKey: draft.categoryKey || "other",
+        description: String(draft.description || "").slice(0, 1500),
+        location: String(draft.location || "").slice(0, 300)
+      }
+    });
+    if (error) throw error;
+    if (!data || !data.imageDataUrl) throw new Error(data?.error || "The image service did not return a generated preview.");
+    preview.innerHTML = `
+      <h4>After-improvement concept</h4>
+      <img class="improvement-generated-image" src="${escapeHtml(data.imageDataUrl)}" alt="AI-generated concept of how the reported place could look after improvement">
+      <p class="improvement-image-note">Compare this concept with the original photo. The AI may alter details or add features that are not present in the real location.</p>
+      <a class="btn btn-ghost btn-lg" href="${escapeHtml(data.imageDataUrl)}" download="civic-os-improvement-concept.png"><i data-lucide="download"></i> Save concept image</a>
+    `;
+  } catch (error) {
+    console.error("Improvement image generation failed:", error);
+    const message = String(error?.message || "");
+    const setupMissing = message.includes("not configured") || message.includes("CLOUDFLARE");
+    preview.innerHTML = `
+      <div class="improvement-error">
+        <strong>${setupMissing ? "Image generation needs setup" : "Could not generate the preview"}</strong>
+        <p>${setupMissing ? "The secure image-generation service still needs Cloudflare Workers AI credentials added as Supabase secrets. Do not put them in website files." : "Please try again later. If the problem continues, the image-generation service needs troubleshooting."}</p>
+      </div>
+    `;
+  } finally {
+    button.disabled = false;
+    button.removeAttribute("aria-busy");
+    button.innerHTML = '<i data-lucide="image-plus"></i> Visualize After Improvement';
+    refreshIcons();
+  }
+}
+
 function renderAnalysis() {
   const a =
     state.analysis;
@@ -2873,6 +2931,20 @@ function renderAnalysis() {
             a.recommendation
           )}
         </p>
+
+        <div class="ai-improvement">
+          <button
+            type="button"
+            class="btn btn-primary btn-lg"
+            data-action="generate-improvement"
+          >
+            <i data-lucide="image-plus"></i>
+            Visualize After Improvement
+          </button>
+          <p class="ai-improvement-caption">Generate a concept preview based on your report photo, showing how this place could look after repair, cleanup, or improvement.</p>
+          <div id="improvementPreview" class="improvement-preview" hidden aria-live="polite"></div>
+          <p class="ai-improvement-disclaimer">AI-generated concept only. It is not a guarantee of the exact result or a substitute for an approved engineering plan.</p>
+        </div>
 
       </div>
 
@@ -6862,6 +6934,13 @@ function bindEvents() {
       } =
         actionBtn.dataset;
 
+
+      if (
+        action ===
+        "generate-improvement"
+      ) {
+        generateImprovementPreview();
+      }
 
       if (
         action ===
