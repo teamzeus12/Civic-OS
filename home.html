@@ -995,7 +995,7 @@
                 04
               </span>
 
-              Add a photo
+              Add photos
 
               <span class="optional">
                 Optional
@@ -1014,6 +1014,7 @@
                 name="photo"
                 type="file"
                 accept="image/*"
+                multiple
                 class="sr-only"
                 aria-labelledby="photoLabel"
               />
@@ -1023,7 +1024,7 @@
               </span>
 
               <span class="dz-title">
-                Take or upload a photo
+                Take or upload up to 5 photos
               </span>
 
               <span class="dz-hint">
@@ -1038,19 +1039,7 @@
               hidden
             >
 
-              <img
-                id="photoImg"
-                alt="Preview of the uploaded evidence photo"
-              />
-
-              <button
-                type="button"
-                class="icon-btn"
-                id="removePhoto"
-                aria-label="Remove photo"
-              >
-                <i data-lucide="x"></i>
-              </button>
+              <p class="photo-preview-note">Selected photos are previews only. They are not uploaded or saved with the report yet.</p>
 
             </div>
 
