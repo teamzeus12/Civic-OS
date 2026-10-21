@@ -3012,10 +3012,11 @@ async function saveReportEvidence(reportId, userId) {
       });
       if (uploadError) throw uploadError;
       uploadedPaths.push(path);
+      const mediaType = file.type.startsWith("video/") ? "video" : file.type.startsWith("audio/") ? "audio" : "image";
       evidenceRows.push({
         report_id: reportId,
         storage_path: path,
-        media_type: "image",
+        media_type: mediaType,
         original_name: originalName
       });
     }
@@ -3048,13 +3049,13 @@ async function retryCivicEvidenceUpload() {
     const retry = panel?.querySelector('[data-action="retry-evidence-upload"]');
     if (retry) retry.remove();
     const success = panel?.querySelector(".success-sub");
-    if (success) success.textContent = `Your report is saved to Civic OS. ${count} evidence photo(s) were securely uploaded. Initial category and priority are prototype AI suggestions and still require human verification.`;
+    if (success) success.textContent = `Your report is saved to Civic OS. ${count} evidence file(s) were securely uploaded. Initial category and priority are prototype AI suggestions and still require human verification.`;
     refreshIcons();
-    toast(`${count} evidence photo(s) uploaded`);
+    toast(`${count} evidence file(s) uploaded`);
   } catch (error) {
     console.error("Civic OS evidence retry failed:", error);
     if (button) { button.disabled = false; button.textContent = "Retry photo upload"; }
-    toast("Photo upload failed again. Check your connection and retry.", "triangle-alert");
+    toast("Evidence upload failed again. Check your connection and retry.", "triangle-alert");
   }
 }
 
@@ -3166,7 +3167,7 @@ async function submitReport() {
           <span class="success-icon"><i data-lucide="check"></i></span>
           <p class="kicker">${escapeHtml(saved.public_id)} · ${escapeHtml(issue.department)}</p>
           <h3 class="success-title">Report saved</h3>
-          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. ${evidenceError ? "Photo upload failed; your selected photos remain available in this session so you can retry." : evidenceCount ? `${evidenceCount} evidence photo(s) were securely uploaded.` : "No evidence photos were attached."} Its initial category and priority are prototype AI suggestions and still require human verification.</p>
+          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. ${evidenceError ? "Photo upload failed; your selected photos remain available in this session so you can retry." : evidenceCount ? `${evidenceCount} evidence file(s) were securely uploaded.` : "No evidence photos were attached."} Its initial category and priority are prototype AI suggestions and still require human verification.</p>
           ${evidenceError ? '<p class="evidence-warning" role="status">Your report is saved, but its photos are not attached yet.</p>' : ""}
           <div class="success-actions">
             ${evidenceError ? '<button type="button" class="btn btn-primary" data-action="retry-evidence-upload">Retry photo upload</button>' : ""}
@@ -3215,29 +3216,34 @@ function resetReportForm() {
   showFormError(null);
 }
 
+
 function setPhoto(files) {
   const selected = Array.from(files || []);
   if (!selected.length) return;
-
-  const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
-  const validImages = selected.filter((file) => {
-    if (!allowedImageTypes.has(file.type)) return false;
-    if (file.size > 10 * 1024 * 1024) {
-      toast("Each photo must be 10 MB or smaller.", "triangle-alert");
-      return false;
+  const imageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
+  const videoTypes = new Set(["video/mp4", "video/quicktime", "video/webm"]);
+  const audioTypes = new Set(["audio/mpeg", "audio/mp4", "audio/aac", "audio/wav", "audio/x-wav", "audio/webm", "audio/ogg"]);
+  const currentImages = state.draftEvidenceFiles.filter((file) => file.type.startsWith("image/")).length;
+  const currentVideos = state.draftEvidenceFiles.filter((file) => file.type.startsWith("video/")).length;
+  const currentAudio = state.draftEvidenceFiles.filter((file) => file.type.startsWith("audio/")).length;
+  const accepted = [];
+  for (const file of selected) {
+    let kind = "";
+    let maxBytes = 0;
+    if (imageTypes.has(file.type)) { kind = "image"; maxBytes = 10 * 1024 * 1024; }
+    else if (videoTypes.has(file.type)) { kind = "video"; maxBytes = 50 * 1024 * 1024; }
+    else if (audioTypes.has(file.type)) { kind = "audio"; maxBytes = 20 * 1024 * 1024; }
+    else { toast("Unsupported file type. Choose a supported photo, video, or audio clip.", "triangle-alert"); continue; }
+    if (file.size > maxBytes) {
+      toast(kind === "image" ? "Each photo must be 10 MB or smaller." : kind === "video" ? "Each video must be 50 MB or smaller." : "Each audio clip must be 20 MB or smaller.", "triangle-alert");
+      continue;
     }
-    return true;
-  });
-  if (validImages.length !== selected.length) {
-    toast("Choose JPG, PNG, WebP, GIF, HEIC, or HEIF photos. Audio and video uploads are not available yet.", "triangle-alert");
-  }
-  const remaining = Math.max(0, 5 - state.draftEvidenceUrls.length);
-  const accepted = validImages.slice(0, remaining);
-  if (validImages.length > remaining) {
-    toast("You can attach up to 5 photos to one report.", "triangle-alert");
+    if (kind === "image" && currentImages + accepted.filter((f) => f.type.startsWith("image/")).length >= 5) { toast("You can attach up to 5 photos.", "triangle-alert"); continue; }
+    if (kind === "video" && currentVideos + accepted.filter((f) => f.type.startsWith("video/")).length >= 1) { toast("You can attach one video.", "triangle-alert"); continue; }
+    if (kind === "audio" && currentAudio + accepted.filter((f) => f.type.startsWith("audio/")).length >= 1) { toast("You can attach one audio clip.", "triangle-alert"); continue; }
+    accepted.push(file);
   }
   if (!accepted.length) return;
-
   state.draftEvidenceFiles.push(...accepted);
   state.draftEvidenceUrls.push(...accepted.map((file) => URL.createObjectURL(file)));
   renderPhotoPreviews();
@@ -3250,19 +3256,25 @@ function renderPhotoPreviews() {
   const preview = $("#photoPreview");
   const dropzone = $("#dropzone");
   if (!preview || !dropzone) return;
-
-  preview.innerHTML = state.draftEvidenceUrls.map((url, index) => `
-    <div class="photo-thumb">
-      <img src="${url}" alt="Selected evidence photo ${index + 1}" />
-      <button type="button" class="icon-btn" data-remove-photo-index="${index}" aria-label="Remove photo ${index + 1}">
-        <i data-lucide="x"></i>
-      </button>
-    </div>
-  `).join("") + (state.draftEvidenceUrls.length
-    ? '<p class="photo-preview-note">Photos are uploaded privately when you submit the report. They are not publicly accessible.</p>'
+  preview.innerHTML = state.draftEvidenceFiles.map((file, index) => {
+    const url = state.draftEvidenceUrls[index];
+    const type = file.type.startsWith("video/") ? "video" : file.type.startsWith("audio/") ? "audio" : "image";
+    const content = type === "image"
+      ? '<img src="' + url + '" alt="Selected evidence photo ' + (index + 1) + '" />'
+      : type === "video"
+        ? '<video src="' + url + '" controls playsinline preload="metadata" aria-label="Selected evidence video ' + (index + 1) + '"></video>'
+        : '<audio src="' + url + '" controls preload="metadata" aria-label="Selected evidence audio ' + (index + 1) + '"></audio>';
+    return '<div class="photo-thumb media-thumb">' + content
+      + '<p class="media-file-name">' + escapeHtml(file.name || ("Evidence " + (index + 1))) + '</p>'
+      + '<button type="button" class="icon-btn" data-remove-photo-index="' + index + '" aria-label="Remove evidence ' + (index + 1) + '"><i data-lucide="x"></i></button></div>';
+  }).join("") + (state.draftEvidenceFiles.length
+    ? '<p class="photo-preview-note">Evidence uploads privately when you submit the report. Images, video, and audio are not publicly accessible.</p>'
     : "");
-  preview.hidden = state.draftEvidenceUrls.length === 0;
-  dropzone.hidden = state.draftEvidenceUrls.length >= 5;
+  preview.hidden = state.draftEvidenceFiles.length === 0;
+  const images = state.draftEvidenceFiles.filter((file) => file.type.startsWith("image/")).length;
+  const videos = state.draftEvidenceFiles.some((file) => file.type.startsWith("video/"));
+  const audio = state.draftEvidenceFiles.some((file) => file.type.startsWith("audio/"));
+  dropzone.hidden = images >= 5 && videos && audio;
   refreshIcons();
 }
 
