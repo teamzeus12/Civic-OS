@@ -138,6 +138,46 @@ const CATEGORIES = {
     skills: ["Community Outreach", "Mapping"],
   },
 
+  agriculture: {
+    label: "Agriculture",
+    aiLabel: "Agriculture & Farming",
+    department: "Agriculture Department",
+    icon: "sprout",
+    keywords: ["farmer", "farm", "agriculture", "crop", "paddy", "irrigation", "fertilizer", "seed", "livestock", "harvest"],
+    action: "Refer the issue to the agriculture team for assessment and practical support.",
+    skills: ["Agriculture", "Environmental Science", "Data Analysis"],
+  },
+
+  transport: {
+    label: "Transport",
+    aiLabel: "Transport & Mobility",
+    department: "Transport Department",
+    icon: "bus",
+    keywords: ["bus", "transport", "vehicle", "traffic jam", "traffic congestion", "public transport", "bus stop", "parking", "road blockage"],
+    action: "Ask the transport team to assess the disruption and coordinate a suitable response.",
+    skills: ["Mapping", "Community Outreach", "Data Analysis"],
+  },
+
+  animals: {
+    label: "Animals",
+    aiLabel: "Animal Welfare",
+    department: "Animal Welfare Services",
+    icon: "paw-print",
+    keywords: ["animal", "dog", "stray dog", "cattle", "injured animal", "animal welfare", "livestock", "wildlife"],
+    action: "Refer the report to the appropriate animal welfare or veterinary service.",
+    skills: ["Animal Welfare", "Community Outreach"],
+  },
+
+  sports: {
+    label: "Sports",
+    aiLabel: "Sports & Recreation",
+    department: "Sports Department",
+    icon: "trophy",
+    keywords: ["sports", "sport", "playground", "football ground", "basketball court", "sports equipment", "stadium", "athletics"],
+    action: "Ask the sports team to assess the facility or equipment gap and identify support options.",
+    skills: ["Sports", "Project Management", "Community Outreach"],
+  },
+
   other: {
     label: "Other",
     aiLabel: "General Civic Issue",
