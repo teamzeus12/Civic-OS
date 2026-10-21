@@ -2463,7 +2463,7 @@ async function handleAnalyze(event) {
 
   let index = 0;
 
-  const tick = () => {
+  const tick = async () => {
     stepEls.forEach(
       (el, i) => {
         el.classList.toggle(
