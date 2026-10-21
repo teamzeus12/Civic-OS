@@ -970,7 +970,7 @@ const EXAMPLES = [
 const state = {
   screen: "homeScreen",
 
-  draftPhotoUrl: null,
+  draftPhotoUrls: [],
 
   draft: null,
 
@@ -2132,9 +2132,7 @@ function getDraft() {
       "",
 
     hasPhoto:
-      Boolean(
-        state.draftPhotoUrl
-      ),
+      state.draftPhotoUrls.length > 0,
 
     coordinates:
       parseIssueCoordinates(
@@ -3074,12 +3072,8 @@ async function submitReport() {
     issues.unshift(issue);
     state.supported.add(saved.public_id);
 
-    const oldPhoto = state.draftPhotoUrl;
-    state.draftPhotoUrl = null;
+    clearPhoto({ revoke: true });
     resetReportForm();
-    if (oldPhoto) {
-      try { URL.revokeObjectURL(oldPhoto); } catch {}
-    }
     const reportForm = $("#reportForm");
     if (reportForm) reportForm.hidden = true;
     state.analysis = null;
@@ -3123,11 +3117,7 @@ function resetReportForm() {
 
   form.reset();
 
-  clearPhoto({
-    revoke: Boolean(
-      state.draftPhotoUrl
-    )
-  });
+  clearPhoto({ revoke: true });
 
   const count =
     $("#descCount");
@@ -3140,100 +3130,56 @@ function resetReportForm() {
   showFormError(null);
 }
 
-function setPhoto(file) {
-  if (!file) return;
+function setPhoto(files) {
+  const selected = Array.from(files || []);
+  if (!selected.length) return;
 
-  if (
-    !file.type.startsWith(
-      "image/"
-    )
-  ) {
-    toast(
-      "Please choose an image file",
-      "triangle-alert"
-    );
-
-    return;
+  const validImages = selected.filter((file) => file.type.startsWith("image/"));
+  if (validImages.length !== selected.length) {
+    toast("Only image files are supported right now. Audio and video upload will be added separately.", "triangle-alert");
   }
-
-  clearPhoto({
-    revoke: true
-  });
-
-  state.draftPhotoUrl =
-    URL.createObjectURL(file);
-
-  const photoImg =
-    $("#photoImg");
-
-  const preview =
-    $("#photoPreview");
-
-  const dropzone =
-    $("#dropzone");
-
-  if (photoImg) {
-    photoImg.src =
-      state.draftPhotoUrl;
+  const remaining = Math.max(0, 5 - state.draftPhotoUrls.length);
+  const accepted = validImages.slice(0, remaining);
+  if (validImages.length > remaining) {
+    toast("You can attach up to 5 photos to one report.", "triangle-alert");
   }
+  if (!accepted.length) return;
 
-  if (preview) {
-    preview.hidden = false;
-  }
-
-  if (dropzone) {
-    dropzone.hidden = true;
-  }
-
+  state.draftPhotoUrls.push(...accepted.map((file) => URL.createObjectURL(file)));
+  renderPhotoPreviews();
+  const photo = $("#photo");
+  if (photo) photo.value = "";
   invalidateAnalysis();
 }
 
-function clearPhoto({
-  revoke
-}) {
-  if (
-    revoke &&
-    state.draftPhotoUrl
-  ) {
-    try {
-      URL.revokeObjectURL(
-        state.draftPhotoUrl
-      );
-    } catch {}
+function renderPhotoPreviews() {
+  const preview = $("#photoPreview");
+  const dropzone = $("#dropzone");
+  if (!preview || !dropzone) return;
+
+  preview.innerHTML = state.draftPhotoUrls.map((url, index) => `
+    <div class="photo-thumb">
+      <img src="${url}" alt="Selected evidence photo ${index + 1}" />
+      <button type="button" class="icon-btn" data-remove-photo-index="${index}" aria-label="Remove photo ${index + 1}">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+  `).join("");
+  preview.hidden = state.draftPhotoUrls.length === 0;
+  dropzone.hidden = state.draftPhotoUrls.length >= 5;
+  refreshIcons();
+}
+
+function clearPhoto({ revoke } = {}) {
+  if (revoke) {
+    state.draftPhotoUrls.forEach((url) => {
+      try { URL.revokeObjectURL(url); } catch {}
+    });
   }
-
-  state.draftPhotoUrl =
-    null;
-
-  const photo =
-    $("#photo");
-
-  const photoImg =
-    $("#photoImg");
-
-  const preview =
-    $("#photoPreview");
-
-  const dropzone =
-    $("#dropzone");
-
-  if (photo) {
-    photo.value = "";
-  }
-
-  if (photoImg) {
-    photoImg.removeAttribute(
-      "src"
-    );
-  }
-
-  if (preview) {
-    preview.hidden = true;
-  }
-
-  if (dropzone) {
-    dropzone.hidden = false;
-  }
+  state.draftPhotoUrls = [];
+  const photo = $("#photo");
+  if (photo) photo.value = "";
+  renderPhotoPreviews();
 }
 
 function fillExample() {
@@ -6964,26 +6910,24 @@ function bindEvents() {
       "change",
       (event) =>
         setPhoto(
-          event.target.files[0]
+          event.target.files
         )
     );
   }
 
 
-  const removePhoto =
-    $("#removePhoto");
-
-  if (removePhoto) {
-    removePhoto.addEventListener(
-      "click",
-      () => {
-        clearPhoto({
-          revoke: true
-        });
-
-        invalidateAnalysis();
-      }
-    );
+  const photoPreview = $("#photoPreview");
+  if (photoPreview) {
+    photoPreview.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-remove-photo-index]");
+      if (!button) return;
+      const index = Number(button.dataset.removePhotoIndex);
+      if (!Number.isInteger(index) || index < 0 || index >= state.draftPhotoUrls.length) return;
+      const [url] = state.draftPhotoUrls.splice(index, 1);
+      try { URL.revokeObjectURL(url); } catch {}
+      renderPhotoPreviews();
+      invalidateAnalysis();
+    });
   }
 
 
