@@ -971,6 +971,8 @@ const state = {
   screen: "homeScreen",
 
   draftPhotoUrls: [],
+  draftPhotoFiles: [],
+  pendingEvidenceReport: null,
 
   draft: null,
 
@@ -2991,6 +2993,71 @@ async function loadPersistentCivicReports() {
   }
 }
 
+async function saveReportEvidence(reportId, userId) {
+  const supabase = window.civicSupabase;
+  const files = [...state.draftPhotoFiles];
+  if (!files.length) return 0;
+
+  const bucket = "civic-report-evidence";
+  const uploadedPaths = [];
+  const evidenceRows = [];
+  try {
+    for (const file of files) {
+      const originalName = String(file.name || "evidence-image").replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100);
+      const extension = (originalName.match(/\.([a-zA-Z0-9]{1,8})$/)?.[1] || "img").toLowerCase();
+      const path = `${userId}/${reportId}/${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, {
+        contentType: file.type,
+        upsert: false
+      });
+      if (uploadError) throw uploadError;
+      uploadedPaths.push(path);
+      evidenceRows.push({
+        report_id: reportId,
+        storage_path: path,
+        media_type: "image",
+        original_name: originalName
+      });
+    }
+
+    const { error: evidenceError } = await supabase.from("report_evidence").insert(evidenceRows);
+    if (evidenceError) throw evidenceError;
+    return evidenceRows.length;
+  } catch (error) {
+    if (uploadedPaths.length) {
+      const { error: cleanupError } = await supabase.storage.from(bucket).remove(uploadedPaths);
+      if (cleanupError) console.warn("Evidence cleanup failed; check private storage:", cleanupError);
+    }
+    throw error;
+  }
+}
+
+async function retryCivicEvidenceUpload() {
+  const pending = state.pendingEvidenceReport;
+  if (!pending || !state.draftPhotoFiles.length) return;
+  const button = $('[data-action="retry-evidence-upload"]');
+  if (button) { button.disabled = true; button.textContent = "Uploading…"; }
+  try {
+    const count = await saveReportEvidence(pending.id, pending.userId);
+    state.pendingEvidenceReport = null;
+    clearPhoto({ revoke: true });
+    resetReportForm();
+    const panel = $("#aiPanel");
+    const warning = panel?.querySelector(".evidence-warning");
+    if (warning) warning.remove();
+    const retry = panel?.querySelector('[data-action="retry-evidence-upload"]');
+    if (retry) retry.remove();
+    const success = panel?.querySelector(".success-sub");
+    if (success) success.textContent = `Your report is saved to Civic OS. ${count} evidence photo(s) were securely uploaded. Initial category and priority are prototype AI suggestions and still require human verification.`;
+    refreshIcons();
+    toast(`${count} evidence photo(s) uploaded`);
+  } catch (error) {
+    console.error("Civic OS evidence retry failed:", error);
+    if (button) { button.disabled = false; button.textContent = "Retry photo upload"; }
+    toast("Photo upload failed again. Check your connection and retry.", "triangle-alert");
+  }
+}
+
 async function submitReport() {
   const a = state.analysis;
   const d = state.draft;
@@ -3049,6 +3116,18 @@ async function submitReport() {
       .single();
     if (error) throw error;
 
+    let evidenceCount = 0;
+    let evidenceError = null;
+    if (state.draftPhotoFiles.length) {
+      try {
+        evidenceCount = await saveReportEvidence(saved.id, user.id);
+      } catch (uploadError) {
+        evidenceError = uploadError;
+        state.pendingEvidenceReport = { id: saved.id, userId: user.id, publicId: saved.public_id };
+        console.error("Report saved but evidence upload failed:", uploadError);
+      }
+    }
+
     const issue = createIssue({
       id: saved.public_id,
       title,
@@ -3072,8 +3151,10 @@ async function submitReport() {
     issues.unshift(issue);
     state.supported.add(saved.public_id);
 
-    clearPhoto({ revoke: true });
-    resetReportForm();
+    if (!evidenceError) {
+      clearPhoto({ revoke: true });
+      resetReportForm();
+    }
     const reportForm = $("#reportForm");
     if (reportForm) reportForm.hidden = true;
     state.analysis = null;
@@ -3085,13 +3166,17 @@ async function submitReport() {
           <span class="success-icon"><i data-lucide="check"></i></span>
           <p class="kicker">${escapeHtml(saved.public_id)} · ${escapeHtml(issue.department)}</p>
           <h3 class="success-title">Report saved</h3>
-          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. Its initial category and priority are prototype AI suggestions and still require human verification. Photos are not uploaded yet.</p>
+          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. ${evidenceError ? "Photo upload failed; your selected photos remain available in this session so you can retry." : evidenceCount ? `${evidenceCount} evidence photo(s) were securely uploaded.` : "No evidence photos were attached."} Its initial category and priority are prototype AI suggestions and still require human verification.</p>
+          ${evidenceError ? '<p class="evidence-warning" role="status">Your report is saved, but its photos are not attached yet.</p>' : ""}
           <div class="success-actions">
+            ${evidenceError ? '<button type="button" class="btn btn-primary" data-action="retry-evidence-upload">Retry photo upload</button>' : ""}
             <button type="button" class="btn btn-primary" data-issue="${escapeHtml(saved.public_id)}"><i data-lucide="activity"></i>Track this issue</button>
             <button type="button" class="btn btn-ghost" data-action="report-another">Report another</button>
           </div>
         </div>`;
       refreshIcons();
+      const retryEvidenceButton = panel.querySelector('[data-action="retry-evidence-upload"]');
+      if (retryEvidenceButton) retryEvidenceButton.addEventListener("click", retryCivicEvidenceUpload);
     }
     updateStepper();
     renderHome();
@@ -3145,6 +3230,7 @@ function setPhoto(files) {
   }
   if (!accepted.length) return;
 
+  state.draftPhotoFiles.push(...accepted);
   state.draftPhotoUrls.push(...accepted.map((file) => URL.createObjectURL(file)));
   renderPhotoPreviews();
   const photo = $("#photo");
@@ -3177,6 +3263,7 @@ function clearPhoto({ revoke } = {}) {
     });
   }
   state.draftPhotoUrls = [];
+  state.draftPhotoFiles = [];
   const photo = $("#photo");
   if (photo) photo.value = "";
   renderPhotoPreviews();
@@ -6924,6 +7011,7 @@ function bindEvents() {
       const index = Number(button.dataset.removePhotoIndex);
       if (!Number.isInteger(index) || index < 0 || index >= state.draftPhotoUrls.length) return;
       const [url] = state.draftPhotoUrls.splice(index, 1);
+      state.draftPhotoFiles.splice(index, 1);
       try { URL.revokeObjectURL(url); } catch {}
       renderPhotoPreviews();
       invalidateAnalysis();
