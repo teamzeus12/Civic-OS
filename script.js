@@ -970,8 +970,8 @@ const EXAMPLES = [
 const state = {
   screen: "homeScreen",
 
-  draftPhotoUrls: [],
-  draftPhotoFiles: [],
+  draftEvidenceUrls: [],
+  draftEvidenceFiles: [],
   pendingEvidenceReport: null,
 
   draft: null,
@@ -2134,7 +2134,7 @@ function getDraft() {
       "",
 
     hasPhoto:
-      state.draftPhotoUrls.length > 0,
+      state.draftEvidenceUrls.length > 0,
 
     coordinates:
       parseIssueCoordinates(
@@ -2995,7 +2995,7 @@ async function loadPersistentCivicReports() {
 
 async function saveReportEvidence(reportId, userId) {
   const supabase = window.civicSupabase;
-  const files = [...state.draftPhotoFiles];
+  const files = [...state.draftEvidenceFiles];
   if (!files.length) return 0;
 
   const bucket = "civic-report-evidence";
@@ -3034,7 +3034,7 @@ async function saveReportEvidence(reportId, userId) {
 
 async function retryCivicEvidenceUpload() {
   const pending = state.pendingEvidenceReport;
-  if (!pending || !state.draftPhotoFiles.length) return;
+  if (!pending || !state.draftEvidenceFiles.length) return;
   const button = $('[data-action="retry-evidence-upload"]');
   if (button) { button.disabled = true; button.textContent = "Uploading…"; }
   try {
@@ -3118,7 +3118,7 @@ async function submitReport() {
 
     let evidenceCount = 0;
     let evidenceError = null;
-    if (state.draftPhotoFiles.length) {
+    if (state.draftEvidenceFiles.length) {
       try {
         evidenceCount = await saveReportEvidence(saved.id, user.id);
       } catch (uploadError) {
@@ -3231,15 +3231,15 @@ function setPhoto(files) {
   if (validImages.length !== selected.length) {
     toast("Choose JPG, PNG, WebP, GIF, HEIC, or HEIF photos. Audio and video uploads are not available yet.", "triangle-alert");
   }
-  const remaining = Math.max(0, 5 - state.draftPhotoUrls.length);
+  const remaining = Math.max(0, 5 - state.draftEvidenceUrls.length);
   const accepted = validImages.slice(0, remaining);
   if (validImages.length > remaining) {
     toast("You can attach up to 5 photos to one report.", "triangle-alert");
   }
   if (!accepted.length) return;
 
-  state.draftPhotoFiles.push(...accepted);
-  state.draftPhotoUrls.push(...accepted.map((file) => URL.createObjectURL(file)));
+  state.draftEvidenceFiles.push(...accepted);
+  state.draftEvidenceUrls.push(...accepted.map((file) => URL.createObjectURL(file)));
   renderPhotoPreviews();
   const photo = $("#photo");
   if (photo) photo.value = "";
@@ -3251,29 +3251,29 @@ function renderPhotoPreviews() {
   const dropzone = $("#dropzone");
   if (!preview || !dropzone) return;
 
-  preview.innerHTML = state.draftPhotoUrls.map((url, index) => `
+  preview.innerHTML = state.draftEvidenceUrls.map((url, index) => `
     <div class="photo-thumb">
       <img src="${url}" alt="Selected evidence photo ${index + 1}" />
       <button type="button" class="icon-btn" data-remove-photo-index="${index}" aria-label="Remove photo ${index + 1}">
         <i data-lucide="x"></i>
       </button>
     </div>
-  `).join("") + (state.draftPhotoUrls.length
+  `).join("") + (state.draftEvidenceUrls.length
     ? '<p class="photo-preview-note">Photos are uploaded privately when you submit the report. They are not publicly accessible.</p>'
     : "");
-  preview.hidden = state.draftPhotoUrls.length === 0;
-  dropzone.hidden = state.draftPhotoUrls.length >= 5;
+  preview.hidden = state.draftEvidenceUrls.length === 0;
+  dropzone.hidden = state.draftEvidenceUrls.length >= 5;
   refreshIcons();
 }
 
 function clearPhoto({ revoke } = {}) {
   if (revoke) {
-    state.draftPhotoUrls.forEach((url) => {
+    state.draftEvidenceUrls.forEach((url) => {
       try { URL.revokeObjectURL(url); } catch {}
     });
   }
-  state.draftPhotoUrls = [];
-  state.draftPhotoFiles = [];
+  state.draftEvidenceUrls = [];
+  state.draftEvidenceFiles = [];
   const photo = $("#photo");
   if (photo) photo.value = "";
   renderPhotoPreviews();
@@ -7019,9 +7019,9 @@ function bindEvents() {
       const button = event.target.closest("[data-remove-photo-index]");
       if (!button) return;
       const index = Number(button.dataset.removePhotoIndex);
-      if (!Number.isInteger(index) || index < 0 || index >= state.draftPhotoUrls.length) return;
-      const [url] = state.draftPhotoUrls.splice(index, 1);
-      state.draftPhotoFiles.splice(index, 1);
+      if (!Number.isInteger(index) || index < 0 || index >= state.draftEvidenceUrls.length) return;
+      const [url] = state.draftEvidenceUrls.splice(index, 1);
+      state.draftEvidenceFiles.splice(index, 1);
       try { URL.revokeObjectURL(url); } catch {}
       renderPhotoPreviews();
       invalidateAnalysis();
