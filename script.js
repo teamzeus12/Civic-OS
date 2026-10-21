@@ -3219,9 +3219,17 @@ function setPhoto(files) {
   const selected = Array.from(files || []);
   if (!selected.length) return;
 
-  const validImages = selected.filter((file) => file.type.startsWith("image/"));
+  const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
+  const validImages = selected.filter((file) => {
+    if (!allowedImageTypes.has(file.type)) return false;
+    if (file.size > 10 * 1024 * 1024) {
+      toast("Each photo must be 10 MB or smaller.", "triangle-alert");
+      return false;
+    }
+    return true;
+  });
   if (validImages.length !== selected.length) {
-    toast("Only image files are supported right now. Audio and video upload will be added separately.", "triangle-alert");
+    toast("Choose JPG, PNG, WebP, GIF, HEIC, or HEIF photos. Audio and video uploads are not available yet.", "triangle-alert");
   }
   const remaining = Math.max(0, 5 - state.draftPhotoUrls.length);
   const accepted = validImages.slice(0, remaining);
@@ -3250,7 +3258,9 @@ function renderPhotoPreviews() {
         <i data-lucide="x"></i>
       </button>
     </div>
-  `).join("");
+  `).join("") + (state.draftPhotoUrls.length
+    ? '<p class="photo-preview-note">Photos are uploaded privately when you submit the report. They are not publicly accessible.</p>'
+    : "");
   preview.hidden = state.draftPhotoUrls.length === 0;
   dropzone.hidden = state.draftPhotoUrls.length >= 5;
   refreshIcons();
