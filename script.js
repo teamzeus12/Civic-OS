@@ -2134,6 +2134,11 @@ function getDraft() {
     hasPhoto:
       Boolean(
         state.draftPhotoUrl
+      ),
+
+    coordinates:
+      parseIssueCoordinates(
+        $("#location")?.value.trim() || ""
       )
   };
 }
@@ -2257,7 +2262,39 @@ function invalidateAnalysis() {
   }
 }
 
-function handleAnalyze(event) {
+async function geocodeCivicLocation(query) {
+  const textQuery = String(query || "").trim();
+  const existing = parseIssueCoordinates(textQuery);
+  if (!textQuery || existing) return existing;
+
+  // Best-effort address lookup. Reporting remains available if lookup fails.
+  try {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("limit", "1");
+    url.searchParams.set("countrycodes", "in");
+    url.searchParams.set("q", /manipur|india/i.test(textQuery)
+      ? textQuery
+      : `${textQuery}, Manipur, India`);
+    const response = await fetch(url.toString(), {
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) return null;
+    const results = await response.json();
+    const match = Array.isArray(results) ? results[0] : null;
+    if (!match) return null;
+    const latitude = Number(match.lat);
+    const longitude = Number(match.lon);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+    if (latitude < 23 || latitude > 25.8 || longitude < 92 || longitude > 95.8) return null;
+    return { latitude, longitude };
+  } catch (error) {
+    console.warn("Location lookup unavailable; keeping the typed address:", error);
+    return null;
+  }
+}
+
+async function handleAnalyze(event) {
   event.preventDefault();
 
   if (state.analyzing) return;
@@ -2319,15 +2356,15 @@ function handleAnalyze(event) {
 
   showFormError(null);
 
-  state.draft = draft;
   state.analyzing = true;
+  const analyzeBtn = $("#analyzeBtn");
+  if (analyzeBtn) analyzeBtn.disabled = true;
 
-  const analyzeBtn =
-    $("#analyzeBtn");
-
-  if (analyzeBtn) {
-    analyzeBtn.disabled = true;
+  // GPS text already contains coordinates. Resolve typed places when possible.
+  if (!draft.coordinates) {
+    draft.coordinates = await geocodeCivicLocation(draft.location);
   }
+  state.draft = draft;
 
   const steps = [
     "Reading your description",
@@ -2932,6 +2969,9 @@ async function loadPersistentCivicReports() {
         category: row.category,
         description: row.public_impact || row.title,
         location: place,
+        latitude: typeof row.location === "object" ? row.location.latitude : null,
+        longitude: typeof row.location === "object" ? row.location.longitude : null,
+        locationPrecision: typeof row.location === "object" ? row.location.precision : null,
         area: "Saved citizen report",
         priority: row.priority || "Medium",
         status: row.status || "Reported",
@@ -2986,7 +3026,11 @@ async function submitReport() {
     title,
     category: a.categoryKey,
     description: d.description,
-    location: { address: d.location, precision: "citizen-entered" },
+    location: {
+      address: d.location,
+      precision: d.coordinates ? "geocoded-or-gps" : "citizen-entered",
+      ...(d.coordinates || {})
+    },
     reported_by: user.id,
     priority: a.priority || "Medium",
     priority_score: priorityScore,
@@ -3013,6 +3057,9 @@ async function submitReport() {
       category: a.categoryKey,
       description: d.description,
       location: d.location,
+      latitude: d.coordinates?.latitude,
+      longitude: d.coordinates?.longitude,
+      locationPrecision: d.coordinates ? (parseIssueCoordinates(d.location) ? "gps" : "geocoded") : null,
       area: "Saved citizen report",
       priority: saved.priority || a.priority,
       status: saved.status || "Reported",
