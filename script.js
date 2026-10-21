@@ -42,7 +42,7 @@ const CATEGORIES = {
   garbage: {
     label: "Garbage",
     aiLabel: "Waste & Sanitation",
-    department: "Sanitation",
+    department: "MAHUD / Urban Local Body",
     icon: "trash-2",
     keywords: [
       "garbage", "trash", "waste", "litter", "dump",
@@ -2501,8 +2501,11 @@ async function handleAnalyze(event) {
         file.type.startsWith('video/') ? 'video' :
         file.type.startsWith('audio/') ? 'audio' : 'image'
       );
+      const imageFiles = state.draftEvidenceFiles.filter((file) => file.type.startsWith('image/')).slice(0, 3);
+      const imageDataUrls = [];
+      for (const file of imageFiles) imageDataUrls.push(await civicImageToDataUrl(file));
       const { data, error } = await client.functions.invoke('civic-ai-analyze', {
-        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes }
+        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
       });
       if (error) throw error;
       if (!data || !data.categoryKey || !data.priority) throw new Error('The AI service returned an incomplete result.');
@@ -2519,6 +2522,39 @@ async function handleAnalyze(event) {
   };
 
   tick();
+}
+
+async function civicImageToDataUrl(file) {
+  if (file.size > 10 * 1024 * 1024) throw new Error("Image is too large for visual analysis.");
+  const sourceUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read the selected image."));
+    reader.readAsDataURL(file);
+  });
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Could not decode the selected image."));
+    img.src = sourceUrl;
+  });
+  const maxSide = 1280;
+  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+  canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Image processing is unavailable in this browser.");
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const compressedBlob = await new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not compress the image.")), "image/jpeg", 0.72);
+  });
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not prepare the image for AI analysis."));
+    reader.readAsDataURL(compressedBlob);
+  });
 }
 
 function renderAnalysis() {
@@ -2581,21 +2617,44 @@ function renderAnalysis() {
         : "";
 
   const photoNote =
-    d.hasPhoto
+    a.imageNotAnalyzed
       ? `
         <div class="ai-warning ai-evidence-warning">
           <i data-lucide="image-off"></i>
           <div class="ai-warning-body">
             <strong>Photo not visually analyzed</strong>
-            <span>
-              This demo does not inspect image contents. The category is based on the written description
-              and category selection, not the picture. Anime or illustration images cannot prove a civic issue.
-              Describe the real problem and verify the category before submitting.
-            </span>
+            <span>The image could not be sent to the vision model. Check your connection or submit with a clear written description.</span>
           </div>
         </div>
       `
-      : "";
+      : a.mediaRelevant === false
+        ? `
+          <div class="ai-warning ai-evidence-warning">
+            <i data-lucide="image-off"></i>
+            <div class="ai-warning-body">
+              <strong>Evidence may not match the report</strong>
+              <span>${escapeHtml(a.mediaMismatchReason || "The uploaded image does not clearly support the reported civic issue.")} ${escapeHtml(a.mediaSummary || "")} Please attach a genuine, relevant photo or correct the report before submitting.</span>
+            </div>
+          </div>
+        `
+        : a.mediaSummary
+          ? `
+            <div class="ai-note">
+              <i data-lucide="scan-eye"></i>
+              <span><strong>Visual check:</strong> ${escapeHtml(a.mediaSummary)} The image check is an aid, not proof; please verify the result.</span>
+            </div>
+          `
+          : d.hasPhoto
+            ? `
+              <div class="ai-warning ai-evidence-warning">
+                <i data-lucide="image-off"></i>
+                <div class="ai-warning-body">
+                  <strong>Photo not visually analyzed</strong>
+                  <span>Only text analysis was returned. Do not treat the image as verified evidence.</span>
+                </div>
+              </div>
+            `
+            : "";
 
   const categoryReviewNote =
     a.categoryNeedsReview
@@ -2737,20 +2796,6 @@ function renderAnalysis() {
 
         <div class="ai-cell">
           <span class="ai-label">
-            Priority
-          </span>
-
-          <span
-            class="ai-value is-${a.priority.toLowerCase()}"
-          >
-            ${escapeHtml(
-              a.priority
-            )}
-          </span>
-        </div>
-
-        <div class="ai-cell">
-          <span class="ai-label">
             Suggested department
           </span>
 
@@ -2769,18 +2814,6 @@ function renderAnalysis() {
           <span class="ai-value">
             ${escapeHtml(
               d.location
-            )}
-          </span>
-        </div>
-
-        <div class="ai-cell">
-          <span class="ai-label">
-            Target response
-          </span>
-
-          <span class="ai-value">
-            ${escapeHtml(
-              a.responseTime
             )}
           </span>
         </div>
