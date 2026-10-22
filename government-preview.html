@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f6faf8">
-  <meta name="description" content="Civic OS Government Portal dashboard preview with sample data only.">
-  <title>Government Dashboard Preview — Civic OS</title>
+  <meta name="description" content="Civic OS Government Portal with role-restricted live report management.">
+  <title>Government Portal — Civic OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="auth.css">
   <link rel="stylesheet" href="government-preview.css">
+  <style>.live-status-select,.live-note-input{box-sizing:border-box;width:100%;min-width:125px;padding:9px;border:1px solid #dce7df;border-radius:9px;background:#fff;color:#17241e;font:inherit;font-size:12px;margin-bottom:6px}.live-note-input{min-width:150px}.live-save-button{border:0;border-radius:9px;padding:9px 11px;background:#16865a;color:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer}.live-save-button:disabled{opacity:.55;cursor:wait}.live-report-error{color:#a52d2d}.gov-table td{vertical-align:top}</style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="government-preview.js" defer></script>
 </head>
 <body>
@@ -20,52 +23,46 @@
       <span>Civic <b>OS</b><small>REPORT. CONNECT. RESOLVE.</small></span>
     </a>
 
-    <section class="demo-banner" aria-label="Demo mode notice">
-      <span class="demo-badge">DEMO MODE</span>
-      <div><strong>Government Portal preview</strong><p>This dashboard uses sample data only. It is not connected to official government records and changes are not saved.</p></div>
+    <section class="demo-banner" aria-label="Government Portal access notice">
+      <span class="demo-badge" id="governmentAccessBadge">ACCESS CHECK</span>
+      <div><strong id="governmentAccessTitle">Government Portal</strong><p id="governmentAccessMessage">Checking your authorised access. Live civic reports are available only to approved government accounts. The map, announcements and analytics below are demo previews.</p></div>
     </section>
 
     <header class="gov-heading">
       <div>
-        <p class="eyebrow">GOVERNMENT PORTAL · PREVIEW</p>
+        <p class="eyebrow">GOVERNMENT PORTAL · CIVIC OS</p>
         <h1>Issue overview<span>.</span></h1>
-        <p class="gov-subtitle">A sample workspace for reviewing civic reports and tracking response progress.</p>
+        <p class="gov-subtitle">Review live citizen reports and record authorised status updates. Other dashboard modules remain illustrative previews.</p>
       </div>
       <a class="back-link gov-back" href="./auth.html?portal=government">← Portal sign-in</a>
     </header>
 
-    <section class="gov-stats" aria-label="Sample dashboard statistics">
-      <article class="gov-stat"><span>Sample reports</span><strong>128</strong><small>Demo figure</small></article>
-      <article class="gov-stat"><span>Awaiting review</span><strong>24</strong><small>Demo figure</small></article>
-      <article class="gov-stat"><span>In progress</span><strong>39</strong><small>Demo figure</small></article>
-      <article class="gov-stat"><span>Resolved</span><strong>65</strong><small>Demo figure</small></article>
+    <section class="gov-stats" id="liveReportStats" aria-label="Live civic report statistics" hidden>
+      <article class="gov-stat"><span>Total reports</span><strong id="statTotal">—</strong><small>From Civic OS database</small></article>
+      <article class="gov-stat"><span>Reported / verified</span><strong id="statReview">—</strong><small>Awaiting resolution</small></article>
+      <article class="gov-stat"><span>In progress</span><strong id="statProgress">—</strong><small>Active response</small></article>
+      <article class="gov-stat"><span>Resolved</span><strong id="statResolved">—</strong><small>Marked resolved</small></article>
     </section>
 
     <section class="gov-panel">
       <div class="gov-panel-heading">
         <div><p class="eyebrow">REPORT MANAGEMENT</p><h2>Recent civic reports</h2></div>
-        <label class="gov-search-label" for="reportSearch">Search sample reports</label>
-        <input id="reportSearch" class="gov-search" type="search" placeholder="Search title, category or location">
+        <label class="gov-search-label" for="reportSearch">Search live reports</label>
+        <input id="reportSearch" class="gov-search" type="search" placeholder="Search title, category or location" disabled>
       </div>
-      <div class="gov-filters" role="group" aria-label="Filter sample reports by status">
+      <div class="gov-filters" role="group" aria-label="Filter live reports by status">
         <button class="gov-filter active" type="button" data-filter="all">All reports</button>
-        <button class="gov-filter" type="button" data-filter="New">New</button>
-        <button class="gov-filter" type="button" data-filter="In review">In review</button>
-        <button class="gov-filter" type="button" data-filter="In progress">In progress</button>
+        <button class="gov-filter" type="button" data-filter="Reported">Reported</button>
+        <button class="gov-filter" type="button" data-filter="Verified">Verified</button>
+        <button class="gov-filter" type="button" data-filter="In Progress">In progress</button>
         <button class="gov-filter" type="button" data-filter="Resolved">Resolved</button>
       </div>
       <div class="gov-table-wrap">
         <table class="gov-table">
-          <thead><tr><th>Report</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th></tr></thead>
-          <tbody id="sampleReportRows">
-            <tr data-status="New"><td><strong>Damaged road surface</strong><small>Sample ID · DEMO-1042</small></td><td>Roads</td><td>Imphal West</td><td><span class="priority high">High</span></td><td><span class="status new">New</span></td></tr>
-            <tr data-status="In review"><td><strong>Streetlight not working</strong><small>Sample ID · DEMO-1038</small></td><td>Electricity</td><td>Thoubal</td><td><span class="priority medium">Medium</span></td><td><span class="status review">In review</span></td></tr>
-            <tr data-status="In progress"><td><strong>Waste collection delay</strong><small>Sample ID · DEMO-1031</small></td><td>Sanitation</td><td>Bishnupur</td><td><span class="priority medium">Medium</span></td><td><span class="status progress">In progress</span></td></tr>
-            <tr data-status="Resolved"><td><strong>Blocked public drain</strong><small>Sample ID · DEMO-1024</small></td><td>Drainage</td><td>Kakching</td><td><span class="priority low">Low</span></td><td><span class="status resolved">Resolved</span></td></tr>
-            <tr data-status="New"><td><strong>School water supply issue</strong><small>Sample ID · DEMO-1019</small></td><td>Education</td><td>Imphal East</td><td><span class="priority high">High</span></td><td><span class="status new">New</span></td></tr>
-          </tbody>
-        </table>
-        <p class="gov-empty" id="noSampleReports" hidden>No sample reports match your search.</p>
+          <thead><tr><th>Report</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Authorised update</th></tr></thead>
+          <tbody id="sampleReportRows"><tr><td colspan="6">Checking access and loading live reports…</td></tr></tbody>        </table>
+        <p class="gov-empty" id="noSampleReports" hidden>No live reports match your search.</p>
+        <p class="demo-copy" id="liveReportMessage" role="status" aria-live="polite"></p>
       </div>
     </section>
 
@@ -119,7 +116,7 @@
         <article class="gov-panel demo-panel"><p class="eyebrow">SAMPLE CATEGORY MIX</p><h2>Report categories</h2><div class="category-row"><span>Roads & transport</span><b>34%</b></div><div class="category-row"><span>Sanitation</span><b>24%</b></div><div class="category-row"><span>Education</span><b>18%</b></div><div class="category-row"><span>Electricity</span><b>14%</b></div><div class="category-row"><span>Other</span><b>10%</b></div></article>
       </div>
     </section>
-    <footer class="gov-footer"><span>© Civic OS</span><span>Preview only · No official access granted</span></footer>
+    <footer class="gov-footer"><span>© Civic OS</span><span>Live report access is role-restricted · Other modules are demo previews</span></footer>
   </main>
 </body>
 </html>
