@@ -21,7 +21,7 @@
     if (busy) { button.dataset.originalText = button.textContent; button.textContent = label || "Please wait…"; }
     else if (button.dataset.originalText) { button.textContent = button.dataset.originalText; delete button.dataset.originalText; }
   };
-  const redirectHome = () => { window.location.href = "./home.html"; };
+  const redirectHome = (destination = "people") => { window.location.href = destination === "government" ? "./government-preview.html" : "./home.html"; };
 
   function choosePortal(next) {
     portal = next === "government" ? "government" : "people";
@@ -170,7 +170,7 @@
         if (error) throw error;
         if (!data.user) throw new Error("Email verification did not return an account.");
         await checkGovernmentRole(data.user);
-        redirectHome();
+        redirectHome("government");
       }
     } catch (error) {
       setMessage("governmentMessage", error?.message || "Official sign-in could not be completed.", true);
@@ -217,7 +217,7 @@
         const { data: profile, error: profileError } = await client.from("profiles").select("role").eq("id", data.session.user.id).maybeSingle();
         if (profileError) throw profileError;
         if (profile && ["government", "admin"].includes(profile.role)) {
-          redirectHome();
+          redirectHome("government");
         } else {
           choosePortal("people");
           setMessage("citizenMessage", "Email verified. You can now sign in to your citizen account.");
