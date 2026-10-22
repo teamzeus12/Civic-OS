@@ -3121,11 +3121,35 @@ function setupCivicBackend() {
 async function loadPersistentCivicReports() {
   if (!window.civicSupabase) return;
   try {
-    const { data, error } = await window.civicSupabase
-      .rpc("get_public_issue_map");
-    if (error) throw error;
+    const client = window.civicSupabase;
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    // The public map intentionally exposes only reports approved for public display.
+    const { data: publicRows, error: publicError } = await client.rpc("get_public_issue_map");
+    if (publicError) throw publicError;
+
+    // Citizens must still be able to reload their own reports while they await verification.
+    // RLS limits this query to reports the signed-in user is permitted to read.
+    let ownRows = [];
+    const user = sessionData.session?.user;
+    if (user) {
+      const { data, error } = await client
+        .from("reports")
+        .select("id,public_id,title,category,description,status,priority,public_impact,location,reported_at,resolved_at")
+        .eq("reported_by", user.id)
+        .order("reported_at", { ascending: true });
+      if (error) throw error;
+      ownRows = data || [];
+    }
+
+    const rowsById = new Map();
+    for (const row of [...(publicRows || []), ...ownRows]) {
+      if (row.public_id) rowsById.set(row.public_id, row);
+    }
+
     const existing = new Set(issues.map((issue) => issue.id));
-    for (const row of (data || []).reverse()) {
+    for (const row of [...rowsById.values()].reverse()) {
       if (!row.public_id || existing.has(row.public_id)) continue;
       const place = typeof row.location === "string"
         ? row.location
@@ -3134,7 +3158,7 @@ async function loadPersistentCivicReports() {
         id: row.public_id,
         title: row.title,
         category: row.category,
-        description: row.public_impact || row.title,
+        description: row.description || row.public_impact || row.title,
         location: place,
         latitude: typeof row.location === "object" ? row.location.latitude : null,
         longitude: typeof row.location === "object" ? row.location.longitude : null,
