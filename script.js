@@ -197,27 +197,7 @@ const STATUSES = [
   "Resolved"
 ];
 
-const PRIORITY_RANK = {
-  High: 3,
-  Medium: 2,
-  Low: 1
-};
-
-const HIGH_PRIORITY_SIGNALS = [
-  "danger",
-  "dangerous",
-  "accident",
-  "flood",
-  "fire",
-  "emergency",
-  "unsafe",
-  "injur",
-  "collapse",
-  "exposed wire",
-  "live wire",
-  "electrocut",
-  "sparking",
-];
+const SAFETY_REVIEW_SIGNALS = ["danger","dangerous","accident","flood","fire","emergency","unsafe","injur","collapse","exposed wire","live wire","electrocut","sparking"];
 
 const IMPACT_SIGNALS = [
   "school",
@@ -231,14 +211,6 @@ const IMPACT_SIGNALS = [
   "night",
   "every day",
   "many",
-];
-
-const LOW_SIGNALS = [
-  "minor",
-  "small",
-  "cosmetic",
-  "slight",
-  "faded"
 ];
 
 const SKILLS = [
@@ -257,12 +229,6 @@ const SKILLS = [
   "Teaching",
   "Project Management",
 ];
-
-const RESPONSE_TIME = {
-  High: "Within 24 hours",
-  Medium: "Within 3–5 days",
-  Low: "Within 2 weeks"
-};
 
 const STOPWORDS = new Set([
   "near",
@@ -390,35 +356,10 @@ function analyzeReport({
 
   const cat = CATEGORIES[key] || CATEGORIES.other;
 
-  const highHits = matchTerms(
-    text,
-    HIGH_PRIORITY_SIGNALS
-  );
+  const reviewSignals = matchTerms(text, SAFETY_REVIEW_SIGNALS);
+  const impactHits = matchTerms(text, IMPACT_SIGNALS);
 
-  const impactHits = matchTerms(
-    text,
-    IMPACT_SIGNALS
-  );
-
-  const lowHits = matchTerms(
-    text,
-    LOW_SIGNALS
-  );
-
-  let priority = "Medium";
-
-  if (
-    highHits.length ||
-    impactHits.length >= 2
-  ) {
-    priority = "High";
-  } else if (
-    lowHits.length &&
-    !impactHits.length
-  ) {
-    priority = "Low";
-  }
-
+  // Civic AI describes the report; authorised officials decide urgency and response order.
   // Do not increase confidence merely because a photo was attached.
   // There is no visual model connected in this prototype.
   const hasCategoryEvidence =
@@ -443,46 +384,34 @@ function analyzeReport({
               : 0
           ) +
           Math.min(
-            highHits.length + impactHits.length,
+            reviewSignals.length + impactHits.length,
             3
           ) * 3
       )
     : 35;
 
   let riskNote = "";
-
-  if (highHits.length) {
-    riskNote =
-      ` The report mentions risk factors (${highHits.join(
-        ", "
-      )}), so it is flagged for urgent attention.`;
+  if (reviewSignals.length) {
+    riskNote = ` The description includes safety-related details (${reviewSignals.join(", ")}). An authorised official should review these details.`;
   } else if (impactHits.length >= 2) {
-    riskNote =
-      ` Impact factors (${impactHits.join(
-        ", "
-      )}) raise its urgency.`;
+    riskNote = ` The description includes several community-impact details (${impactHits.join(", ")}). An authorised official should review the report.`;
   }
 
   const summary =
     `A citizen reports a ${cat.aiLabel.toLowerCase()} problem at ${location}. ` +
     `${firstSentence(description)}${riskNote}`;
 
-  const recommendation =
-    priority === "High"
-      ? `Priority dispatch: ${cat.action} Secure the area until the work is complete.`
-      : cat.action;
+  const recommendation = cat.action;
 
   return {
     categoryKey: key,
     categoryLabel: cat.aiLabel,
     department: cat.department,
-    priority,
     confidence,
     summary,
     recommendation,
-    responseTime: RESPONSE_TIME[priority],
     signals: [
-      ...highHits,
+      ...reviewSignals,
       ...impactHits
     ],
     skills: cat.skills,
@@ -567,7 +496,6 @@ const SEED_ISSUES = [
     id: "CIV-1042",
     title: "Pothole on road near Kangla Western Gate",
     category: "roads",
-    priority: "High",
     status: "Reported",
     hoursAgo: 2,
     supporters: 23,
@@ -583,7 +511,6 @@ const SEED_ISSUES = [
     id: "CIV-1041",
     title: "Waste collection delayed near Ima Keithel",
     category: "garbage",
-    priority: "Medium",
     status: "In Progress",
     hoursAgo: 9,
     supporters: 41,
@@ -599,7 +526,6 @@ const SEED_ISSUES = [
     id: "CIV-1040",
     title: "Streetlight outage in Lamphelpat",
     category: "streetlights",
-    priority: "Low",
     status: "Resolved",
     hoursAgo: 30,
     supporters: 12,
@@ -615,7 +541,6 @@ const SEED_ISSUES = [
     id: "CIV-1039",
     title: "Leaking water pipe near Khuman Lampak",
     category: "water",
-    priority: "Medium",
     status: "Verified",
     hoursAgo: 14,
     supporters: 17,
@@ -631,7 +556,6 @@ const SEED_ISSUES = [
     id: "CIV-1038",
     title: "Drain overflowing in Thangmeiband",
     category: "water",
-    priority: "High",
     status: "In Progress",
     hoursAgo: 26,
     supporters: 58,
@@ -647,7 +571,6 @@ const SEED_ISSUES = [
     id: "CIV-1037",
     title: "Exposed wiring near Khuman Lampak",
     category: "streetlights",
-    priority: "High",
     status: "Verified",
     hoursAgo: 20,
     supporters: 34,
@@ -663,7 +586,6 @@ const SEED_ISSUES = [
     id: "CIV-1036",
     title: "Illegal dumping reported in Uripok",
     category: "garbage",
-    priority: "Medium",
     status: "Reported",
     hoursAgo: 30,
     supporters: 9,
@@ -679,7 +601,6 @@ const SEED_ISSUES = [
     id: "CIV-1035",
     title: "Stagnant water near Porompat",
     category: "health",
-    priority: "Medium",
     status: "In Progress",
     hoursAgo: 48,
     supporters: 27,
@@ -695,7 +616,6 @@ const SEED_ISSUES = [
     id: "CIV-1034",
     title: "Leaking school roof in Singjamei",
     category: "education",
-    priority: "Medium",
     status: "Reported",
     hoursAgo: 52,
     supporters: 19,
@@ -711,7 +631,6 @@ const SEED_ISSUES = [
     id: "CIV-1033",
     title: "Tree cutting concern near Khurai Lamlong",
     category: "environment",
-    priority: "Medium",
     status: "Verified",
     hoursAgo: 72,
     supporters: 46,
@@ -727,7 +646,6 @@ const SEED_ISSUES = [
     id: "CIV-1032",
     title: "Traffic signal issue near Keishampat",
     category: "safety",
-    priority: "High",
     status: "Resolved",
     hoursAgo: 96,
     supporters: 64,
@@ -743,7 +661,6 @@ const SEED_ISSUES = [
     id: "CIV-1031",
     title: "Road cracks and waterlogging in Sagolband",
     category: "roads",
-    priority: "Medium",
     status: "In Progress",
     hoursAgo: 120,
     supporters: 22,
@@ -759,7 +676,6 @@ const SEED_ISSUES = [
     id: "CIV-1030",
     title: "Overflowing bins near Khuman Lampak terminal",
     category: "garbage",
-    priority: "Low",
     status: "Resolved",
     hoursAgo: 144,
     supporters: 8,
@@ -775,7 +691,6 @@ const SEED_ISSUES = [
     id: "CIV-1029",
     title: "Streetlights out along the Nambul River",
     category: "streetlights",
-    priority: "Medium",
     status: "Reported",
     hoursAgo: 76,
     supporters: 31,
@@ -1025,7 +940,6 @@ const state = {
   filters: {
     status: "All",
     category: "all",
-    priority: "all",
     sort: "newest",
     query: ""
   },
@@ -1189,14 +1103,6 @@ function statusPill(status) {
   `;
 }
 
-function priorityPill(priority) {
-  return `
-    <span class="pill pill-${priority.toLowerCase()}">
-      ${escapeHtml(priority)} priority
-    </span>
-  `;
-}
-
 let toastTimer;
 
 function toast(
@@ -1336,7 +1242,6 @@ function renderDashboardMapIssue(issue) {
     <h4 class="dashboard-map-detail-title">${escapeHtml(issue.title)}</h4>
     <div class="dashboard-map-tags">
       ${statusPill(issue.status)}
-      ${priorityPill(issue.priority)}
       <span class="pill">${escapeHtml(categoryLabel)}</span>
     </div>
     <p class="dashboard-map-description">${escapeHtml(issue.description)}</p>
@@ -1452,12 +1357,12 @@ function initDashboardMap() {
     const coords = getIssueMapCoordinates(issue);
     if (!coords) return;
     const color = statusColors[issue.status] || "#0f766e";
-    const baseRadius = issue.priority === "High" ? 9 : 7;
+    const baseRadius = 7;
     const marker = window.L.circleMarker(
       [coords.latitude, coords.longitude],
       {
         radius: baseRadius,
-        color: issue.priority === "High" ? "#b83243" : color,
+        color,
         weight: 2,
         opacity: 1,
         fillColor: color,
@@ -1487,7 +1392,7 @@ function initDashboardMap() {
         <div class="dashboard-map-empty-selection">
           <span class="dashboard-map-empty-icon"><i data-lucide="mouse-pointer-click"></i></span>
           <strong>Select a map pin</strong>
-          <p>Click any marker to see its report details, status, priority and location link here.</p>
+          <p>Click any marker to see its report details, status and location link here.</p>
         </div>
       `
       : `
@@ -1553,10 +1458,6 @@ function createIssue(seed) {
 
     area: seed.area,
 
-    priority:
-      seed.priority ??
-      analysis.priority,
-
     status:
       seed.status ??
       "Reported",
@@ -1573,14 +1474,7 @@ function createIssue(seed) {
 
     summary: analysis.summary,
 
-    recommendation:
-      seed.priority === "High" ||
-      analysis.priority === "High"
-        ? analysis.recommendation
-        : CATEGORIES[
-            seed.category
-          ]?.action ||
-          CATEGORIES.other.action,
+    recommendation: analysis.recommendation || CATEGORIES[seed.category]?.action || CATEGORIES.other.action,
 
     updates: buildUpdates(
       seed.status ?? "Reported",
@@ -1832,7 +1726,6 @@ function renderHome() {
       </p>
 
       <div class="tag-row">
-        ${priorityPill(latest.priority)}
         ${statusPill(latest.status)}
       </div>
 
@@ -2032,12 +1925,7 @@ function issueCard(issue) {
     CATEGORIES[issue.category] ||
     CATEGORIES.other;
 
-  const iconTone =
-    issue.status === "Resolved"
-      ? "is-resolved"
-      : issue.priority === "High"
-        ? "is-high"
-        : "";
+  const iconTone = issue.status === "Resolved" ? "is-resolved" : "";
 
   return `
     <button
@@ -2080,7 +1968,6 @@ function issueCard(issue) {
 
         <span class="issue-tags">
           ${statusPill(issue.status)}
-          ${priorityPill(issue.priority)}
 
           <span class="pill">
             <i data-lucide="users"></i>
@@ -2409,7 +2296,7 @@ async function handleAnalyze(event) {
   const steps = [
     "Reading your description",
     "Detecting the issue category",
-    "Assessing priority and risk",
+    "Preparing report summary",
     "Routing to a department",
     "Checking for duplicate reports"
   ];
@@ -2508,8 +2395,16 @@ async function handleAnalyze(event) {
         body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
       });
       if (error) throw error;
-      if (!data || !data.categoryKey || !data.priority) throw new Error('The AI service returned an incomplete result.');
-      modelAnalysis = { ...data, engine: data.engine || 'groq' };
+      if (!data || !data.categoryKey) throw new Error('The AI service returned an incomplete result.');
+      modelAnalysis = {
+        categoryKey: data.categoryKey, categoryLabel: data.categoryLabel,
+        department: data.department, confidence: data.confidence,
+        summary: data.summary, recommendation: data.recommendation,
+        signals: data.signals, skills: data.skills, autoDetected: data.autoDetected,
+        suggestion: data.suggestion, categoryNeedsReview: data.categoryNeedsReview,
+        imageNotAnalyzed: data.imageNotAnalyzed, duplicate: data.duplicate,
+        engine: data.engine || 'groq'
+      };
     } catch (error) {
       console.warn('Real Civic AI unavailable; using clearly labelled prototype analysis:', error);
       modelUnavailableReason = 'Real AI is not configured or temporarily unavailable. This result uses the local keyword prototype.';
@@ -3136,7 +3031,7 @@ async function loadPersistentCivicReports() {
     if (user) {
       const { data, error } = await client
         .from("reports")
-        .select("id,public_id,title,category,description,status,priority,public_impact,location,reported_at,resolved_at")
+        .select("id,public_id,title,category,description,status,public_impact,location,reported_at,resolved_at")
         .eq("reported_by", user.id)
         .order("reported_at", { ascending: true });
       if (error) throw error;
@@ -3164,7 +3059,6 @@ async function loadPersistentCivicReports() {
         longitude: typeof row.location === "object" ? row.location.longitude : null,
         locationPrecision: typeof row.location === "object" ? row.location.precision : null,
         area: "Saved citizen report",
-        priority: row.priority || "Medium",
         status: row.status || "Reported",
         supporters: 1,
         reportedAt: row.reported_at ? new Date(row.reported_at).getTime() : Date.now()
@@ -3240,7 +3134,7 @@ async function retryCivicEvidenceUpload() {
     const retry = panel?.querySelector('[data-action="retry-evidence-upload"]');
     if (retry) retry.remove();
     const success = panel?.querySelector(".success-sub");
-    if (success) success.textContent = `Your report is saved to Civic OS. ${count} evidence file(s) were securely uploaded. Initial category and priority are prototype AI suggestions and still require human verification.`;
+    if (success) success.textContent = `Your report is saved to Civic OS. ${count} evidence file(s) were securely uploaded. initial category and department suggestions are AI-assisted and should be reviewed by an authorised official.`;
     refreshIcons();
     toast(`${count} evidence file(s) uploaded`);
   } catch (error) {
@@ -3276,8 +3170,6 @@ async function submitReport() {
   const user = sessionData.session.user;
   const publicId = `CIV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const title = makeTitle(d.description);
-  const priorityScores = { Critical: 95, High: 75, Medium: 50, Low: 25 };
-  const priorityScore = priorityScores[a.priority] || 50;
   const insertRow = {
     public_id: publicId,
     title,
@@ -3289,9 +3181,6 @@ async function submitReport() {
       ...(d.coordinates || {})
     },
     reported_by: user.id,
-    priority: a.priority || "Medium",
-    priority_score: priorityScore,
-    severity_score: priorityScore,
     public_impact: a.summary || title,
     ai_confidence: a.confidence || 35,
     routing_reason: "Initial prototype keyword analysis; department routing requires review.",
@@ -3304,7 +3193,7 @@ async function submitReport() {
     const { data: saved, error } = await window.civicSupabase
       .from("reports")
       .insert(insertRow)
-      .select("id,public_id,status,priority,reported_at")
+      .select("id,public_id,status,reported_at")
       .single();
     if (error) throw error;
 
@@ -3330,7 +3219,6 @@ async function submitReport() {
       longitude: d.coordinates?.longitude,
       locationPrecision: d.coordinates ? (parseIssueCoordinates(d.location) ? "gps" : "geocoded") : null,
       area: "Saved citizen report",
-      priority: saved.priority || a.priority,
       status: saved.status || "Reported",
       supporters: 1,
       photo: null,
@@ -3358,7 +3246,7 @@ async function submitReport() {
           <span class="success-icon"><i data-lucide="check"></i></span>
           <p class="kicker">${escapeHtml(saved.public_id)} · ${escapeHtml(issue.department)}</p>
           <h3 class="success-title">Report saved</h3>
-          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. ${evidenceError ? "Photo upload failed; your selected photos remain available in this session so you can retry." : evidenceCount ? `${evidenceCount} evidence file(s) were securely uploaded.` : "No evidence photos were attached."} Its initial category and priority are prototype AI suggestions and still require human verification.</p>
+          <p class="success-sub">Your report is saved to Civic OS and can be loaded again after refresh. ${evidenceError ? "Photo upload failed; your selected photos remain available in this session so you can retry." : evidenceCount ? `${evidenceCount} evidence file(s) were securely uploaded.` : "No evidence photos were attached."} Its initial category and department suggestions are AI-assisted and should be reviewed by an authorised official.</p>
           ${evidenceError ? '<p class="evidence-warning" role="status">Your report is saved, but its photos are not attached yet.</p>' : ""}
           <div class="success-actions">
             ${evidenceError ? '<button type="button" class="btn btn-primary" data-action="retry-evidence-upload">Retry photo upload</button>' : ""}
@@ -3675,9 +3563,6 @@ function syncFilterControls() {
   const category =
     $("#filterCategory");
 
-  const priority =
-    $("#filterPriority");
-
   const sort =
     $("#sortIssues");
 
@@ -3687,11 +3572,6 @@ function syncFilterControls() {
   if (category) {
     category.value =
       f.category;
-  }
-
-  if (priority) {
-    priority.value =
-      f.priority;
   }
 
   if (sort) {
@@ -3738,7 +3618,6 @@ function getFilteredIssues() {
   const {
     status,
     category,
-    priority,
     sort,
     query
   } = state.filters;
@@ -3758,13 +3637,6 @@ function getFilteredIssues() {
       if (
         category !== "all" &&
         i.category !== category
-      ) {
-        return false;
-      }
-
-      if (
-        priority !== "all" &&
-        i.priority !== priority
       ) {
         return false;
       }
@@ -3791,21 +3663,7 @@ function getFilteredIssues() {
         .includes(q);
     });
 
-  if (sort === "priority") {
-    list.sort(
-      (a, b) =>
-        PRIORITY_RANK[
-          b.priority
-        ] -
-          PRIORITY_RANK[
-            a.priority
-          ] ||
-        b.reportedAt -
-          a.reportedAt
-    );
-  } else if (
-    sort === "supported"
-  ) {
+  if (sort === "supported") {
     list.sort(
       (a, b) =>
         b.supporters -
@@ -4002,7 +3860,6 @@ function renderIssueSheet(issue) {
       style="margin:0 0 18px"
     >
       ${statusPill(issue.status)}
-      ${priorityPill(issue.priority)}
     </div>
 
     ${
@@ -4079,22 +3936,6 @@ function renderIssueSheet(issue) {
           <span class="ai-value">
             ${escapeHtml(
               cat.aiLabel
-            )}
-          </span>
-
-        </div>
-
-        <div class="ai-cell">
-
-          <span class="ai-label">
-            Priority
-          </span>
-
-          <span
-            class="ai-value is-${issue.priority.toLowerCase()}"
-          >
-            ${escapeHtml(
-              issue.priority
             )}
           </span>
 
@@ -4515,12 +4356,6 @@ function renderDashboard() {
     counts.Reported +
     counts.Verified;
 
-  const highOpen =
-    open.filter(
-      (i) =>
-        i.priority === "High"
-    );
-
   const resolutionRate =
     total
       ? Math.round(
@@ -4578,35 +4413,11 @@ function renderDashboard() {
     1;
 
   const byArea = {};
-
-  open.forEach((i) => {
-    byArea[i.area] =
-      byArea[i.area] || {
-        count: 0,
-        high: 0
-      };
-
-    byArea[i.area].count++;
-
-    if (
-      i.priority === "High"
-    ) {
-      byArea[i.area].high++;
-    }
+  open.forEach((issue) => {
+    byArea[issue.area] = byArea[issue.area] || { count: 0 };
+    byArea[issue.area].count++;
   });
-
-  const hotspots =
-    Object.entries(
-      byArea
-    )
-      .sort(
-        (a, b) =>
-          b[1].count -
-            a[1].count ||
-          b[1].high -
-            a[1].high
-      )
-      .slice(0, 4);
+  const hotspots = Object.entries(byArea).sort((a, b) => b[1].count - a[1].count).slice(0, 4);
 
   const days = [];
 
@@ -4830,29 +4641,7 @@ function renderDashboard() {
         <span class="kpi-sub">
           Reported or verified
         </span>
-      </button>
-
-      <button
-        type="button"
-        class="kpi glass kpi-high"
-        data-goto="issuesScreen"
-        data-priority="High"
-      >
-        <span class="kpi-label">
-          <i data-lucide="siren"></i>
-          High priority
-        </span>
-
-        <span class="kpi-value">
-          ${highOpen.length}
-        </span>
-
-        <span class="kpi-sub">
-          Open and urgent
-        </span>
-      </button>
-
-    </div>
+      </button>    </div>
 
     <div class="insight-card">
 
@@ -4912,25 +4701,12 @@ function renderDashboard() {
                 is the current hotspot with
                 ${topArea[1].count}
                 open reports
-                ${
-                  topArea[1].high
-                    ? `, ${topArea[1].high} of them high priority`
-                    : ""
-                }.
+                .
               `
               : ""
           }
 
-          ${
-            highOpen.length
-              ? `
-                Recommend prioritising the
-                ${highOpen.length}
-                high-priority issues within
-                24 hours.
-              `
-              : "No urgent issues are open right now."
-          }
+          Government officials review reports and determine the appropriate response and timing.
 
         </p>
 
@@ -4959,7 +4735,7 @@ function renderDashboard() {
             <span><i class="map-legend-dot is-verified"></i> Verified</span>
             <span><i class="map-legend-dot is-progress"></i> In progress</span>
             <span><i class="map-legend-dot is-resolved"></i> Resolved</span>
-            <span><i class="map-legend-dot is-high"></i> High priority outline</span>
+            
           </div>
         </div>
 
@@ -5361,25 +5137,9 @@ function renderDashboard() {
                     <small>
                       ${info.count}
                       open ·
-                      ${info.high}
-                      high priority
                     </small>
 
                   </span>
-
-                  ${
-                    info.high
-                      ? `
-                        <span class="pill pill-high">
-                          Watch
-                        </span>
-                      `
-                      : `
-                        <span class="pill">
-                          Stable
-                        </span>
-                      `
-                  }
 
                 </li>
               `
@@ -5390,58 +5150,11 @@ function renderDashboard() {
 
       </section>
 
-      <section
-        class="panel glass"
-        aria-labelledby="urgentPanelTitle"
-      >
-
-        <div class="panel-head">
-
-          <div>
-
-            <h3
-              id="urgentPanelTitle"
-              class="panel-title"
-            >
-              Needs attention
-            </h3>
-
-            <p class="panel-sub">
-              Open high-priority issues
-            </p>
-
-          </div>
-
+      <section class="panel glass" aria-labelledby="urgentPanelTitle">
+        <div class="panel-head"><div><h3 id="urgentPanelTitle" class="panel-title">Latest open reports</h3><p class="panel-sub">Reports awaiting further action or resolution.</p></div></div>
+        <div class="latest-report-list">
+          ${open.length ? open.slice().sort((a, b) => b.reportedAt - a.reportedAt).slice(0, 4).map(issueCard).join("") : '<div class="empty-state"><i data-lucide="shield-check"></i><span>No open reports at the moment.</span></div>'}
         </div>
-
-        <div class="priority-list">
-
-          ${
-            highOpen.length
-              ? highOpen
-                  .sort(
-                    (a, b) =>
-                      b.supporters -
-                      a.supporters
-                  )
-                  .slice(0, 4)
-                  .map(issueCard)
-                  .join("")
-              : `
-                <div class="empty-state">
-
-                  <i data-lucide="shield-check"></i>
-
-                  <span>
-                    No urgent issues open.
-                  </span>
-
-                </div>
-              `
-          }
-
-        </div>
-
       </section>
 
     </div>
@@ -5969,9 +5682,6 @@ function getCivicAiContext() {
 
         description:
           issue.description,
-
-        priority:
-          issue.priority,
 
         status:
           issue.status,
@@ -6844,20 +6554,13 @@ function bindEvents() {
 
       if (goto) {
 
-        if (
-          goto.dataset.status ||
-          goto.dataset.priority
-        ) {
+        if (goto.dataset.status) {
           state.filters = {
             status:
               goto.dataset.status ||
               "All",
 
             category:
-              "all",
-
-            priority:
-              goto.dataset.priority ||
               "all",
 
             sort:
@@ -7128,7 +6831,6 @@ function bindEvents() {
         state.filters = {
           status: "All",
           category: "all",
-          priority: "all",
           sort: "newest",
           query: ""
         };
@@ -7291,22 +6993,6 @@ function bindEvents() {
       "change",
       (event) => {
         state.filters.category =
-          event.target.value;
-
-        renderIssueList();
-      }
-    );
-  }
-
-
-  const filterPriority =
-    $("#filterPriority");
-
-  if (filterPriority) {
-    filterPriority.addEventListener(
-      "change",
-      (event) => {
-        state.filters.priority =
           event.target.value;
 
         renderIssueList();
