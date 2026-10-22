@@ -9,6 +9,7 @@
   const empty = document.getElementById("noSampleReports");
   const message = document.getElementById("liveReportMessage");
   const filters = Array.from(document.querySelectorAll(".gov-filter"));
+  const DEVELOPMENT_DEMO_MODE = true; // This branch uses sample data only; never reads or writes production reports.
   const stats = document.getElementById("liveReportStats");
   const bannerBadge = document.getElementById("governmentAccessBadge");
   const bannerTitle = document.getElementById("governmentAccessTitle");
@@ -102,6 +103,11 @@
       save.className = "live-save-button";
       save.textContent = "Save update";
       save.addEventListener("click", async () => {
+        if (DEVELOPMENT_DEMO_MODE) {
+          message.classList.remove("live-report-error");
+          message.textContent = "Development demo only: this status change was not saved to any database.";
+          return;
+        }
         if (!authorized || !client) return;
         save.disabled = true;
         message.classList.remove("live-report-error");
@@ -142,6 +148,22 @@
   async function initLiveReports() {
     stats.hidden = true;
     search.disabled = true;
+    if (DEVELOPMENT_DEMO_MODE) {
+      reports = [
+        { public_id: "DEMO-001", title: "Large pothole near market", category: "roads", description: "Sample road damage report for testing.", location: "Imphal West", priority: "High", status: "Reported" },
+        { public_id: "DEMO-002", title: "Waste collection missed", category: "garbage", description: "Sample sanitation report for testing.", location: "Imphal East", priority: "Medium", status: "Verified" },
+        { public_id: "DEMO-003", title: "Streetlight not working", category: "electricity", description: "Sample streetlight report for testing.", location: "Thoubal", priority: "Low", status: "In Progress" },
+        { public_id: "DEMO-004", title: "School water supply issue", category: "education", description: "Sample public-service report for testing.", location: "Bishnupur", priority: "High", status: "Resolved" }
+      ];
+      authorized = true;
+      setBanner("DEVELOPMENT DEMO", "Sample data only", "This development preview uses fictional sample reports. No live citizen records are loaded, and status updates are not saved. Official access controls remain in production.");
+      stats.hidden = false;
+      search.disabled = false;
+      updateStats();
+      render();
+      message.textContent = "Demo reports loaded. Search and filters work locally; no database is connected for this table.";
+      return;
+    }
     if (!client) {
       setBanner("CONFIG ERROR","Secure connection unavailable","The Civic OS database client did not load. Refresh or contact the project administrator.");
       rowsBody.replaceChildren();
