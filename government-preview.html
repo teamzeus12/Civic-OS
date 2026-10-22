@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f6faf8">
-  <meta name="description" content="Civic OS Government Portal with role-restricted live report management.">
+  <meta name="description" content="Civic OS Government Portal development preview with fictional sample reports.">
   <title>Government Portal — Civic OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,9 +30,9 @@
 
     <header class="gov-heading">
       <div>
-        <p class="eyebrow">GOVERNMENT PORTAL · CIVIC OS</p>
+        <p class="eyebrow">GOVERNMENT PORTAL · CIVIC OS · DEVELOPMENT</p>
         <h1>Issue overview<span>.</span></h1>
-        <p class="gov-subtitle">Review live citizen reports and record authorised status updates. Other dashboard modules remain illustrative previews.</p>
+        <p class="gov-subtitle">Development preview with fictional sample reports. Test search and filters safely; changes are not saved to official records.</p>
       </div>
       <a class="back-link gov-back" href="./auth.html?portal=government">← Portal sign-in</a>
     </header>
@@ -47,7 +47,7 @@
     <section class="gov-panel">
       <div class="gov-panel-heading">
         <div><p class="eyebrow">REPORT MANAGEMENT</p><h2>Recent civic reports</h2></div>
-        <label class="gov-search-label" for="reportSearch">Search live reports</label>
+        <label class="gov-search-label" for="reportSearch">Search sample reports</label>
         <input id="reportSearch" class="gov-search" type="search" placeholder="Search title, category or location" disabled>
       </div>
       <div class="gov-filters" role="group" aria-label="Filter live reports by status">
@@ -59,7 +59,7 @@
       </div>
       <div class="gov-table-wrap">
         <table class="gov-table">
-          <thead><tr><th>Report</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Authorised update</th></tr></thead>
+          <thead><tr><th>Report</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Demo status control</th></tr></thead>
           <tbody id="sampleReportRows"><tr><td colspan="6">Checking access and loading live reports…</td></tr></tbody>        </table>
         <p class="gov-empty" id="noSampleReports" hidden>No live reports match your search.</p>
         <p class="demo-copy" id="liveReportMessage" role="status" aria-live="polite"></p>
