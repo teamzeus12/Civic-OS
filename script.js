@@ -2391,7 +2391,7 @@ async function handleAnalyze(event) {
       const imageFiles = state.draftEvidenceFiles.filter((file) => file.type.startsWith('image/')).slice(0, 3);
       const imageDataUrls = [];
       for (const file of imageFiles) imageDataUrls.push(await civicImageToDataUrl(file));
-      const { data, error } = await client.functions.invoke('civic-ai-analyze', {
+      const { data, error } = await client.functions.invoke('civic-ai-analyze-dev', {
         body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
       });
       if (error) throw error;
