@@ -218,7 +218,16 @@
       if (notes === null) return;
       const summary = window.prompt("Demo resolution summary (leave blank if not resolved):", report.resolutionSummary || "");
       if (summary === null) return;
-      report.status = status.trim() || report.status;
+      const nextStatus = status.trim() || report.status;
+      if (liveMode && supabaseClient && report.publicId) {
+        const result = await supabaseClient.rpc("government_update_report_status", { p_public_id: report.publicId, p_new_status: nextStatus, p_note: notes.trim() || null });
+        if (result.error) { window.alert("The update was not saved: " + result.error.message); return; }
+        window.alert("Status and progress note saved to the shared database. Resolution summary publishing and citizen notifications are not connected yet.");
+        await connectGovernmentWorkspace();
+        renderStats("homeStats"); renderStats("dashboardStats"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); if (selectedDepartment) renderDepartmentReports();
+        return;
+      }
+      report.status = nextStatus;
       report.actionNotes = notes.trim();
       report.resolutionSummary = summary.trim();
       report.actionHistory = report.actionHistory || [];
