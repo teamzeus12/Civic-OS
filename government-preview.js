@@ -213,7 +213,7 @@
     if (action) {
       const report = reports.find((item) => item.id === action.dataset.actionReport);
       if (!report) return;
-      const status = window.prompt("Demo status (Reported, Under Review, Verified, In Progress, Resolved, Rejected, More Information Required):", report.status);
+      const status = window.prompt((liveMode ? "Official status" : "Demo status") + " (Submitted, Under Review, Verified, Action in Progress, Resolved, Rejected, More Information Required):", report.status);
       if (status === null) return;
       const notes = window.prompt("Demo progress notes (leave blank to keep existing):", report.actionNotes || "");
       if (notes === null) return;
@@ -293,6 +293,8 @@
       renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments");
       renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues();
       if (message) message.textContent = "Authenticated. Live department reports loaded.";
+    } else if (message) {
+      message.textContent = "Signed in, but this account is not authorized for the Government Portal or has no assigned department. Ask an administrator to review access.";
     }
   });
 
