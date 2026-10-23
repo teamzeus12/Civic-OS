@@ -62,7 +62,7 @@
   function reportCard(report, allowStatusControl = false) {
     const dept = deptById(report.department);
     const statusControl = allowStatusControl ? `<select aria-label="Demo status for ${escapeHtml(report.id)}" data-status-select="${escapeHtml(report.id)}">${statusOptions.map((status) => `<option ${status === report.status ? "selected" : ""}>${status}</option>`).join("")}</select><button class="btn btn-primary" data-save-status="${escapeHtml(report.id)}" type="button">Save demo status</button>` : "";
-    return `<article class="report-card"><div><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">⌖ ${escapeHtml(report.location)}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">Department →</button>`}</div></article>`;
+    return `<article class="report-card"><div><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">⌖ ${escapeHtml(report.location)}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">Department →</button>`}<button class="btn btn-primary" data-action-report="${escapeHtml(report.id)}" type="button">Action &amp; Resolution</button></div></article>`;
   }
 
   function renderStats(targetId) {
@@ -177,6 +177,25 @@
       activeStatus = chip.dataset.statusChip;
       $("#issueStatusFilter").value = activeStatus;
       renderIssues();
+      return;
+    }
+    const action = event.target.closest("[data-action-report]");
+    if (action) {
+      const report = reports.find((item) => item.id === action.dataset.actionReport);
+      if (!report) return;
+      const status = window.prompt("Demo status (Reported, Under Review, Verified, In Progress, Resolved, Rejected, More Information Required):", report.status);
+      if (status === null) return;
+      const notes = window.prompt("Demo progress notes (leave blank to keep existing):", report.actionNotes || "");
+      if (notes === null) return;
+      const summary = window.prompt("Demo resolution summary (leave blank if not resolved):", report.resolutionSummary || "");
+      if (summary === null) return;
+      report.status = status.trim() || report.status;
+      report.actionNotes = notes.trim();
+      report.resolutionSummary = summary.trim();
+      report.actionHistory = report.actionHistory || [];
+      report.actionHistory.push(new Date().toLocaleString() + " — " + report.status + (report.actionNotes ? " — progress notes updated" : "") + (report.resolutionSummary ? " — resolution summary updated" : ""));
+      window.alert("Demo update recorded in memory only. It is not saved to Supabase, published, or sent to citizens.");
+      renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch").value); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); if (selectedDepartment) renderDepartmentReports();
       return;
     }
     const save = event.target.closest("[data-save-status]");
