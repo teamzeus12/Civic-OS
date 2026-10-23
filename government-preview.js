@@ -17,7 +17,7 @@
     { id: "other", name: "Other Civic Services", short: "Other", icon: "＋", description: "Reports that need review and routing by an authorized official.", categories: ["other"] }
   ];
 
-  const reports = [
+  let reports = [
     { id: "DEMO-001", title: "Large pothole near market", category: "Roads", department: "pwd", location: "Imphal West", description: "Sample road surface damage reported near a busy market.", status: "Reported", updated: "Just now" },
     { id: "DEMO-002", title: "Waste collection missed", category: "Sanitation", department: "mahud", location: "Imphal East", description: "Sample report about missed waste collection in a residential area.", status: "Verified", updated: "Today" },
     { id: "DEMO-003", title: "Streetlight not working", category: "Electricity", department: "electricity", location: "Thoubal", description: "Sample report about a streetlight that is no longer operating.", status: "In Progress", updated: "Today" },
@@ -33,6 +33,9 @@
   const statusOptions = ["Reported", "Verified", "In Progress", "Resolved"];
   let selectedDepartment = null;
   let activeStatus = "all";
+  let supabaseClient = null;
+  let liveMode = false;
+  let officialProfile = null;
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
@@ -52,7 +55,7 @@
 
   function departmentCard(dept) {
     const count = countDepartment(dept.id);
-    return `<button type="button" class="department-card" data-department="${dept.id}"><span class="dept-icon">${dept.icon}</span><strong>${escapeHtml(dept.name)}</strong><small>${escapeHtml(dept.description)}</small><span class="card-arrow">↗</span><span class="pill">${count} sample ${count === 1 ? "report" : "reports"}</span></button>`;
+    return `<button type="button" class="department-card" data-department="${dept.id}"><span class="dept-icon">${dept.icon}</span><strong>${escapeHtml(dept.name)}</strong><small>${escapeHtml(dept.description)}</small><span class="card-arrow">↗</span><span class="pill">${count} ${liveMode ? "" : "sample "}${count === 1 ? "report" : "reports"}</span></button>`;
   }
 
   function statusClass(status) {
@@ -69,7 +72,7 @@
     const target = $("#" + targetId);
     if (!target) return;
     target.innerHTML = statsMarkup([
-      { label: "Total sample reports", value: reports.length, note: "Fictional test records", icon: "▤" },
+      { label: liveMode ? "Total reports" : "Total sample reports", value: reports.length, note: liveMode ? "Live records" : "Fictional test records", icon: "▤" },
       { label: "Awaiting review", value: countStatus("Reported"), note: "Reported status", icon: "◷" },
       { label: "In progress", value: countStatus("In Progress"), note: "Work underway in sample", icon: "↻" },
       { label: "Resolved", value: countStatus("Resolved"), note: "Marked resolved in sample", icon: "✓" }
@@ -153,6 +156,32 @@
     ].map(([title, text, when]) => `<article class="notification-card"><span class="notification-icon">♧</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p><small>${escapeHtml(when)}</small></div></article>`).join("");
   }
 
+  async function connectGovernmentWorkspace() {
+    const config = window.CIVIC_SUPABASE_CONFIG;
+    if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) return;
+    const client = window.supabase.createClient(config.url, config.publishableKey);
+    const { data: sessionData } = await client.auth.getSession();
+    if (!sessionData?.session) return;
+    const userId = sessionData.session.user.id;
+    const { data: profile, error: profileError } = await client.from("profiles").select("id,role,department_id,full_name").eq("id", userId).maybeSingle();
+    if (profileError || !profile || !["government", "admin"].includes(profile.role)) return;
+    if (profile.role !== "admin" && !profile.department_id) {
+      const n = document.createElement("p"); n.className = "notice";
+      n.textContent = "Your official account has no department assignment. Showing sample data only; ask an administrator to assign your department.";
+      document.querySelector(".topbar")?.after(n); return;
+    }
+    const query = client.from("reports").select("id,public_id,title,category,description,status,location,primary_department_id,reported_at,updated_at").order("reported_at", { ascending: false });
+    const scopedQuery = profile.role === "admin" ? query : query.eq("primary_department_id", profile.department_id);
+    const { data, error } = await scopedQuery;
+    if (error) { console.error("Live report load failed", error); return; }
+    const deptMap = { mahud:"mahud", pwd:"pwd", power:"electricity", environment_forest:"forest", education:"education", agriculture:"agriculture", transport:"transport", health:"health", water_resources:"water", youth_sports:"sports", animal_husbandry:"animal" };
+    const place = (v) => typeof v === "string" ? v : v && typeof v === "object" ? [v.address,v.name,v.locality,v.district,v.city,v.label].find(x => typeof x === "string" && x.trim()) || "Location recorded" : "Location not provided";
+    reports = (data || []).map(r => ({ id:r.id, publicId:r.public_id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "" }));
+    liveMode = true; supabaseClient = client; officialProfile = profile;
+    const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
+    const small = document.querySelector(".profile-mini small"); if (small) small.textContent = profile.role === "admin" ? "Administrator" : profile.department_id.toUpperCase() + " official";
+  }
+
   function init() {
     renderStats("homeStats");
     renderStats("dashboardStats");
@@ -165,7 +194,7 @@
     renderIssues();
   }
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const nav = event.target.closest("[data-page]");
     if (nav) { navigate(nav.dataset.page); return; }
     const deptCard = event.target.closest("[data-department]");
@@ -224,5 +253,8 @@
   $("#departmentSearch").addEventListener("input", (event) => renderDepartments("allDepartments", event.target.value));
   ["issueSearch", "issueDepartmentFilter", "issueStatusFilter"].forEach((id) => $("#" + id).addEventListener(id === "issueSearch" ? "input" : "change", renderIssues));
   ["departmentReportSearch", "departmentStatusFilter"].forEach((id) => $("#" + id).addEventListener(id === "departmentReportSearch" ? "input" : "change", renderDepartmentReports));
-  init();
+  connectGovernmentWorkspace().finally(() => {
+    init();
+    if (liveMode) { renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); }
+  });
 })();
