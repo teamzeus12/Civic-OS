@@ -65,7 +65,21 @@
       </section>
       <section class="page" id="page-profile" data-page-view="profile">
         <header class="page-heading"><div><p class="eyebrow">Account settings</p><h1>Profile</h1><p>This is a demonstration profile, not a real authenticated government account.</p></div></header>
-        <div class="grid profile-grid"><section class="profile-card"><div class="profile-identity"><span class="avatar">GO</span><div><h2>Government Official</h2><p>Development preview account</p></div></div><div class="profile-row"><span>Role</span><strong>Demo only</strong></div><div class="profile-row"><span>Department</span><strong>Not assigned</strong></div><div class="profile-row"><span>Data access</span><strong>Fictional samples</strong></div></section><section class="profile-card"><p class="eyebrow">Security boundary</p><h2 style="font-size:17px">Production access is separate</h2><p style="color:var(--muted);font-size:11px;line-height:1.8">This development page does not authenticate officials or read production reports. The production portal must verify a signed-in user's role and department permissions on the backend before returning any real records or accepting changes.</p><a class="btn" href="./portals.html">Return to portal selection</a></section></div>
+        <div class="grid profile-grid">
+          <section class="profile-card">
+            <p class="eyebrow">Official sign-in</p>
+            <h2 style="font-size:17px">Connect your government account</h2>
+            <p style="color:var(--muted);font-size:11px;line-height:1.8">Use an existing authorized Civic OS Government Portal account. Citizen accounts will not receive government access.</p>
+            <form id="governmentSignInForm">
+              <label for="governmentEmail">Official email</label>
+              <input id="governmentEmail" type="email" autocomplete="username" required>
+              <label for="governmentPassword">Password</label>
+              <input id="governmentPassword" type="password" autocomplete="current-password" required>
+              <button class="btn btn-primary" type="submit">Sign in securely</button>
+              <button class="btn" id="governmentSignOut" type="button">Sign out</button>
+              <p id="governmentAuthMessage" role="status" aria-live="polite"></p>
+            </form>
+          </section><section class="profile-card"><div class="profile-identity"><span class="avatar">GO</span><div><h2>Government Official</h2><p>Development preview account</p></div></div><div class="profile-row"><span>Role</span><strong>Demo only</strong></div><div class="profile-row"><span>Department</span><strong>Not assigned</strong></div><div class="profile-row"><span>Data access</span><strong>Fictional samples</strong></div></section><section class="profile-card"><p class="eyebrow">Security boundary</p><h2 style="font-size:17px">Production access is separate</h2><p style="color:var(--muted);font-size:11px;line-height:1.8">This development page does not authenticate officials or read production reports. The production portal must verify a signed-in user's role and department permissions on the backend before returning any real records or accepting changes.</p><a class="btn" href="./portals.html">Return to portal selection</a></section></div>
       </section>
       <footer class="footer">Civic OS · Government Portal development preview · Fictional sample data only. This interface is for testing and does not represent official government records.</footer>
     </main>
