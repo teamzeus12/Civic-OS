@@ -160,6 +160,7 @@
     const config = window.CIVIC_SUPABASE_CONFIG;
     if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) return;
     const client = window.supabase.createClient(config.url, config.publishableKey);
+    supabaseClient = client;
     const { data: sessionData } = await client.auth.getSession();
     if (!sessionData?.session) return;
     const userId = sessionData.session.user.id;
@@ -262,6 +263,45 @@
   $("#departmentSearch").addEventListener("input", (event) => renderDepartments("allDepartments", event.target.value));
   ["issueSearch", "issueDepartmentFilter", "issueStatusFilter"].forEach((id) => $("#" + id).addEventListener(id === "issueSearch" ? "input" : "change", renderIssues));
   ["departmentReportSearch", "departmentStatusFilter"].forEach((id) => $("#" + id).addEventListener(id === "departmentReportSearch" ? "input" : "change", renderDepartmentReports));
+  document.querySelector("#governmentSignInForm")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const message = document.querySelector("#governmentAuthMessage");
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    const config = window.CIVIC_SUPABASE_CONFIG;
+    if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) {
+      if (message) message.textContent = "Authentication service is not configured.";
+      return;
+    }
+    const client = supabaseClient || window.supabase.createClient(config.url, config.publishableKey);
+    supabaseClient = client;
+    button.disabled = true;
+    if (message) message.textContent = "Signing in…";
+    const { error } = await client.auth.signInWithPassword({
+      email: document.querySelector("#governmentEmail").value.trim(),
+      password: document.querySelector("#governmentPassword").value
+    });
+    button.disabled = false;
+    if (error) {
+      if (message) message.textContent = "Sign-in failed. Check the account details and government authorization.";
+      return;
+    }
+    document.querySelector("#governmentPassword").value = "";
+    if (message) message.textContent = "Signed in. Checking official role and department…";
+    await connectGovernmentWorkspace();
+    init();
+    if (liveMode) {
+      renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments");
+      renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues();
+      if (message) message.textContent = "Authenticated. Live department reports loaded.";
+    }
+  });
+
+  document.querySelector("#governmentSignOut")?.addEventListener("click", async () => {
+    if (supabaseClient) await supabaseClient.auth.signOut();
+    liveMode = false; officialProfile = null; supabaseClient = null;
+    window.location.reload();
+  });
+
   connectGovernmentWorkspace().finally(() => {
     init();
     if (liveMode) { renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); }
