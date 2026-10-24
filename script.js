@@ -494,7 +494,6 @@ const HOUR = 36e5;
 const SEED_ISSUES = []; // Real reports are loaded from Supabase only.
 
 let issues = [];
-let nextIssueNumber = 1043;
 let dashboardMapInstance = null;
 const dashboardMapMarkers = new Map();
 
