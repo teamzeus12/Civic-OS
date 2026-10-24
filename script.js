@@ -3276,12 +3276,29 @@ async function submitReport() {
   const user = sessionData.session.user;
   const publicId = `CIV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const title = makeTitle(d.description);
+  // Initial department routing keeps new citizen reports visible to the
+  // responsible department. Officials can review and reassign when needed.
+  const initialDepartmentByCategory = {
+    roads: "pwd",
+    garbage: "mahud",
+    streetlights: "power",
+    water: "water_resources",
+    health: "health",
+    education: "education",
+    environment: "environment_forest",
+    agriculture: "agriculture",
+    transport: "transport",
+    animals: "animal_husbandry",
+    sports: "youth_sports"
+  };
+  const initialDepartmentId = initialDepartmentByCategory[a.categoryKey] || null;
   const priorityScores = { Critical: 95, High: 75, Medium: 50, Low: 25 };
   const priorityScore = priorityScores[a.priority] || 50;
   const insertRow = {
     public_id: publicId,
     title,
     category: a.categoryKey,
+    primary_department_id: initialDepartmentId,
     description: d.description,
     location: {
       address: d.location,
