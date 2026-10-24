@@ -4013,8 +4013,7 @@ function renderDashboard() {
       6 - d;
 
     const reported =
-      WEEKLY_BASELINE
-        .reported[idx] +
+      (WEEKLY_BASELINE.reported[idx] || 0) +
       issues.filter(
         (i) =>
           i.reportedAt >=
@@ -4024,8 +4023,7 @@ function renderDashboard() {
       ).length;
 
     const resolved =
-      WEEKLY_BASELINE
-        .resolved[idx] +
+      (WEEKLY_BASELINE.resolved[idx] || 0) +
       issues.filter(
         (i) =>
           i.updates.some(
