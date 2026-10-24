@@ -2570,7 +2570,7 @@ async function attachReportEvidence(client, reportRows) {
     }
 
     for (const issue of issues) {
-      if (!issue.databaseId) continue;
+      if (!issue.databaseId || !reportIds.includes(issue.databaseId)) continue;
       const photos = photosByReport.get(issue.databaseId) || [];
       issue.photos = photos;
       issue.photo = photos[0]?.url || null;
