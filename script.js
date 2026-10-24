@@ -537,7 +537,7 @@ const state = {
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
-const $ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 function escapeHtml(value) {
   return String(value).replace(
