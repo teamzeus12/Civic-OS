@@ -501,6 +501,44 @@ const PEOPLE = []; // Community profiles must be sourced from real users.
 
 const MISSIONS = []; // Missions must be populated from genuine community/database records.
 
+// Keep chart calculations functional without inventing historical activity.
+const WEEKLY_BASELINE = {
+  reported: [0, 0, 0, 0, 0, 0, 0],
+  resolved: [0, 0, 0, 0, 0, 0, 0]
+};
+
+// Fictional sample reports are intentionally disabled.
+const EXAMPLES = [];
+
+// Core application state required by navigation and event handlers.
+const state = {
+  screen: "homeScreen",
+  draftEvidenceUrls: [],
+  draftEvidenceFiles: [],
+  pendingEvidenceReport: null,
+  draft: null,
+  analysis: null,
+  analyzing: false,
+  exampleIndex: 0,
+  filters: {
+    status: "All",
+    category: "all",
+    sort: "newest",
+    query: ""
+  },
+  mySkills: new Set(),
+  joinedMissions: new Set(),
+  supported: new Set(),
+  openIssueId: null,
+  civicAiOpen: false,
+  civicAiContext: null,
+  civicAiMessages: [],
+  civicActionId: null
+};
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
 function escapeHtml(value) {
   return String(value).replace(
     /[&<>"']/g,
@@ -2908,51 +2946,28 @@ function clearPhoto({ revoke } = {}) {
 }
 
 function fillExample() {
-  const example =
-    EXAMPLES[
-      state.exampleIndex %
-        EXAMPLES.length
-    ];
+  // Sample issue autofill is disabled because fictional reports were removed.
+  if (!EXAMPLES.length) {
+    toast("Sample reports are disabled. Enter details for a real civic issue.", "info");
+    return;
+  }
 
+  const example = EXAMPLES[state.exampleIndex % EXAMPLES.length];
   state.exampleIndex++;
 
-  const radio =
-    document.getElementById(
-      `cat-${example.category}`
-    );
+  const radio = document.getElementById(`cat-${example.category}`);
+  if (radio) radio.checked = true;
 
-  if (radio) {
-    radio.checked = true;
-  }
+  const description = $("#description");
+  const location = $("#location");
+  const count = $("#descCount");
 
-  const description =
-    $("#description");
-
-  const location =
-    $("#location");
-
-  const count =
-    $("#descCount");
-
-  if (description) {
-    description.value =
-      example.description;
-  }
-
-  if (location) {
-    location.value =
-      example.location;
-  }
-
-  if (count) {
-    count.textContent =
-      `${example.description.length} / 500`;
-  }
+  if (description) description.value = example.description;
+  if (location) location.value = example.location;
+  if (count) count.textContent = `${example.description.length} / 500`;
 
   invalidateAnalysis();
-
   showFormError(null);
-
   updateStepper();
 }
 
