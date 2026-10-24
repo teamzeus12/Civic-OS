@@ -2543,7 +2543,10 @@ function setupCivicBackend() {
 }
 
 async function loadPersistentCivicReports() {
-  if (!window.civicSupabase) return;
+  if (!window.civicSupabase) {
+    toast("Civic OS could not connect to its database. Saved reports are unavailable until the connection is restored.", "triangle-alert");
+    return;
+  }
   try {
     const client = window.civicSupabase;
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
