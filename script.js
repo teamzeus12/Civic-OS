@@ -758,7 +758,7 @@ function renderDashboardMapIssue(issue) {
   const locationLabel = String(issue.location || "Location not supplied");
   const categoryLabel = CATEGORIES[issue.category]?.label || "Other";
   const locationNote = issue.locationPrecision === "approximate" && coords
-    ? "Approximate demo pin · area-level location"
+    ? "Approximate location · area-level pin"
     : coords
       ? `GPS pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
       : "Address text only · exact map pin unavailable";
@@ -843,7 +843,7 @@ function initDashboardMap() {
 
   if (statusElement) {
     statusElement.textContent =
-      `${mappedIssues.length} of ${issues.length} reports have map coordinates. Seeded demo pins are approximate area-level locations; reports submitted with GPS use exact coordinates.`;
+      `${mappedIssues.length} of ${issues.length} reports have map coordinates. Reports with approximate locations use area-level pins; GPS-enabled reports may show more precise locations.`;
   }
 
   if (!mapElement) return;
@@ -2603,7 +2603,7 @@ async function loadPersistentCivicReports() {
     renderDashboard();
   } catch (error) {
     console.error("Could not load saved Civic OS reports:", error);
-    toast("Saved reports could not be loaded. Demo reports are still available.", "triangle-alert");
+    toast("Saved reports could not be loaded. Check your connection and try again.", "triangle-alert");
   }
 }
 
