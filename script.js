@@ -3395,9 +3395,24 @@ async function submitReport() {
     toast(`${saved.public_id} saved successfully`);
   } catch (error) {
     console.error("Civic OS report save failed:", error);
-    toast(error?.message?.includes("row-level security")
-      ? "Your account could not submit this report. Please sign out and sign in again."
-      : "Report was not saved. Check your connection and try again.", "triangle-alert");
+    const rawMessage = String(error?.message || error?.details || error?.hint || "");
+    const errorCode = String(error?.code || "");
+    console.error("Report submission diagnostic:", {
+      code: errorCode,
+      message: rawMessage,
+      details: error?.details || null,
+      hint: error?.hint || null
+    });
+    const userMessage = /row-level security|permission denied|42501/i.test(rawMessage)
+      ? "Report save was blocked by database permissions. Your draft is still available; please retry shortly."
+      : /foreign key|23503/i.test(rawMessage)
+        ? "Report could not be routed to its department. Your draft is still available."
+        : /check constraint|23514|invalid input/i.test(rawMessage)
+          ? "One of the report fields was rejected. Your draft is still available."
+          : /duplicate key|23505/i.test(rawMessage)
+            ? "This report ID conflicted with an existing record. Please submit again."
+            : "Report could not be saved. Your draft is still available; check your connection and retry.";
+    toast(userMessage, "triangle-alert");
   } finally {
     if (submitButton) { submitButton.disabled = false; submitButton.removeAttribute("aria-busy"); }
   }
