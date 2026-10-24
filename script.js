@@ -3429,6 +3429,8 @@ function renderIssueSheet(issue) {
   if (!body) return;
 
   body.innerHTML = `
+    ${issuePhotoGallery(issue)}
+
     <div class="sheet-top">
       <span>${escapeHtml(issue.id)}</span>
       <span aria-hidden="true">·</span>
@@ -3464,8 +3466,6 @@ function renderIssueSheet(issue) {
     >
       ${statusPill(issue.status)}
     </div>
-
-    ${issuePhotoGallery(issue)}
 
     <p class="sheet-desc">
       ${escapeHtml(
