@@ -3354,10 +3354,10 @@ function renderIssueSheet(issue) {
     ] ||
     CATEGORIES.other;
 
-  const stepIndex =
-    STATUSES.indexOf(
-      issue.status
-    );
+  const stepIndex = Math.max(
+    0,
+    STATUSES.indexOf(issue.status)
+  );
 
   const supported =
     state.supported.has(
@@ -3434,32 +3434,44 @@ function renderIssueSheet(issue) {
       )}
     </p>
 
-    <div class="sheet-section">
+    <div class="sheet-section report-status-section">
 
       <div class="sheet-section-title">
-        <span>Progress</span>
-        <span>
-          ${stepIndex + 1}
-          /
-          ${STATUSES.length}
-        </span>
+        <span>Updates</span>
+        <span class="report-status-count">${stepIndex + 1} of ${STATUSES.length} stages</span>
       </div>
 
-      <ol class="timeline">
+      <ol class="report-status-list" aria-label="Report status progress">
+        ${STATUSES.map((status, i) => {
+          const reached = i <= stepIndex;
+          const current = i === stepIndex;
+          const detail = i === 0
+            ? "Report submitted successfully"
+            : reached
+              ? current
+                ? "Current stage"
+                : "Stage completed"
+              : `Waiting for ${STATUSES[i - 1].toLowerCase()}`;
 
-        ${STATUSES.map(
-          (s, i) => `
-            <li
-              class="tl-step
-              ${i <= stepIndex ? "done" : ""}
-              ${i === stepIndex ? "current" : ""}"
-            >
-              ${escapeHtml(s)}
+          return `
+            <li class="report-status-step ${reached ? "is-complete" : "is-pending"} ${current ? "is-current" : ""}" ${current ? 'aria-current="step"' : ""}>
+              <span class="report-status-marker" aria-hidden="true">${reached ? "✓" : "×"}</span>
+              <div class="report-status-copy">
+                <div class="report-status-heading">
+                  ${escapeHtml(status)}
+                  ${current ? '<span class="report-status-current">Current</span>' : ""}
+                </div>
+                <p class="report-status-detail">${escapeHtml(detail)}</p>
+              </div>
+              ${i === 0 ? `<time class="report-status-time">${escapeHtml(timeAgo(issue.reportedAt))}</time>` : ""}
             </li>
-          `
-        ).join("")}
-
+          `;
+        }).join("")}
       </ol>
+
+      <p class="report-status-footnote">
+        Progress advances when the Government Portal records a status update. Pending stages remain marked until then.
+      </p>
 
     </div>
 
@@ -3674,107 +3686,7 @@ function renderIssueSheet(issue) {
         : ""
     }
 
-    <div class="sheet-section">
 
-      <div class="sheet-section-title">
-        <span>Updates</span>
-      </div>
-
-      <ol class="updates">
-
-        ${[
-          ...issue.updates
-        ]
-          .reverse()
-          .map(
-            (u) => `
-              <li class="update">
-
-                <span
-                  class="update-dot"
-                  aria-hidden="true"
-                ></span>
-
-                <div>
-
-                  <div class="update-head">
-                    ${escapeHtml(
-                      u.status
-                    )}
-
-                    <span class="update-time">
-                      ${timeAgo(
-                        u.time
-                      )}
-                    </span>
-                  </div>
-
-                  <p class="update-note">
-                    ${escapeHtml(
-                      u.note
-                    )}
-                  </p>
-
-                </div>
-
-              </li>
-            `
-          )
-          .join("")}
-
-      </ol>
-
-    </div>
-
-    <div class="sheet-section">
-
-      <div class="official-box">
-
-        <div class="sheet-section-title">
-          <span>
-            Governance demo control
-          </span>
-        </div>
-
-        <p>
-          For the presentation:
-          act as
-          ${escapeHtml(
-            issue.department
-          )}
-          and move this issue
-          through its lifecycle.
-        </p>
-
-        ${
-          nextStatus
-            ? `
-              <button
-                type="button"
-                class="btn btn-ghost btn-sm"
-                data-action="advance"
-                data-id="${escapeHtml(
-                  issue.id
-                )}"
-              >
-                <i data-lucide="arrow-right"></i>
-                Mark as
-                ${escapeHtml(
-                  nextStatus
-                )}
-              </button>
-            `
-            : `
-              <span class="pill status-resolved">
-                <i data-lucide="badge-check"></i>
-                Fully resolved
-              </span>
-            `
-        }
-
-      </div>
-
-    </div>
   `;
 
   refreshIcons();
