@@ -5,8 +5,8 @@
    Report. Connect. Resolve.
 
    1. Reference data
-   2. Demo AI engine
-   3. Demo data
+   2. Rule-based AI prototype
+   3. Live data state
    4. App state & helpers
    5. Screen switching
    6. Home
@@ -264,7 +264,7 @@ const STOPWORDS = new Set([
 
 
 /* =========================================================
-   2. DEMO AI ENGINE
+   2. RULE-BASED AI PROTOTYPE
    ========================================================= */
 
 function matchTerms(text, terms) {
@@ -298,7 +298,7 @@ function analyzeReport({
   location,
   hasPhoto
 }) {
-  // This demo analyzer uses the written description, not image recognition.
+  // This rule-based prototype uses the written description, not image recognition.
   const text = String(description || "").toLowerCase();
   const detected = detectCategory(text);
 
@@ -485,493 +485,21 @@ function findPossibleDuplicate(
 
 
 /* =========================================================
-   3. DEMO DATA
+   3. LIVE DATA STATE
    ========================================================= */
 
 const NOW = Date.now();
 const HOUR = 36e5;
 
-const SEED_ISSUES = [
-  {
-    id: "CIV-1042",
-    title: "Pothole on road near Kangla Western Gate",
-    category: "roads",
-    status: "Reported",
-    hoursAgo: 2,
-    supporters: 23,
-    area: "Kangla, Imphal West",
-    location: "Near Kangla Western Gate, Imphal, Manipur",
-    latitude: 24.809,
-    longitude: 93.9426,
-    locationPrecision: "approximate",
-    description: "A deep pothole has opened on the approach road near Kangla Western Gate. Vehicles are swerving around it, making it risky for pedestrians."
-  },
-
-  {
-    id: "CIV-1041",
-    title: "Waste collection delayed near Ima Keithel",
-    category: "garbage",
-    status: "In Progress",
-    hoursAgo: 9,
-    supporters: 41,
-    area: "Khwairamband, Imphal West",
-    location: "Ima Keithel, Khwairamband Bazaar, Imphal, Manipur",
-    latitude: 24.808,
-    longitude: 93.935,
-    locationPrecision: "approximate",
-    description: "Bins near the busy Khwairamband Bazaar area are overflowing after missed collections, leaving waste on nearby footpaths."
-  },
-
-  {
-    id: "CIV-1040",
-    title: "Streetlight outage in Lamphelpat",
-    category: "streetlights",
-    status: "Resolved",
-    hoursAgo: 30,
-    supporters: 12,
-    area: "Lamphelpat, Imphal West",
-    location: "RIMS Road area, Lamphelpat, Imphal, Manipur",
-    latitude: 24.8354,
-    longitude: 93.9136,
-    locationPrecision: "approximate",
-    description: "A streetlight along the Lamphelpat road stretch stopped working, leaving part of the footpath dark after sunset."
-  },
-
-  {
-    id: "CIV-1039",
-    title: "Leaking water pipe near Khuman Lampak",
-    category: "water",
-    status: "Verified",
-    hoursAgo: 14,
-    supporters: 17,
-    area: "Khuman Lampak, Imphal East",
-    location: "Khuman Lampak bus terminal area, Imphal, Manipur",
-    latitude: 24.8218,
-    longitude: 93.9517,
-    locationPrecision: "approximate",
-    description: "Water is leaking onto the roadside near the Khuman Lampak transport area, creating a slippery patch for people walking past."
-  },
-
-  {
-    id: "CIV-1038",
-    title: "Drain overflowing in Thangmeiband",
-    category: "water",
-    status: "In Progress",
-    hoursAgo: 26,
-    supporters: 58,
-    area: "Thangmeiband, Imphal West",
-    location: "Thangmeiband, Imphal, Manipur",
-    latitude: 24.82,
-    longitude: 93.9343,
-    locationPrecision: "approximate",
-    description: "A roadside drain in Thangmeiband overflows after heavy rain, leaving dirty water across part of the lane."
-  },
-
-  {
-    id: "CIV-1037",
-    title: "Exposed wiring near Khuman Lampak",
-    category: "streetlights",
-    status: "Verified",
-    hoursAgo: 20,
-    supporters: 34,
-    area: "Khuman Lampak, Imphal East",
-    location: "Near Khuman Lampak Sports Complex, Imphal, Manipur",
-    latitude: 24.82268,
-    longitude: 93.95222,
-    locationPrecision: "approximate",
-    description: "A damaged streetlight fitting has exposed wiring along a public approach road near the sports complex. The area needs a safety check."
-  },
-
-  {
-    id: "CIV-1036",
-    title: "Illegal dumping reported in Uripok",
-    category: "garbage",
-    status: "Reported",
-    hoursAgo: 30,
-    supporters: 9,
-    area: "Uripok, Imphal West",
-    location: "Uripok, Imphal, Manipur",
-    latitude: 24.8225,
-    longitude: 93.9237,
-    locationPrecision: "approximate",
-    description: "Household rubbish and construction debris have been left on an open roadside plot in Uripok instead of being taken to a collection point."
-  },
-
-  {
-    id: "CIV-1035",
-    title: "Stagnant water near Porompat",
-    category: "health",
-    status: "In Progress",
-    hoursAgo: 48,
-    supporters: 27,
-    area: "Porompat, Imphal East",
-    location: "Porompat, near JNIMS Road, Imphal, Manipur",
-    latitude: 24.8125,
-    longitude: 93.9596,
-    locationPrecision: "approximate",
-    description: "Rainwater has remained pooled near a residential lane in Porompat, attracting mosquitoes. Residents are requesting drainage and prevention measures."
-  },
-
-  {
-    id: "CIV-1034",
-    title: "Leaking school roof in Singjamei",
-    category: "education",
-    status: "Reported",
-    hoursAgo: 52,
-    supporters: 19,
-    area: "Singjamei, Imphal",
-    location: "Singjamei, Imphal, Manipur",
-    latitude: 24.77736,
-    longitude: 93.94243,
-    locationPrecision: "approximate",
-    description: "A public-school classroom roof leaks during heavy rain and several desks need repair before students can use the room comfortably."
-  },
-
-  {
-    id: "CIV-1033",
-    title: "Tree cutting concern near Khurai Lamlong",
-    category: "environment",
-    status: "Verified",
-    hoursAgo: 72,
-    supporters: 46,
-    area: "Khurai, Imphal East",
-    location: "Khurai Lamlong Market area, Imphal, Manipur",
-    latitude: 24.8405,
-    longitude: 93.97,
-    locationPrecision: "approximate",
-    description: "Residents have raised a concern about trees removed along a road near Khurai Lamlong and are asking for the site to be reviewed."
-  },
-
-  {
-    id: "CIV-1032",
-    title: "Traffic signal issue near Keishampat",
-    category: "safety",
-    status: "Resolved",
-    hoursAgo: 96,
-    supporters: 64,
-    area: "Keishampat, Imphal West",
-    location: "Keishampat junction, Imphal, Manipur",
-    latitude: 24.80758,
-    longitude: 93.92979,
-    locationPrecision: "approximate",
-    description: "A junction signal near Keishampat was not operating correctly, making it difficult for vehicles and pedestrians to cross safely during busy periods."
-  },
-
-  {
-    id: "CIV-1031",
-    title: "Road cracks and waterlogging in Sagolband",
-    category: "roads",
-    status: "In Progress",
-    hoursAgo: 120,
-    supporters: 22,
-    area: "Sagolband, Imphal West",
-    location: "Sagolband, near the Nambul River, Imphal, Manipur",
-    latitude: 24.8025,
-    longitude: 93.9249,
-    locationPrecision: "approximate",
-    description: "Cracks in a local road around Sagolband collect rainwater and slow traffic. The damaged stretch needs inspection and repair."
-  },
-
-  {
-    id: "CIV-1030",
-    title: "Overflowing bins near Khuman Lampak terminal",
-    category: "garbage",
-    status: "Resolved",
-    hoursAgo: 144,
-    supporters: 8,
-    area: "Khuman Lampak, Imphal East",
-    location: "Near Khuman Lampak bus terminal, Imphal, Manipur",
-    latitude: 24.82035,
-    longitude: 93.95283,
-    locationPrecision: "approximate",
-    description: "Public bins near the Khuman Lampak transport terminal filled up quickly, causing litter around the waiting area before collection was arranged."
-  },
-
-  {
-    id: "CIV-1029",
-    title: "Streetlights out along the Nambul River",
-    category: "streetlights",
-    status: "Reported",
-    hoursAgo: 76,
-    supporters: 31,
-    area: "Sagolband, Imphal West",
-    location: "Nambul River embankment, Sagolband, Imphal, Manipur",
-    latitude: 24.8045,
-    longitude: 93.921,
-    locationPrecision: "approximate",
-    description: "Several lights along a walkway beside the Nambul River are not working, leaving the stretch poorly lit for people returning home after dark."
-  }
-];
+const SEED_ISSUES = []; // Real reports are loaded from Supabase only.
 
 let issues = [];
-let nextIssueNumber = 1043;
 let dashboardMapInstance = null;
 const dashboardMapMarkers = new Map();
 
-const PEOPLE = [
-  {
-    name: "Aisha Rahman",
-    role: "Student · GIS & mapping",
-    area: "Ward 4",
-    skills: [
-      "Mapping",
-      "Data Analysis",
-      "Photography"
-    ]
-  },
+const PEOPLE = []; // Community profiles must be sourced from real users.
 
-  {
-    name: "Daniel Okafor",
-    role: "Civil engineer",
-    area: "Ward 1",
-    skills: [
-      "Infrastructure Assessment",
-      "Project Management"
-    ]
-  },
-
-  {
-    name: "Meera Iyer",
-    role: "Graphic designer",
-    area: "Ward 2",
-    skills: [
-      "Graphic Design",
-      "Social Media"
-    ]
-  },
-
-  {
-    name: "Carlos Mendes",
-    role: "Licensed electrician",
-    area: "Ward 3",
-    skills: [
-      "Electrical Repair",
-      "Infrastructure Assessment"
-    ]
-  },
-
-  {
-    name: "Priya Nair",
-    role: "Community organizer",
-    area: "Ward 5",
-    skills: [
-      "Community Outreach",
-      "Event Organizing",
-      "Social Media"
-    ]
-  },
-
-  {
-    name: "Tom Becker",
-    role: "Retired plumber",
-    area: "Ward 1",
-    skills: [
-      "Plumbing",
-      "Infrastructure Assessment"
-    ]
-  },
-
-  {
-    name: "Lina Haddad",
-    role: "Public health nurse",
-    area: "Ward 5",
-    skills: [
-      "Public Health",
-      "Community Outreach"
-    ]
-  },
-
-  {
-    name: "Green Ward Collective",
-    role: "Environmental NGO · 120 members",
-    area: "Citywide",
-    org: true,
-    skills: [
-      "Environmental Science",
-      "Event Organizing",
-      "Community Outreach"
-    ]
-  },
-
-  {
-    name: "City Tech Students Club",
-    role: "University club · 45 members",
-    area: "Citywide",
-    org: true,
-    skills: [
-      "Mapping",
-      "Data Analysis",
-      "Social Media",
-      "Teaching"
-    ]
-  }
-];
-
-const MISSIONS = [
-  {
-    id: "M1",
-    issueId: "CIV-1035",
-    title:
-      "Porompat drain & mosquito cleanup drive",
-    needed: 12,
-    joined: 7,
-    description:
-      "Clear stagnant water, distribute repellent and share prevention tips with families.",
-    skills: [
-      "Event Organizing",
-      "Community Outreach",
-      "Public Health"
-    ]
-  },
-
-  {
-    id: "M2",
-    issueId: "CIV-1041",
-    title:
-      "Waste segregation awareness at Ima Keithel",
-    needed: 6,
-    joined: 3,
-    description:
-      "Create posters and social posts to help shops around Khwairamband Bazaar separate waste correctly.",
-    skills: [
-      "Graphic Design",
-      "Social Media",
-      "Community Outreach"
-    ]
-  },
-
-  {
-    id: "M3",
-    issueId: "CIV-1029",
-    title:
-      "Map unlit streets in Thangmeiband",
-    needed: 5,
-    joined: 2,
-    description:
-      "Record poorly lit stretches around Thangmeiband and build a location map for the electricity team.",
-    skills: [
-      "Mapping",
-      "Data Analysis",
-      "Photography"
-    ]
-  },
-
-  {
-    id: "M4",
-    issueId: "CIV-1034",
-    title:
-      "Assess school building safety",
-    needed: 4,
-    joined: 1,
-    description:
-      "Document classroom damage at a school in Singjamei and help prepare a repair request.",
-    skills: [
-      "Infrastructure Assessment",
-      "Teaching",
-      "Project Management"
-    ]
-  },
-
-  {
-    id: "M5",
-    issueId: "CIV-1033",
-    title:
-      "Tree census around Khurai Lamlong",
-    needed: 8,
-    joined: 3,
-    description:
-      "Count and map roadside trees around Khurai Lamlong to support a local environmental review.",
-    skills: [
-      "Environmental Science",
-      "Mapping",
-      "Data Analysis"
-    ]
-  }
-];
-
-const WEEKLY_BASELINE = {
-  reported: [6, 9, 7, 11, 8, 12, 5],
-  resolved: [4, 6, 8, 7, 9, 8, 3]
-};
-
-const EXAMPLES = [
-  {
-    category: "roads",
-    location: "Near Kangla Western Gate, Imphal, Manipur",
-    description: "A pothole has opened on the road near Kangla Western Gate in Imphal. Vehicles swerve around it and pedestrians have trouble crossing safely."
-  },
-  {
-    category: "garbage",
-    location: "Ima Keithel, Khwairamband Bazaar, Imphal, Manipur",
-    description: "Waste bins near Khwairamband Bazaar are overflowing onto the footpath after several missed collections."
-  },
-  {
-    category: "streetlights",
-    location: "Thangmeiband, Imphal, Manipur",
-    description: "Several streetlights along a Thangmeiband lane are not working, making the walk home difficult after dark."
-  },
-  {
-    category: "other",
-    location: "Khuman Lampak, Imphal, Manipur",
-    description: "A water pipe is leaking onto the road near the Khuman Lampak transport area, leaving a slippery patch for pedestrians."
-  }
-];
-
-
-/* =========================================================
-   4. APP STATE & HELPERS
-   ========================================================= */
-
-const state = {
-  screen: "homeScreen",
-
-  draftEvidenceUrls: [],
-  draftEvidenceFiles: [],
-  pendingEvidenceReport: null,
-
-  draft: null,
-
-  analysis: null,
-
-  analyzing: false,
-
-  exampleIndex: 0,
-
-  filters: {
-    status: "All",
-    category: "all",
-    sort: "newest",
-    query: ""
-  },
-
-  mySkills: new Set(),
-
-  joinedMissions: new Set(),
-
-  supported: new Set(),
-
-  openIssueId: null,
-
-  civicAiOpen: false,
-
-  civicAiContext: null,
-
-  civicAiMessages: [],
-
-  civicActionId: null
-};
-
-const $ = (
-  selector,
-  root = document
-) => root.querySelector(selector);
-
-const $$ = (
-  selector,
-  root = document
-) => [
-  ...root.querySelectorAll(selector)
-];
+const MISSIONS = []; // Missions must be populated from genuine community/database records.
 
 function escapeHtml(value) {
   return String(value).replace(
@@ -1130,42 +658,14 @@ function toast(
   );
 }
 
-function buildUpdates(
-  status,
-  reportedAt,
-  department
-) {
-  const notes = {
-    Reported:
-      `Report received. Civic AI categorised it and routed it to ${department}.`,
-
-    Verified:
-      "Verified by the ward officer after a site check.",
-
-    "In Progress":
-      `${department} team assigned and work scheduled.`,
-
-    Resolved:
-      "Work completed and issue closed. Supporters were notified."
-  };
-
-  const lastIndex =
-    STATUSES.indexOf(status);
-
-  const elapsed =
-    Date.now() - reportedAt;
-
-  return STATUSES.slice(
-    0,
-    lastIndex + 1
-  ).map((s, i) => ({
-    status: s,
-    note: notes[s],
-    time:
-      reportedAt +
-      (elapsed * i) /
-        (lastIndex + 1)
-  }));
+function buildUpdates(status, reportedAt) {
+  // Only the submission event is available in this report query.
+  // Never invent verification, work-progress, or resolution history.
+  return [{
+    status: "Reported",
+    note: "Report submitted. Additional status history appears only when recorded by the system.",
+    time: reportedAt
+  }];
 }
 
 function parseIssueCoordinates(locationValue) {
@@ -1229,7 +729,7 @@ function renderDashboardMapIssue(issue) {
   const locationLabel = String(issue.location || "Location not supplied");
   const categoryLabel = CATEGORIES[issue.category]?.label || "Other";
   const locationNote = issue.locationPrecision === "approximate" && coords
-    ? "Approximate demo pin · area-level location"
+    ? "Approximate location · area-level pin"
     : coords
       ? `GPS pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
       : "Address text only · exact map pin unavailable";
@@ -1314,7 +814,7 @@ function initDashboardMap() {
 
   if (statusElement) {
     statusElement.textContent =
-      `${mappedIssues.length} of ${issues.length} reports have map coordinates. Seeded demo pins are approximate area-level locations; reports submitted with GPS use exact coordinates.`;
+      `${mappedIssues.length} of ${issues.length} reports have map coordinates. Reports with approximate locations use area-level pins; GPS-enabled reports may show more precise locations.`;
   }
 
   if (!mapElement) return;
@@ -3014,7 +2514,10 @@ function setupCivicBackend() {
 }
 
 async function loadPersistentCivicReports() {
-  if (!window.civicSupabase) return;
+  if (!window.civicSupabase) {
+    toast("Civic OS could not connect to its database. Saved reports are unavailable until the connection is restored.", "triangle-alert");
+    return;
+  }
   try {
     const client = window.civicSupabase;
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
@@ -3074,7 +2577,7 @@ async function loadPersistentCivicReports() {
     renderDashboard();
   } catch (error) {
     console.error("Could not load saved Civic OS reports:", error);
-    toast("Saved reports could not be loaded. Demo reports are still available.", "triangle-alert");
+    toast("Saved reports could not be loaded. Check your connection and try again.", "triangle-alert");
   }
 }
 
@@ -4263,62 +3766,11 @@ function renderIssueSheet(issue) {
 }
 
 function advanceIssue(id) {
-  const issue =
-    getIssue(id);
-
+  // Citizen-side status changes are not authoritative. Only the Government
+  // Portal's authenticated database RPC may change a saved report status.
+  const issue = getIssue(id);
   if (!issue) return;
-
-  const index =
-    STATUSES.indexOf(
-      issue.status
-    );
-
-  if (
-    index <
-      0 ||
-    index >=
-      STATUSES.length - 1
-  ) {
-    return;
-  }
-
-  const next =
-    STATUSES[index + 1];
-
-  const notes = {
-    Verified:
-      "Verified by the ward officer after a site check.",
-
-    "In Progress":
-      `${issue.department} team assigned and work scheduled.`,
-
-    Resolved:
-      "Work completed and issue closed."
-  };
-
-  issue.status =
-    next;
-
-  issue.updates.push({
-    status: next,
-    note: notes[next],
-    time: Date.now()
-  });
-
-  renderIssueSheet(issue);
-
-  renderScreen(
-    state.screen
-  );
-
-  toast(
-    next === "Resolved"
-      ? `${issue.id} resolved`
-      : `${issue.id} marked as ${next}`,
-    next === "Resolved"
-      ? "badge-check"
-      : "circle-check"
-  );
+  toast("Report status can only be updated by an authorized government account.", "shield-alert");
 }
 
 function toggleSupport(id) {
@@ -4481,8 +3933,7 @@ function renderDashboard() {
       6 - d;
 
     const reported =
-      WEEKLY_BASELINE
-        .reported[idx] +
+      (WEEKLY_BASELINE.reported[idx] || 0) +
       issues.filter(
         (i) =>
           i.reportedAt >=
@@ -4492,8 +3943,7 @@ function renderDashboard() {
       ).length;
 
     const resolved =
-      WEEKLY_BASELINE
-        .resolved[idx] +
+      (WEEKLY_BASELINE.resolved[idx] || 0) +
       issues.filter(
         (i) =>
           i.updates.some(
@@ -7945,32 +7395,7 @@ function renderCivicActions() {
     window.civicUserActivities = [];
   }
 
-  const builtInActions = [
-    {
-      id: "flood",
-      title: "Flood Preparedness & Awareness Drive",
-      icon: "waves",
-      location: "Imphal",
-      participants: 24,
-      description: "Help residents learn basic flood preparedness and emergency safety measures."
-    },
-    {
-      id: "cleanup",
-      title: "Community Clean-Up Drive",
-      icon: "sparkles",
-      location: "Khurai",
-      participants: 18,
-      description: "Volunteers come together to clean a shared public area and improve the neighbourhood."
-    },
-    {
-      id: "planting",
-      title: "Tree Plantation & Green Space Drive",
-      icon: "trees",
-      location: "Lamphel",
-      participants: 31,
-      description: "Help create greener community spaces through a local tree plantation activity."
-    }
-  ];
+  const builtInActions = []; // Do not show fictional community activity.
 
   const userActions = window.civicUserActivities.map((activity) => {
     civicActionData[activity.id] = activity;
@@ -8105,9 +7530,7 @@ function init() {
 
   runInitStep("backend", setupCivicBackend);
 
-  runInitStep("demo data", () => {
-    issues = SEED_ISSUES.map(createIssue);
-  });
+  runInitStep("real reports", () => { issues = []; });
 
   runInitStep("category options", renderCategoryOptions);
   runInitStep("issue filters", setupIssueFilters);

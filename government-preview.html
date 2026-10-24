@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f9f6">
-<meta name="description" content="Civic OS Government Portal development preview with fictional sample reports.">
+<meta name="description" content="Civic OS Government Portal preview using genuine database records only.">
 <title>Government Portal — Civic OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
 <div class="app-shell">
   <header class="topbar">
     <a class="brand" href="./index.html" aria-label="Civic OS home"><span class="brand-mark">C</span><span>Civic <b>OS</b><small>GOVERNMENT OPERATIONS</small></span></a>
-    <div class="topbar-right"><span class="demo-pill">DEVELOPMENT · SAMPLE DATA</span><button class="profile-mini" type="button" data-page="profile"><span class="avatar">GO</span><span>Government Official<small>Demo workspace</small></span></button></div>
+    <div class="topbar-right"><span class="demo-pill">DEVELOPMENT · REAL DATA ONLY</span><button class="profile-mini" type="button" data-page="profile"><span class="avatar">GO</span><span>Government workspace<small>Not signed in</small></span></button></div>
   </header>
   <div class="layout">
     <aside class="sidebar" aria-label="Government portal navigation">
@@ -26,16 +26,16 @@
       <button class="nav-btn" data-page="dashboard"><span class="nav-icon">▥</span>Dashboard</button>
       <button class="nav-btn" data-page="notifications"><span class="nav-icon">♧</span>Notifications</button>
       <button class="nav-btn" data-page="profile"><span class="nav-icon">◎</span>Profile</button>
-      <div class="sidebar-note"><strong>Preview mode</strong><br>All reports are fictional examples. Status changes stay in this browser and are never saved to official records.</div>
+      <div class="sidebar-note"><strong>Real data only</strong><br>Reports load from Supabase only after authorized government sign-in. No fictional records are displayed.</div>
     </aside>
     <main class="main">
       <section class="page active" id="page-home" data-page-view="home">
         <header class="page-heading"><div><p class="eyebrow">Government workspace</p><h1>Good day, official.</h1><p>Select your department to open its report workspace. In production, access to real reports is controlled by your assigned role and department permissions.</p></div><button class="btn btn-primary" data-page="departments">Browse departments →</button></header>
-        <div class="notice">Development preview · fictional sample records only. No live citizen data is accessed and no official updates are saved.</div>
+        <div class="notice">Government workspace · only genuine database reports are displayed after authorized sign-in.</div>
         <div class="grid stats-grid" id="homeStats"></div>
         <div class="grid home-grid">
-          <section class="panel"><div class="panel-head"><div><h2>Find your department</h2><p>Choose a department to see its related sample reports.</p></div><button class="text-link" data-page="departments">View all →</button></div><div class="grid department-grid" id="homeDepartments"></div></section>
-          <section class="panel"><div class="panel-head"><div><h2>Recent reports</h2><p>Latest activity across the sample workspace.</p></div><button class="text-link" data-page="issues">All issues →</button></div><div class="report-list" id="homeRecent"></div></section>
+          <section class="panel"><div class="panel-head"><div><h2>Find your department</h2><p>Choose a department to see its related reports.</p></div><button class="text-link" data-page="departments">View all →</button></div><div class="grid department-grid" id="homeDepartments"></div></section>
+          <section class="panel"><div class="panel-head"><div><h2>Recent reports</h2><p>Latest activity across the workspace.</p></div><button class="text-link" data-page="issues">All issues →</button></div><div class="report-list" id="homeRecent"></div></section>
         </div>
       </section>
       <section class="page" id="page-departments" data-page-view="departments">
@@ -47,24 +47,24 @@
         <header class="page-heading"><div><p class="eyebrow">Department workspace</p><h1 id="departmentTitle">Department reports</h1><p id="departmentDescription">Review reports assigned to this department.</p></div><button class="btn" data-page="departments">← All departments</button></header>
         <div class="department-hero"><span class="dept-icon" id="departmentHeroIcon">▦</span><div><h2 id="departmentHeroTitle">Department</h2><p id="departmentHeroDescription">Reports associated with this department.</p></div></div>
         <div class="grid stats-grid" id="departmentStats"></div>
-        <section class="panel"><div class="panel-head"><div><h2>Department reports</h2><p>Sample reports matching this department.</p></div></div><div class="search-row"><input id="departmentReportSearch" class="search-input" type="search" placeholder="Search this department's reports…"><select id="departmentStatusFilter" class="filter-select" aria-label="Filter department reports by status"><option value="all">All statuses</option><option>Reported</option><option>Verified</option><option>In Progress</option><option>Resolved</option></select></div><div id="departmentReports" class="report-list"></div></section>
+        <section class="panel"><div class="panel-head"><div><h2>Department reports</h2><p>Reports matching this department.</p></div></div><div class="search-row"><input id="departmentReportSearch" class="search-input" type="search" placeholder="Search this department's reports…"><select id="departmentStatusFilter" class="filter-select" aria-label="Filter department reports by status"><option value="all">All statuses</option><option>Reported</option><option>Verified</option><option>In Progress</option><option>Resolved</option></select></div><div id="departmentReports" class="report-list"></div></section>
       </section>
       <section class="page" id="page-issues" data-page-view="issues">
-        <header class="page-heading"><div><p class="eyebrow">Report management</p><h1>Issues & reports</h1><p>Search the fictional report set, filter by status or department, and test the sample status controls.</p></div></header>
+        <header class="page-heading"><div><p class="eyebrow">Report management</p><h1>Issues & reports</h1><p>Search genuine database reports and filter by status or department.</p></div></header>
         <section class="panel"><div class="search-row"><input id="issueSearch" class="search-input" type="search" placeholder="Search report, category or location…"><select id="issueDepartmentFilter" class="filter-select" aria-label="Filter by department"><option value="all">All departments</option></select><select id="issueStatusFilter" class="filter-select" aria-label="Filter by status"><option value="all">All statuses</option><option>Reported</option><option>Verified</option><option>In Progress</option><option>Resolved</option></select></div><div class="filter-chips" id="statusChips"></div><div id="issueReports" class="report-list"></div></section>
       </section>
       <section class="page" id="page-dashboard" data-page-view="dashboard">
-        <header class="page-heading"><div><p class="eyebrow">Service delivery overview</p><h1>Dashboard</h1><p>Review report volume, status distribution, and department workload in the sample workspace.</p></div></header>
+        <header class="page-heading"><div><p class="eyebrow">Service delivery overview</p><h1>Dashboard</h1><p>Review report volume, status distribution, and department workload in the workspace.</p></div></header>
         <div class="grid stats-grid" id="dashboardStats"></div>
-        <div class="grid analytics-grid"><section class="panel"><div class="panel-head"><div><h2>Reports by status</h2><p>Current sample report distribution.</p></div></div><div id="statusAnalytics"></div></section><section class="panel"><div class="panel-head"><div><h2>Reports by department</h2><p>Counts across the fictional dataset.</p></div></div><div id="departmentAnalytics"></div></section></div>
-        <section class="panel"><div class="panel-head"><div><h2>Recent activity</h2><p>Latest sample report activity.</p></div></div><div id="dashboardActivity"></div></section>
+        <div class="grid analytics-grid"><section class="panel"><div class="panel-head"><div><h2>Reports by status</h2><p>Current report distribution.</p></div></div><div id="statusAnalytics"></div></section><section class="panel"><div class="panel-head"><div><h2>Reports by department</h2><p>Counts calculated from genuine database records.</p></div></div><div id="departmentAnalytics"></div></section></div>
+        <section class="panel"><div class="panel-head"><div><h2>Recent activity</h2><p>Latest report activity.</p></div></div><div id="dashboardActivity"></div></section>
       </section>
       <section class="page" id="page-notifications" data-page-view="notifications">
-        <header class="page-heading"><div><p class="eyebrow">Updates</p><h1>Notifications</h1><p>Illustrative notifications for the Government Portal preview.</p></div></header>
+        <header class="page-heading"><div><p class="eyebrow">Updates</p><h1>Notifications</h1><p>Official notifications from real events will appear here when connected.</p></div></header>
         <div id="notificationList"></div>
       </section>
       <section class="page" id="page-profile" data-page-view="profile">
-        <header class="page-heading"><div><p class="eyebrow">Account settings</p><h1>Profile</h1><p>This is a demonstration profile, not a real authenticated government account.</p></div></header>
+        <header class="page-heading"><div><p class="eyebrow">Account settings</p><h1>Profile</h1><p>Sign in to view your verified government account details.</p></div></header>
         <div class="grid profile-grid">
           <section class="profile-card">
             <p class="eyebrow">Official sign-in</p>
@@ -79,9 +79,9 @@
               <button class="btn" id="governmentSignOut" type="button">Sign out</button>
               <p id="governmentAuthMessage" role="status" aria-live="polite"></p>
             </form>
-          </section><section class="profile-card"><div class="profile-identity"><span class="avatar">GO</span><div><h2>Government Official</h2><p>Development preview account</p></div></div><div class="profile-row"><span>Role</span><strong>Demo only</strong></div><div class="profile-row"><span>Department</span><strong>Not assigned</strong></div><div class="profile-row"><span>Data access</span><strong>Fictional samples</strong></div></section><section class="profile-card"><p class="eyebrow">Security boundary</p><h2 style="font-size:17px">Production access is separate</h2><p style="color:var(--muted);font-size:11px;line-height:1.8">This development page does not authenticate officials or read production reports. The production portal must verify a signed-in user's role and department permissions on the backend before returning any real records or accepting changes.</p><a class="btn" href="./portals.html">Return to portal selection</a></section></div>
+          </section><section class="profile-card"><div class="profile-identity"><span class="avatar">GO</span><div><h2>Government workspace</h2><p>Not signed in</p></div></div><div class="profile-row"><span>Role</span><strong>Not authenticated</strong></div><div class="profile-row"><span>Department</span><strong>Not assigned</strong></div><div class="profile-row"><span>Data access</span><strong>Unavailable until sign-in</strong></div></section><section class="profile-card"><p class="eyebrow">Security boundary</p><h2 style="font-size:17px">Production access is separate</h2><p style="color:var(--muted);font-size:11px;line-height:1.8">This development page does not authenticate officials or read production reports. The production portal must verify a signed-in user's role and department permissions on the backend before returning any real records or accepting changes.</p><a class="btn" href="./portals.html">Return to portal selection</a></section></div>
       </section>
-      <footer class="footer">Civic OS · Government Portal development preview · Fictional sample data only. This interface is for testing and does not represent official government records.</footer>
+      <footer class="footer">Civic OS · Government Portal development preview · Only genuine database records are shown after authorized sign-in. No fictional reports are included.</footer>
     </main>
   </div>
 </div>
