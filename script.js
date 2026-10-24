@@ -5,8 +5,8 @@
    Report. Connect. Resolve.
 
    1. Reference data
-   2. Demo AI engine
-   3. Demo data
+   2. Rule-based AI prototype
+   3. Live data state
    4. App state & helpers
    5. Screen switching
    6. Home
@@ -264,7 +264,7 @@ const STOPWORDS = new Set([
 
 
 /* =========================================================
-   2. DEMO AI ENGINE
+   2. RULE-BASED AI PROTOTYPE
    ========================================================= */
 
 function matchTerms(text, terms) {
@@ -298,7 +298,7 @@ function analyzeReport({
   location,
   hasPhoto
 }) {
-  // This demo analyzer uses the written description, not image recognition.
+  // This rule-based prototype uses the written description, not image recognition.
   const text = String(description || "").toLowerCase();
   const detected = detectCategory(text);
 
@@ -485,7 +485,7 @@ function findPossibleDuplicate(
 
 
 /* =========================================================
-   3. DEMO DATA
+   3. LIVE DATA STATE
    ========================================================= */
 
 const NOW = Date.now();
@@ -659,42 +659,14 @@ function toast(
   );
 }
 
-function buildUpdates(
-  status,
-  reportedAt,
-  department
-) {
-  const notes = {
-    Reported:
-      `Report received. Civic AI categorised it and routed it to ${department}.`,
-
-    Verified:
-      "Verified by the ward officer after a site check.",
-
-    "In Progress":
-      `${department} team assigned and work scheduled.`,
-
-    Resolved:
-      "Work completed and issue closed. Supporters were notified."
-  };
-
-  const lastIndex =
-    STATUSES.indexOf(status);
-
-  const elapsed =
-    Date.now() - reportedAt;
-
-  return STATUSES.slice(
-    0,
-    lastIndex + 1
-  ).map((s, i) => ({
-    status: s,
-    note: notes[s],
-    time:
-      reportedAt +
-      (elapsed * i) /
-        (lastIndex + 1)
-  }));
+function buildUpdates(status, reportedAt) {
+  // Only the submission event is available in this report query.
+  // Never invent verification, work-progress, or resolution history.
+  return [{
+    status: "Reported",
+    note: "Report submitted. Additional status history appears only when recorded by the system.",
+    time: reportedAt
+  }];
 }
 
 function parseIssueCoordinates(locationValue) {
@@ -3795,62 +3767,11 @@ function renderIssueSheet(issue) {
 }
 
 function advanceIssue(id) {
-  const issue =
-    getIssue(id);
-
+  // Citizen-side status changes are not authoritative. Only the Government
+  // Portal's authenticated database RPC may change a saved report status.
+  const issue = getIssue(id);
   if (!issue) return;
-
-  const index =
-    STATUSES.indexOf(
-      issue.status
-    );
-
-  if (
-    index <
-      0 ||
-    index >=
-      STATUSES.length - 1
-  ) {
-    return;
-  }
-
-  const next =
-    STATUSES[index + 1];
-
-  const notes = {
-    Verified:
-      "Verified by the ward officer after a site check.",
-
-    "In Progress":
-      `${issue.department} team assigned and work scheduled.`,
-
-    Resolved:
-      "Work completed and issue closed."
-  };
-
-  issue.status =
-    next;
-
-  issue.updates.push({
-    status: next,
-    note: notes[next],
-    time: Date.now()
-  });
-
-  renderIssueSheet(issue);
-
-  renderScreen(
-    state.screen
-  );
-
-  toast(
-    next === "Resolved"
-      ? `${issue.id} resolved`
-      : `${issue.id} marked as ${next}`,
-    next === "Resolved"
-      ? "badge-check"
-      : "circle-check"
-  );
+  toast("Report status can only be updated by an authorized government account.", "shield-alert");
 }
 
 function toggleSupport(id) {
