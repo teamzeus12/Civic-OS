@@ -2541,11 +2541,11 @@ function setupCivicBackend() {
 }
 
 async function attachReportEvidence(client, reportRows) {
-  const reportIds = [...new Set((reportRows || []).map((row) => row?.id).filter(Boolean))];
+  const rows = (reportRows || []).filter((row) => row?.id);
+  const reportIds = [...new Set(rows.map((row) => row.id))];
   if (!client || !reportIds.length) return;
 
   try {
-    // Keep evidence private. Signed URLs are temporary and depend on evidence-table RLS.
     const { data: evidenceRows, error } = await client
       .from("report_evidence")
       .select("report_id,storage_path,media_type,original_name,created_at")
@@ -2555,8 +2555,19 @@ async function attachReportEvidence(client, reportRows) {
     if (error) throw error;
 
     const photosByReport = new Map();
+    const reportsById = new Map(rows.map((row) => [row.id, row]));
+    const userResult = await client.auth.getUser();
+    const currentUserId = userResult.data?.user?.id || null;
+
     for (const evidence of evidenceRows || []) {
       if (!evidence.storage_path) continue;
+      const report = reportsById.get(evidence.report_id);
+      // Only fetch evidence belonging to the signed-in owner or a publicly
+      // approved report. Government access continues to follow storage RLS.
+      const isOwner = Boolean(currentUserId && report?.reported_by === currentUserId);
+      const isPublic = report?.verification_required === false;
+      if (!isOwner && !isPublic) continue;
+
       const { data: signed, error: signedError } = await client
         .storage.from("civic-report-evidence")
         .createSignedUrl(evidence.storage_path, 3600);
@@ -2601,7 +2612,7 @@ async function loadPersistentCivicReports() {
     if (user) {
       const { data, error } = await client
         .from("reports")
-        .select("id,public_id,title,category,description,status,public_impact,location,reported_at,resolved_at")
+        .select("id,public_id,title,category,description,status,public_impact,location,reported_at,resolved_at,reported_by,verification_required")
         .eq("reported_by", user.id)
         .order("reported_at", { ascending: true });
       if (error) throw error;
