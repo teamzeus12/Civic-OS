@@ -17,18 +17,8 @@
     { id: "other", name: "Other Civic Services", short: "Other", icon: "＋", description: "Reports that need review and routing by an authorized official.", categories: ["other"] }
   ];
 
-  let reports = [
-    { id: "DEMO-001", title: "Large pothole near market", category: "Roads", department: "pwd", location: "Imphal West", description: "Sample road surface damage reported near a busy market.", status: "Reported", updated: "Just now" },
-    { id: "DEMO-002", title: "Waste collection missed", category: "Sanitation", department: "mahud", location: "Imphal East", description: "Sample report about missed waste collection in a residential area.", status: "Verified", updated: "Today" },
-    { id: "DEMO-003", title: "Streetlight not working", category: "Electricity", department: "electricity", location: "Thoubal", description: "Sample report about a streetlight that is no longer operating.", status: "In Progress", updated: "Today" },
-    { id: "DEMO-004", title: "School water supply issue", category: "Education", department: "education", location: "Bishnupur", description: "Sample report about water access at a public school.", status: "Resolved", updated: "Yesterday" },
-    { id: "DEMO-005", title: "Tree damage beside public road", category: "Forest", department: "forest", location: "Kakching", description: "Sample report asking the relevant team to inspect damaged trees.", status: "Reported", updated: "Today" },
-    { id: "DEMO-006", title: "Irrigation channel blockage", category: "Agriculture", department: "agriculture", location: "Thoubal district", description: "Sample report about a blocked channel affecting nearby fields.", status: "Verified", updated: "Yesterday" },
-    { id: "DEMO-007", title: "Traffic signal malfunction", category: "Transport", department: "transport", location: "Imphal West", description: "Sample report about a traffic signal that needs inspection.", status: "In Progress", updated: "Today" },
-    { id: "DEMO-008", title: "Drain overflow after rain", category: "Water Resources", department: "water", location: "Imphal East", description: "Sample report about drainage overflow after rainfall.", status: "Reported", updated: "Today" },
-    { id: "DEMO-009", title: "Community sports ground needs repair", category: "Sports", department: "sports", location: "Bishnupur", description: "Sample report about damaged equipment at a public sports ground.", status: "Verified", updated: "Yesterday" },
-    { id: "DEMO-010", title: "Stray animal assistance request", category: "Animal Welfare", department: "animal", location: "Imphal East", description: "Sample request for help with an animal welfare concern.", status: "Reported", updated: "Today" }
-  ];
+  // Real records only; populated after authorized Supabase access.
+  let reports = [];
 
   const statusOptions = ["Reported", "Verified", "In Progress", "Resolved"];
   let selectedDepartment = null;
@@ -90,7 +80,7 @@
   function renderReports(targetId, list, controls = false) {
     const target = $("#" + targetId);
     if (!target) return;
-    target.innerHTML = list.length ? list.map((report) => reportCard(report, controls)).join("") : '<div class="empty-state">No sample reports match these filters.</div>';
+    target.innerHTML = list.length ? list.map((report) => reportCard(report, controls)).join("") : '<div class="empty-state">No genuine reports are available for this view yet.</div>';
   }
 
   function openDepartment(id) {
@@ -149,23 +139,20 @@
   }
 
   function renderNotifications() {
-    $("#notificationList").innerHTML = [
-      ["Report assigned for review", "A sample report has been placed in its department workspace.", "Today · Demo notification"],
-      ["Status updated", "A fictional report status changed in the sample data.", "Today · Demo notification"],
-      ["Department directory available", "Choose your department from Home or Departments.", "Preview guide"]
-    ].map(([title, text, when]) => `<article class="notification-card"><span class="notification-icon">♧</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p><small>${escapeHtml(when)}</small></div></article>`).join("");
+    const target = $("#notificationList");
+    if (target) target.innerHTML = '<div class="empty-state">No official notifications are available yet.</div>';
   }
 
   async function connectGovernmentWorkspace() {
     const config = window.CIVIC_SUPABASE_CONFIG;
-    if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) return;
+    if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) { showWorkspaceError("Supabase is not configured. Live reports cannot be loaded."); return; }
     const client = window.supabase.createClient(config.url, config.publishableKey);
     supabaseClient = client;
     const { data: sessionData } = await client.auth.getSession();
-    if (!sessionData?.session) return;
+    if (!sessionData?.session) { showWorkspaceError("Sign in with an authorized government account to load real reports. No sample data is displayed."); return; }
     const userId = sessionData.session.user.id;
     const { data: profile, error: profileError } = await client.from("profiles").select("id,role,department_id,full_name").eq("id", userId).maybeSingle();
-    if (profileError || !profile || !["government", "admin"].includes(profile.role)) return;
+    if (profileError || !profile || !["government", "admin"].includes(profile.role)) { showWorkspaceError("Government access could not be verified. No reports were loaded."); return; }
     if (profile.role !== "admin" && !profile.department_id) {
       const n = document.createElement("p"); n.className = "notice";
       n.textContent = "Your official account has no department assignment. Showing sample data only; ask an administrator to assign your department.";
@@ -174,14 +161,23 @@
     const query = client.from("reports").select("id,public_id,title,category,description,status,location,primary_department_id,reported_at,updated_at").order("reported_at", { ascending: false });
     const scopedQuery = profile.role === "admin" ? query : query.eq("primary_department_id", profile.department_id);
     const { data, error } = await scopedQuery;
-    if (error) { console.error("Live report load failed", error); return; }
+    if (error) { console.error("Live report load failed", error); showWorkspaceError("Reports could not be loaded from Supabase. Check your connection or permissions."); return; }
+    clearWorkspaceError();
     const deptMap = { mahud:"mahud", pwd:"pwd", power:"electricity", environment_forest:"forest", education:"education", agriculture:"agriculture", transport:"transport", health:"health", water_resources:"water", youth_sports:"sports", animal_husbandry:"animal" };
     const place = (v) => typeof v === "string" ? v : v && typeof v === "object" ? [v.address,v.name,v.locality,v.district,v.city,v.label].find(x => typeof x === "string" && x.trim()) || "Location recorded" : "Location not provided";
     reports = (data || []).map(r => ({ id:r.id, publicId:r.public_id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "" }));
     liveMode = true; supabaseClient = client; officialProfile = profile;
     const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
+    renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications();
     const small = document.querySelector(".profile-mini small"); if (small) small.textContent = profile.role === "admin" ? "Administrator" : profile.department_id.toUpperCase() + " official";
   }
+
+  function showWorkspaceError(message) {
+    let node = $("#workspaceDataError");
+    if (!node) { node = document.createElement("div"); node.id = "workspaceDataError"; node.className = "notice"; document.querySelector(".main")?.prepend(node); }
+    if (node) node.textContent = message;
+  }
+  function clearWorkspaceError() { $("#workspaceDataError")?.remove(); }
 
   function init() {
     renderStats("homeStats");
