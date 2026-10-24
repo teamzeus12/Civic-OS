@@ -278,9 +278,6 @@ svg.lucide {
   background: currentColor;
 }
 
-.pill-high { color: #ff9d9d; background: var(--red-soft); border-color: rgba(242, 107, 107, 0.28); }
-.pill-medium { color: #ffd083; background: var(--amber-soft); border-color: rgba(245, 181, 68, 0.28); }
-.pill-low { color: #c8d2cd; }
 
 .status-reported { color: #c8d2cd; }
 .status-verified { color: var(--st-verified); background: rgba(183, 243, 211, 0.08); border-color: rgba(183, 243, 211, 0.2); }
@@ -1032,11 +1029,7 @@ main {
   color: var(--text);
 }
 
-.issue-icon.is-high {
-  color: #ff9d9d;
-  background: var(--red-soft);
-  border-color: rgba(242, 107, 107, 0.25);
-}
+
 
 .issue-icon.is-resolved {
   color: var(--accent);
@@ -1682,9 +1675,6 @@ input[type="search"]::-webkit-search-cancel-button {
   overflow-wrap: anywhere;
 }
 
-.ai-value.is-high { color: #ff9d9d; }
-.ai-value.is-medium { color: #ffd083; }
-.ai-value.is-low { color: #c8d2cd; }
 
 .ai-text {
   font-size: 14px;
@@ -2146,7 +2136,6 @@ input[type="search"]::-webkit-search-cancel-button {
   color: var(--subtle);
 }
 
-.kpi-high .kpi-value { color: #ff9d9d; }
 .kpi-resolved .kpi-value { color: var(--accent); }
 .kpi-progress .kpi-value { color: #ffd083; }
 
@@ -2432,7 +2421,7 @@ input[type="search"]::-webkit-search-cancel-button {
   color: var(--muted);
 }
 
-.priority-list {
+.latest-report-list {
   display: grid;
   gap: 8px;
 }
@@ -5765,17 +5754,6 @@ body {
   background: #f1f5f8;
   border-color: #dce6eb;
 }
-.pill-high {
-  color: #a62d3b;
-  background: #ffeaec;
-  border-color: #f2c1c7;
-}
-.pill-medium {
-  color: #875000;
-  background: #fff2d8;
-  border-color: #f1d39c;
-}
-.pill-low { color: #176b52; background: #e7f6f0; }
 .status-reported { color: #526a79; }
 .status-verified {
   color: #176b52;
@@ -5851,11 +5829,7 @@ select option { color: #172b3a; background: #fff; }
   border-color: #dce7eb;
   color: #31566b;
 }
-.issue-icon.is-high {
-  color: #b83243;
-  background: #ffeaec;
-  border-color: #f2c1c7;
-}
+
 .issue-icon.is-resolved {
   color: #087354;
   background: #e0f5ed;
@@ -6350,7 +6324,6 @@ button:disabled,
 .map-legend-dot.is-verified { background: #2563eb; }
 .map-legend-dot.is-progress { background: #b86c08; }
 .map-legend-dot.is-resolved { background: #0f9f78; }
-.map-legend-dot.is-high { background: #fff; border-color: #b83243; }
 
 .dashboard-map-side {
   display: flex;
