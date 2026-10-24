@@ -2620,7 +2620,11 @@ async function loadPersistentCivicReports() {
     }
 
     const rowsById = new Map();
-    for (const row of [...(publicRows || []), ...ownRows]) {
+    // The public-map RPC returns only reports approved for public display.
+    for (const row of publicRows || []) {
+      if (row.public_id) rowsById.set(row.public_id, { ...row, verification_required: false });
+    }
+    for (const row of ownRows) {
       if (row.public_id) rowsById.set(row.public_id, row);
     }
 
@@ -2707,7 +2711,7 @@ async function retryCivicEvidenceUpload() {
   if (button) { button.disabled = true; button.textContent = "Uploading…"; }
   try {
     const count = await saveReportEvidence(pending.id, pending.userId);
-    await attachReportEvidence(window.civicSupabase, [{ id: pending.id }]);
+    await attachReportEvidence(window.civicSupabase, [{ id: pending.id, reported_by: pending.userId, verification_required: true }]);
     state.pendingEvidenceReport = null;
     clearPhoto({ revoke: true });
     resetReportForm();
@@ -2835,7 +2839,7 @@ async function submitReport() {
     state.supported.add(saved.public_id);
 
     if (!evidenceError && evidenceCount) {
-      await attachReportEvidence(window.civicSupabase, [saved]);
+      await attachReportEvidence(window.civicSupabase, [{ ...saved, reported_by: user.id, verification_required: true }]);
     }
 
     if (!evidenceError) {
