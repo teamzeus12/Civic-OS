@@ -500,92 +500,9 @@ const dashboardMapMarkers = new Map();
 
 const PEOPLE = []; // Community profiles must be sourced from real users.
 
-const MISSIONS = [
-  {
-    id: "M1",
-    issueId: "CIV-1035",
-    title:
-      "Porompat drain & mosquito cleanup drive",
-    needed: 12,
-    joined: 7,
-    description:
-      "Clear stagnant water, distribute repellent and share prevention tips with families.",
-    skills: [
-      "Event Organizing",
-      "Community Outreach",
-      "Public Health"
-    ]
-  },
+const MISSIONS = []; // Missions must come from genuine community/database records.
 
-  {
-    id: "M2",
-    issueId: "CIV-1041",
-    title:
-      "Waste segregation awareness at Ima Keithel",
-    needed: 6,
-    joined: 3,
-    description:
-      "Create posters and social posts to help shops around Khwairamband Bazaar separate waste correctly.",
-    skills: [
-      "Graphic Design",
-      "Social Media",
-      "Community Outreach"
-    ]
-  },
-
-  {
-    id: "M3",
-    issueId: "CIV-1029",
-    title:
-      "Map unlit streets in Thangmeiband",
-    needed: 5,
-    joined: 2,
-    description:
-      "Record poorly lit stretches around Thangmeiband and build a location map for the electricity team.",
-    skills: [
-      "Mapping",
-      "Data Analysis",
-      "Photography"
-    ]
-  },
-
-  {
-    id: "M4",
-    issueId: "CIV-1034",
-    title:
-      "Assess school building safety",
-    needed: 4,
-    joined: 1,
-    description:
-      "Document classroom damage at a school in Singjamei and help prepare a repair request.",
-    skills: [
-      "Infrastructure Assessment",
-      "Teaching",
-      "Project Management"
-    ]
-  },
-
-  {
-    id: "M5",
-    issueId: "CIV-1033",
-    title:
-      "Tree census around Khurai Lamlong",
-    needed: 8,
-    joined: 3,
-    description:
-      "Count and map roadside trees around Khurai Lamlong to support a local environmental review.",
-    skills: [
-      "Environmental Science",
-      "Mapping",
-      "Data Analysis"
-    ]
-  }
-];
-
-const WEEKLY_BASELINE = {
-  reported: [6, 9, 7, 11, 8, 12, 5],
-  resolved: [4, 6, 8, 7, 9, 8, 3]
-};
+const WEEKLY_BASELINE = { reported: [], resolved: [] }; // No fabricated dashboard series.
 
 const EXAMPLES = [
   {
