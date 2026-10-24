@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // DEVELOPMENT ONLY: fictional data; this script never calls Supabase or production APIs.
+  // Development preview: report data is fetched only from Supabase after authorization.
   const departments = [
     { id: "pwd", name: "Public Works Department", short: "PWD", icon: "⌁", description: "Roads, bridges, drainage and public infrastructure.", categories: ["roads", "drainage", "infrastructure"] },
     { id: "mahud", name: "MAHUD", short: "MAHUD", icon: "⌂", description: "Municipal administration, urban services and sanitation.", categories: ["garbage", "sanitation", "urban services"] },
@@ -45,7 +45,7 @@
 
   function departmentCard(dept) {
     const count = countDepartment(dept.id);
-    return `<button type="button" class="department-card" data-department="${dept.id}"><span class="dept-icon">${dept.icon}</span><strong>${escapeHtml(dept.name)}</strong><small>${escapeHtml(dept.description)}</small><span class="card-arrow">↗</span><span class="pill">${count} ${liveMode ? "" : "sample "}${count === 1 ? "report" : "reports"}</span></button>`;
+    return `<button type="button" class="department-card" data-department="${dept.id}"><span class="dept-icon">${dept.icon}</span><strong>${escapeHtml(dept.name)}</strong><small>${escapeHtml(dept.description)}</small><span class="card-arrow">↗</span><span class="pill">${count} ${count === 1 ? "report" : "reports"}</span></button>`;
   }
 
   function statusClass(status) {
@@ -97,7 +97,7 @@
       { label: "Department reports", value: list.length, note: "Database records", icon: "▤" },
       { label: "Reported", value: list.filter((r) => r.status === "Reported").length, note: "Awaiting review", icon: "◷" },
       { label: "In progress", value: list.filter((r) => r.status === "In Progress").length, note: "Currently active", icon: "↻" },
-      { label: "Resolved", value: list.filter((r) => r.status === "Resolved").length, note: "Completed in sample", icon: "✓" }
+      { label: "Resolved", value: list.filter((r) => r.status === "Resolved").length, note: "Completed reports", icon: "✓" }
     ]);
     renderDepartmentReports();
     navigate("department");
@@ -148,15 +148,26 @@
     if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) { showWorkspaceError("Supabase is not configured. Live reports cannot be loaded."); return; }
     const client = window.supabase.createClient(config.url, config.publishableKey);
     supabaseClient = client;
-    const { data: sessionData } = await client.auth.getSession();
+    let sessionData;
+    try {
+      const sessionResult = await client.auth.getSession();
+      sessionData = sessionResult.data;
+      if (sessionResult.error) { showWorkspaceError("Authentication could not be checked. No reports were loaded."); return; }
+    } catch (error) { console.error("Government session check failed", error); showWorkspaceError("Authentication service is unavailable. No reports were loaded."); return; }
     if (!sessionData?.session) { showWorkspaceError("Sign in with an authorized government account to load real reports. No sample data is displayed."); return; }
     const userId = sessionData.session.user.id;
-    const { data: profile, error: profileError } = await client.from("profiles").select("id,role,department_id,full_name").eq("id", userId).maybeSingle();
+    let profile, profileError;
+    try {
+      const profileResult = await client.from("profiles").select("id,role,department_id,full_name").eq("id", userId).maybeSingle();
+      profile = profileResult.data; profileError = profileResult.error;
+    } catch (error) { console.error("Government profile check failed", error); showWorkspaceError("Government account verification failed. No reports were loaded."); return; }
     if (profileError || !profile || !["government", "admin"].includes(profile.role)) { showWorkspaceError("Government access could not be verified. No reports were loaded."); return; }
     if (profile.role !== "admin" && !profile.department_id) { showWorkspaceError("Your official account has no department assignment. No reports were loaded; ask an administrator to assign your department."); return; }
     const query = client.from("reports").select("id,public_id,title,category,description,status,location,primary_department_id,reported_at,updated_at").order("reported_at", { ascending: false });
     const scopedQuery = profile.role === "admin" ? query : query.eq("primary_department_id", profile.department_id);
-    const { data, error } = await scopedQuery;
+    let data, error;
+    try { const reportResult = await scopedQuery; data = reportResult.data; error = reportResult.error; }
+    catch (loadError) { console.error("Live report load failed", loadError); showWorkspaceError("Reports could not be loaded from Supabase. Check your connection or permissions."); return; }
     if (error) { console.error("Live report load failed", error); showWorkspaceError("Reports could not be loaded from Supabase. Check your connection or permissions."); return; }
     clearWorkspaceError();
     const deptMap = { mahud:"mahud", pwd:"pwd", power:"electricity", environment_forest:"forest", education:"education", agriculture:"agriculture", transport:"transport", health:"health", water_resources:"water", youth_sports:"sports", animal_husbandry:"animal" };
