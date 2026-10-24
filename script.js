@@ -1458,70 +1458,59 @@ function renderHome() {
   refreshIcons();
 }
 
+function issuePhotoUrls(issue) {
+  const photos = Array.isArray(issue.photos) ? issue.photos : [];
+  const urls = photos
+    .map((photo) => typeof photo === "string" ? photo : photo?.url)
+    .filter((url) => typeof url === "string" && url.length);
+  if (!urls.length && typeof issue.photo === "string" && issue.photo) urls.push(issue.photo);
+  return [...new Set(urls)];
+}
+
+function issuePhotoGallery(issue) {
+  const photos = issuePhotoUrls(issue);
+  if (!photos.length) {
+    return `<div class="sheet-no-photo" role="note"><i data-lucide="image-off" aria-hidden="true"></i><span>No photo was attached to this report.</span></div>`;
+  }
+  return `
+    <div class="sheet-photo-gallery" aria-label="Submitted report photos">
+      ${photos.map((url, index) => `
+        <img class="sheet-photo" src="${escapeHtml(url)}" alt="Submitted evidence photo ${index + 1} for ${escapeHtml(issue.title)}" loading="lazy" decoding="async" />
+      `).join("")}
+    </div>
+  `;
+}
+
 function issueCard(issue) {
   const cat =
     CATEGORIES[issue.category] ||
     CATEGORIES.other;
 
   const iconTone = issue.status === "Resolved" ? "is-resolved" : "";
+  const photos = issuePhotoUrls(issue);
+  const photoMarkup = photos.length
+    ? `<img class="issue-photo" src="${escapeHtml(photos[0])}" alt="Submitted photo for ${escapeHtml(issue.title)}" loading="lazy" decoding="async" />`
+    : `<span class="issue-photo-placeholder"><i data-lucide="image-off" aria-hidden="true"></i><span>No photo</span></span>`;
 
   return `
-    <button
-      type="button"
-      class="issue-card glass"
-      data-issue="${escapeHtml(issue.id)}"
-    >
-      <span
-        class="issue-icon ${iconTone}"
-        aria-hidden="true"
-      >
-        <i data-lucide="${cat.icon}"></i>
-      </span>
-
+    <button type="button" class="issue-card glass" data-issue="${escapeHtml(issue.id)}">
+      <span class="issue-icon ${iconTone}" aria-hidden="true"><i data-lucide="${cat.icon}"></i></span>
       <span class="issue-main">
-
         <span class="issue-top">
-          <span>${escapeHtml(issue.id)}</span>
-          <span aria-hidden="true">·</span>
-          <span>${timeAgo(issue.reportedAt)}</span>
-          <span aria-hidden="true">·</span>
-          <span>${escapeHtml(cat.label)}</span>
+          <span>${escapeHtml(issue.id)}</span><span aria-hidden="true">·</span><span>${timeAgo(issue.reportedAt)}</span><span aria-hidden="true">·</span><span>${escapeHtml(cat.label)}</span>
         </span>
-
-        <span class="issue-title">
-          ${escapeHtml(issue.title)}
-        </span>
-
+        <span class="issue-title">${escapeHtml(issue.title)}</span>
         <span class="issue-meta">
-          <span>
-            <i data-lucide="map-pin"></i>
-            ${escapeHtml(issue.location)}
-          </span>
-
-          <span>
-            <i data-lucide="building-2"></i>
-            ${escapeHtml(issue.department)}
-          </span>
+          <span><i data-lucide="map-pin"></i>${escapeHtml(issue.location)}</span>
+          <span><i data-lucide="building-2"></i>${escapeHtml(issue.department)}</span>
         </span>
-
         <span class="issue-tags">
           ${statusPill(issue.status)}
-
-          <span class="pill">
-            <i data-lucide="users"></i>
-            ${issue.supporters}
-            <span class="sr-only">
-              supporters
-            </span>
-          </span>
+          <span class="pill"><i data-lucide="users"></i>${issue.supporters}<span class="sr-only">supporters</span></span>
         </span>
-
       </span>
-
-      <i
-        data-lucide="chevron-right"
-        class="issue-chevron"
-      ></i>
+      <span class="issue-photo-wrap" aria-label="${photos.length ? photos.length + " submitted photo(s)" : "No photo submitted"}">${photoMarkup}</span>
+      <i data-lucide="chevron-right" class="issue-chevron" aria-hidden="true"></i>
     </button>
   `;
 }
@@ -2551,6 +2540,46 @@ function setupCivicBackend() {
   }
 }
 
+async function attachReportEvidence(client, reportRows) {
+  const reportIds = [...new Set((reportRows || []).map((row) => row?.id).filter(Boolean))];
+  if (!client || !reportIds.length) return;
+
+  try {
+    // Keep evidence private. Signed URLs are temporary and depend on evidence-table RLS.
+    const { data: evidenceRows, error } = await client
+      .from("report_evidence")
+      .select("report_id,storage_path,media_type,original_name,created_at")
+      .in("report_id", reportIds)
+      .eq("media_type", "image")
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+
+    const photosByReport = new Map();
+    for (const evidence of evidenceRows || []) {
+      if (!evidence.storage_path) continue;
+      const { data: signed, error: signedError } = await client
+        .storage.from("civic-report-evidence")
+        .createSignedUrl(evidence.storage_path, 3600);
+      if (signedError || !signed?.signedUrl) {
+        console.warn("Could not create a temporary report photo URL:", signedError);
+        continue;
+      }
+      const photos = photosByReport.get(evidence.report_id) || [];
+      photos.push({ url: signed.signedUrl, name: evidence.original_name || "Submitted evidence" });
+      photosByReport.set(evidence.report_id, photos);
+    }
+
+    for (const issue of issues) {
+      if (!issue.databaseId) continue;
+      const photos = photosByReport.get(issue.databaseId) || [];
+      issue.photos = photos;
+      issue.photo = photos[0]?.url || null;
+    }
+  } catch (error) {
+    console.warn("Report photos could not be loaded for this account:", error);
+  }
+}
+
 async function loadPersistentCivicReports() {
   if (!window.civicSupabase) {
     toast("Civic OS could not connect to its database. Saved reports are unavailable until the connection is restored.", "triangle-alert");
@@ -2610,6 +2639,7 @@ async function loadPersistentCivicReports() {
       issues.unshift(issue);
       existing.add(row.public_id);
     }
+    await attachReportEvidence(client, [...rowsById.values()]);
     renderHome();
     renderIssues();
     renderDashboard();
@@ -2666,6 +2696,7 @@ async function retryCivicEvidenceUpload() {
   if (button) { button.disabled = true; button.textContent = "Uploading…"; }
   try {
     const count = await saveReportEvidence(pending.id, pending.userId);
+    await attachReportEvidence(window.civicSupabase, [{ id: pending.id }]);
     state.pendingEvidenceReport = null;
     clearPhoto({ revoke: true });
     resetReportForm();
@@ -2788,8 +2819,13 @@ async function submitReport() {
     issue.recommendation = a.recommendation;
     issue.databaseId = saved.id;
     issue.persisted = true;
+    issue.photos = [];
     issues.unshift(issue);
     state.supported.add(saved.public_id);
+
+    if (!evidenceError && evidenceCount) {
+      await attachReportEvidence(window.civicSupabase, [saved]);
+    }
 
     if (!evidenceError) {
       clearPhoto({ revoke: true });
@@ -3414,19 +3450,7 @@ function renderIssueSheet(issue) {
       ${statusPill(issue.status)}
     </div>
 
-    ${
-      issue.photo
-        ? `
-          <img
-            class="sheet-photo"
-            src="${issue.photo}"
-            alt="Evidence photo for ${escapeHtml(
-              issue.title
-            )}"
-          />
-        `
-        : ""
-    }
+    ${issuePhotoGallery(issue)}
 
     <p class="sheet-desc">
       ${escapeHtml(
