@@ -3170,10 +3170,30 @@ async function submitReport() {
   const user = sessionData.session.user;
   const publicId = `CIV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const title = makeTitle(d.description);
+  // Assign each new report to its initial responsible department so it appears
+  // in that department's authenticated Government Portal and the live development view.
+  // This is a routing suggestion; authorised officials can review/reassign it.
+  const initialDepartmentByCategory = {
+    roads: "pwd",
+    garbage: "mahud",
+    streetlights: "power",
+    water: "water_resources",
+    health: "health",
+    education: "education",
+    environment: "environment_forest",
+    safety: "transport",
+    agriculture: "agriculture",
+    transport: "transport",
+    animals: "animal_husbandry",
+    sports: "youth_sports"
+  };
+  const initialDepartmentId = initialDepartmentByCategory[a.categoryKey] || null;
+
   const insertRow = {
     public_id: publicId,
     title,
     category: a.categoryKey,
+    primary_department_id: initialDepartmentId,
     description: d.description,
     location: {
       address: d.location,
