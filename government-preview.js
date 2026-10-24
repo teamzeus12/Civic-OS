@@ -54,7 +54,7 @@
 
   function reportCard(report, allowStatusControl = false) {
     const dept = deptById(report.department);
-    const statusControl = allowStatusControl ? `<select aria-label="Demo status for ${escapeHtml(report.id)}" data-status-select="${escapeHtml(report.id)}">${statusOptions.map((status) => `<option ${status === report.status ? "selected" : ""}>${status}</option>`).join("")}</select><button class="btn btn-primary" data-save-status="${escapeHtml(report.id)}" type="button">Save demo status</button>` : "";
+    const statusControl = allowStatusControl && liveMode ? `<select aria-label="Status for ${escapeHtml(report.id)}" data-status-select="${escapeHtml(report.id)}">${statusOptions.map((status) => `<option ${status === report.status ? "selected" : ""}>${status}</option>`).join("")}</select><button class="btn btn-primary" data-save-status="${escapeHtml(report.id)}" type="button">Save status</button>` : "";
     return `<article class="report-card"><div><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">⌖ ${escapeHtml(report.location)}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">Department →</button>`}<button class="btn btn-primary" data-action-report="${escapeHtml(report.id)}" type="button">Action &amp; Resolution</button></div></article>`;
   }
 
@@ -62,10 +62,10 @@
     const target = $("#" + targetId);
     if (!target) return;
     target.innerHTML = statsMarkup([
-      { label: liveMode ? "Total reports" : "Total sample reports", value: reports.length, note: liveMode ? "Live records" : "Fictional test records", icon: "▤" },
+      { label: "Total reports", value: reports.length, note: liveMode ? "Live database records" : "Waiting for authorized sign-in", icon: "▤" },
       { label: "Awaiting review", value: countStatus("Reported"), note: "Reported status", icon: "◷" },
-      { label: "In progress", value: countStatus("In Progress"), note: "Work underway in sample", icon: "↻" },
-      { label: "Resolved", value: countStatus("Resolved"), note: "Marked resolved in sample", icon: "✓" }
+      { label: "In progress", value: countStatus("In Progress"), note: "Work underway", icon: "↻" },
+      { label: "Resolved", value: countStatus("Resolved"), note: "Marked resolved", icon: "✓" }
     ]);
   }
 
@@ -94,7 +94,7 @@
     $("#departmentHeroDescription").textContent = dept.description;
     const list = reports.filter((report) => report.department === id);
     $("#departmentStats").innerHTML = statsMarkup([
-      { label: "Department reports", value: list.length, note: "Fictional records", icon: "▤" },
+      { label: "Department reports", value: list.length, note: "Database records", icon: "▤" },
       { label: "Reported", value: list.filter((r) => r.status === "Reported").length, note: "Awaiting review", icon: "◷" },
       { label: "In progress", value: list.filter((r) => r.status === "In Progress").length, note: "Currently active", icon: "↻" },
       { label: "Resolved", value: list.filter((r) => r.status === "Resolved").length, note: "Completed in sample", icon: "✓" }
@@ -110,7 +110,7 @@
     const list = reports.filter((report) => report.department === selectedDepartment)
       .filter((report) => status === "all" || report.status === status)
       .filter((report) => [report.id, report.title, report.category, report.location, report.description].join(" ").toLowerCase().includes(q));
-    renderReports("departmentReports", list, true);
+    renderReports("departmentReports", list, liveMode);
   }
 
   function renderIssues() {
@@ -120,7 +120,7 @@
     const list = reports.filter((report) => dept === "all" || report.department === dept)
       .filter((report) => status === "all" || report.status === status)
       .filter((report) => [report.id, report.title, report.category, report.location, report.description, deptById(report.department)?.name].join(" ").toLowerCase().includes(q));
-    renderReports("issueReports", list, true);
+    renderReports("issueReports", list, liveMode);
     const chips = $("#statusChips");
     if (chips) chips.innerHTML = [["all", "All"], ...statusOptions.map((statusName) => [statusName, statusName])].map(([value, label]) => `<button type="button" class="filter-chip ${activeStatus === value ? "active" : ""}" data-status-chip="${escapeHtml(value)}">${escapeHtml(label)} · ${value === "all" ? reports.length : countStatus(value)}</button>`).join("");
   }
@@ -153,11 +153,7 @@
     const userId = sessionData.session.user.id;
     const { data: profile, error: profileError } = await client.from("profiles").select("id,role,department_id,full_name").eq("id", userId).maybeSingle();
     if (profileError || !profile || !["government", "admin"].includes(profile.role)) { showWorkspaceError("Government access could not be verified. No reports were loaded."); return; }
-    if (profile.role !== "admin" && !profile.department_id) {
-      const n = document.createElement("p"); n.className = "notice";
-      n.textContent = "Your official account has no department assignment. Showing sample data only; ask an administrator to assign your department.";
-      document.querySelector(".topbar")?.after(n); return;
-    }
+    if (profile.role !== "admin" && !profile.department_id) { showWorkspaceError("Your official account has no department assignment. No reports were loaded; ask an administrator to assign your department."); return; }
     const query = client.from("reports").select("id,public_id,title,category,description,status,location,primary_department_id,reported_at,updated_at").order("reported_at", { ascending: false });
     const scopedQuery = profile.role === "admin" ? query : query.eq("primary_department_id", profile.department_id);
     const { data, error } = await scopedQuery;
@@ -207,52 +203,33 @@
     }
     const action = event.target.closest("[data-action-report]");
     if (action) {
+      if (!liveMode) { window.alert("Report actions are disabled until authorized live records are loaded."); return; }
       const report = reports.find((item) => item.id === action.dataset.actionReport);
       if (!report) return;
-      const status = window.prompt((liveMode ? "Official status" : "Demo status") + " (Submitted, Under Review, Verified, Action in Progress, Resolved, Rejected, More Information Required):", report.status);
+      const status = window.prompt("Official status (Reported, Verified, In Progress, Resolved):", report.status);
       if (status === null) return;
-      const notes = window.prompt("Demo progress notes (leave blank to keep existing):", report.actionNotes || "");
+      const notes = window.prompt("Official progress note:", "");
       if (notes === null) return;
-      const summary = window.prompt("Demo resolution summary (leave blank if not resolved):", report.resolutionSummary || "");
-      if (summary === null) return;
       const nextStatus = status.trim() || report.status;
-      if (liveMode && supabaseClient && report.publicId) {
-        const result = await supabaseClient.rpc("government_update_report_status", { p_public_id: report.publicId, p_new_status: nextStatus, p_note: notes.trim() || null });
-        if (result.error) { window.alert("The update was not saved: " + result.error.message); return; }
-        window.alert("Status and progress note saved to the shared database. Resolution summary publishing and citizen notifications are not connected yet.");
-        await connectGovernmentWorkspace();
-        renderStats("homeStats"); renderStats("dashboardStats"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); if (selectedDepartment) renderDepartmentReports();
-        return;
-      }
-      report.status = nextStatus;
-      report.actionNotes = notes.trim();
-      report.resolutionSummary = summary.trim();
-      report.actionHistory = report.actionHistory || [];
-      report.actionHistory.push(new Date().toLocaleString() + " — " + report.status + (report.actionNotes ? " — progress notes updated" : "") + (report.resolutionSummary ? " — resolution summary updated" : ""));
-      window.alert("Demo update recorded in memory only. It is not saved to Supabase, published, or sent to citizens.");
-      renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch").value); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); if (selectedDepartment) renderDepartmentReports();
+      if (!supabaseClient || !report.publicId) { window.alert("This report cannot be updated because its official public ID is unavailable."); return; }
+      const result = await supabaseClient.rpc("government_update_report_status", { p_public_id: report.publicId, p_new_status: nextStatus, p_note: notes.trim() || null });
+      if (result.error) { window.alert("The update was not saved: " + result.error.message); return; }
+      window.alert("Official status update saved.");
+      await connectGovernmentWorkspace();
+      if (selectedDepartment) renderDepartmentReports();
       return;
     }
     const save = event.target.closest("[data-save-status]");
     if (save) {
+      if (!liveMode) { window.alert("Status updates are disabled until authorized live records are loaded."); return; }
       const id = save.dataset.saveStatus;
       const select = document.querySelector(`[data-status-select="${CSS.escape(id)}"]`);
       const report = reports.find((item) => item.id === id);
-      if (!report || !select) return;
-      report.status = select.value;
-      report.updated = "Just updated in this browser";
-      renderStats("homeStats");
-      renderStats("dashboardStats");
-      renderDepartments("homeDepartments");
-      renderDepartments("allDepartments", $("#departmentSearch").value);
-      renderReports("homeRecent", reports.slice().reverse().slice(0, 4));
-      renderDashboard();
-      renderIssues();
+      if (!report || !select || !supabaseClient || !report.publicId) return;
+      const result = await supabaseClient.rpc("government_update_report_status", { p_public_id: report.publicId, p_new_status: select.value, p_note: null });
+      if (result.error) { window.alert("The update was not saved: " + result.error.message); return; }
+      await connectGovernmentWorkspace();
       if (selectedDepartment) renderDepartmentReports();
-      const message = document.createElement("div");
-      message.className = "notice";
-      message.textContent = "Demo only: the status changed in this browser. Nothing was saved to a database or official record.";
-      save.closest(".report-card")?.appendChild(message);
     }
   });
 
