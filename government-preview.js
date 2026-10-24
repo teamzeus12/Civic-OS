@@ -55,7 +55,11 @@
   function reportCard(report, allowStatusControl = false) {
     const dept = deptById(report.department);
     const statusControl = allowStatusControl && liveMode ? `<select aria-label="Status for ${escapeHtml(report.id)}" data-status-select="${escapeHtml(report.id)}">${statusOptions.map((status) => `<option ${status === report.status ? "selected" : ""}>${status}</option>`).join("")}</select><button class="btn btn-primary" data-save-status="${escapeHtml(report.id)}" type="button">Save status</button>` : "";
-    return `<article class="report-card"><div><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">⌖ ${escapeHtml(report.location)}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">Department →</button>`}<button class="btn btn-primary" data-action-report="${escapeHtml(report.id)}" type="button">Action &amp; Resolution</button></div></article>`;
+    const photos = Array.isArray(report.photos) ? report.photos : [];
+    const photoMarkup = photos.length
+      ? `<img class="gov-report-photo" src="${escapeHtml(photos[0].url)}" alt="Submitted photo for ${escapeHtml(report.title)}" loading="lazy" decoding="async" />`
+      : `<span class="gov-report-photo-placeholder"><span aria-hidden="true">▧</span><span>No photo</span></span>`;
+    return `<article class="report-card"><div class="gov-report-copy"><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">⌖ ${escapeHtml(report.location)}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">Department →</button>`}<button class="btn btn-primary" data-action-report="${escapeHtml(report.id)}" type="button">Action &amp; Resolution</button></div></div><div class="gov-report-media" aria-label="${photos.length ? photos.length + " submitted photo(s)" : "No photo submitted"}">${photoMarkup}</div></article>`;
   }
 
   function renderStats(targetId) {
@@ -163,7 +167,7 @@
     } catch (error) { console.error("Government profile check failed", error); showWorkspaceError("Government account verification failed. No reports were loaded."); return; }
     if (profileError || !profile || !["government", "admin"].includes(profile.role)) { showWorkspaceError("Government access could not be verified. No reports were loaded."); return; }
     if (profile.role !== "admin" && !profile.department_id) { showWorkspaceError("Your official account has no department assignment. No reports were loaded; ask an administrator to assign your department."); return; }
-    const query = client.from("reports").select("id,public_id,title,category,description,status,location,primary_department_id,reported_at,updated_at").order("reported_at", { ascending: false });
+    const query = client.from("reports").select("id,public_id,title,category,description,status,location,primary_department_id,reported_at,updated_at,verification_required").order("reported_at", { ascending: false });
     const scopedQuery = profile.role === "admin" ? query : query.eq("primary_department_id", profile.department_id);
     let data, error;
     try { const reportResult = await scopedQuery; data = reportResult.data; error = reportResult.error; }
@@ -172,7 +176,35 @@
     clearWorkspaceError();
     const deptMap = { mahud:"mahud", pwd:"pwd", power:"electricity", environment_forest:"forest", education:"education", agriculture:"agriculture", transport:"transport", health:"health", water_resources:"water", youth_sports:"sports", animal_husbandry:"animal" };
     const place = (v) => typeof v === "string" ? v : v && typeof v === "object" ? [v.address,v.name,v.locality,v.district,v.city,v.label].find(x => typeof x === "string" && x.trim()) || "Location recorded" : "Location not provided";
-    reports = (data || []).map(r => ({ id:r.id, publicId:r.public_id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "" }));
+    const reportRows = data || [];
+    const reportIds = reportRows.map((report) => report.id).filter(Boolean);
+    const photosByReport = new Map();
+    if (reportIds.length) {
+      const { data: evidenceRows, error: evidenceError } = await client
+        .from("report_evidence")
+        .select("report_id,storage_path,media_type,original_name,created_at")
+        .in("report_id", reportIds)
+        .eq("media_type", "image")
+        .order("created_at", { ascending: true });
+      if (evidenceError) {
+        console.warn("Government report evidence could not be loaded:", evidenceError);
+      } else {
+        for (const evidence of evidenceRows || []) {
+          if (!evidence.storage_path) continue;
+          const { data: signed, error: signedError } = await client
+            .storage.from("civic-report-evidence")
+            .createSignedUrl(evidence.storage_path, 3600);
+          if (signedError || !signed?.signedUrl) {
+            console.warn("Could not create a temporary government photo URL:", signedError);
+            continue;
+          }
+          const photos = photosByReport.get(evidence.report_id) || [];
+          photos.push({ url: signed.signedUrl, name: evidence.original_name || "Submitted evidence" });
+          photosByReport.set(evidence.report_id, photos);
+        }
+      }
+    }
+    reports = reportRows.map(r => ({ id:r.id, publicId:r.public_id, databaseId:r.id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "", photos:photosByReport.get(r.id) || [] }));
     liveMode = true; supabaseClient = client; officialProfile = profile;
     const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
     renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications();
