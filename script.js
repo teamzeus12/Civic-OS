@@ -1947,7 +1947,7 @@ async function handleAnalyze(event) {
 }
 
 async function civicImageToDataUrl(file) {
-  if (file.size > 10 * 1024 * 1024) throw new Error("Image is too large for visual analysis.");
+  if (file.size > 10 * 1024 * 1024) throw new Error("Image is too large for visual analysis. Please choose an image under 10 MB.");
   const sourceUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
@@ -1960,23 +1960,37 @@ async function civicImageToDataUrl(file) {
     img.onerror = () => reject(new Error("Could not decode the selected image."));
     img.src = sourceUrl;
   });
-  const maxSide = 1024;
-  const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
-  canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
-  const context = canvas.getContext("2d");
+  const originalWidth = image.naturalWidth || image.width;
+  const originalHeight = image.naturalHeight || image.height;
+  const contextCanvas = document.createElement("canvas");
+  const context = contextCanvas.getContext("2d");
   if (!context) throw new Error("Image processing is unavailable in this browser.");
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  const compressedBlob = await new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not compress the image.")), "image/jpeg", 0.58);
-  });
-  return await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Could not prepare the image for AI analysis."));
-    reader.readAsDataURL(compressedBlob);
-  });
+
+  for (const maxSide of [1024, 800, 640]) {
+    const scale = Math.min(1, maxSide / Math.max(originalWidth, originalHeight));
+    contextCanvas.width = Math.max(1, Math.round(originalWidth * scale));
+    contextCanvas.height = Math.max(1, Math.round(originalHeight * scale));
+    context.drawImage(image, 0, 0, contextCanvas.width, contextCanvas.height);
+
+    for (const quality of [0.58, 0.42, 0.3]) {
+      const compressedBlob = await new Promise((resolve, reject) => {
+        contextCanvas.toBlob(
+          (blob) => blob ? resolve(blob) : reject(new Error("Could not compress the image.")),
+          "image/jpeg",
+          quality
+        );
+      });
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Could not prepare the image for AI analysis."));
+        reader.readAsDataURL(compressedBlob);
+      });
+      // Keep the encoded image below the Edge Function's accepted payload limit.
+      if (dataUrl.length <= 1_700_000) return dataUrl;
+    }
+  }
+  throw new Error("This image could not be compressed enough for visual analysis. Try a smaller or lower-resolution image.");
 }
 
 async function generateImprovementPreview() {
