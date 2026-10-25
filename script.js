@@ -1960,7 +1960,7 @@ async function civicImageToDataUrl(file) {
     img.onerror = () => reject(new Error("Could not decode the selected image."));
     img.src = sourceUrl;
   });
-  const maxSide = 1280;
+  const maxSide = 1024;
   const scale = Math.min(1, maxSide / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
@@ -1969,7 +1969,7 @@ async function civicImageToDataUrl(file) {
   if (!context) throw new Error("Image processing is unavailable in this browser.");
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   const compressedBlob = await new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not compress the image.")), "image/jpeg", 0.72);
+    canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Could not compress the image.")), "image/jpeg", 0.58);
   });
   return await new Promise((resolve, reject) => {
     const reader = new FileReader();
