@@ -1929,7 +1929,7 @@ async function handleAnalyze(event) {
         summary: data.summary, recommendation: data.recommendation,
         signals: data.signals, skills: data.skills, autoDetected: data.autoDetected,
         suggestion: data.suggestion, categoryNeedsReview: data.categoryNeedsReview,
-        imageNotAnalyzed: data.imageNotAnalyzed, duplicate: data.duplicate,
+        imageNotAnalyzed: data.imageNotAnalyzed, mediaRelevant: data.mediaRelevant, mediaSummary: data.mediaSummary, mediaMismatchReason: data.mediaMismatchReason, duplicate: data.duplicate,
         engine: data.engine || 'groq'
       };
     } catch (error) {
