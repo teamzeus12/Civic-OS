@@ -5209,6 +5209,7 @@ function openCivicAi(
   panel.classList.add(
     "is-open"
   );
+  document.body.classList.add("civic-ai-open");
 
   panel.setAttribute(
     "aria-hidden",
@@ -5254,8 +5255,17 @@ function closeCivicAi() {
   }
 
   panel.classList.remove(
-    "is-open"
+    "is-open", "is-maximized"
   );
+  document.body.classList.remove("civic-ai-open", "civic-ai-maximized");
+  const maximizeButton = document.getElementById("maximizeCivicAi");
+  maximizeButton?.setAttribute("aria-pressed", "false");
+  maximizeButton?.setAttribute("aria-label", "Maximize Civic AI");
+  if (maximizeButton) {
+    maximizeButton.title = "Maximize";
+    maximizeButton.innerHTML = '<i data-lucide="maximize-2"></i>';
+    refreshIcons();
+  }
 
   panel.setAttribute(
     "aria-hidden",
@@ -6789,6 +6799,7 @@ function bindEvents() {
       const panel = document.getElementById("civicAiPanel");
       if (!panel) return;
       const maximized = panel.classList.toggle("is-maximized");
+      document.body.classList.toggle("civic-ai-maximized", maximized);
       maximizeCivicAiButton.setAttribute("aria-pressed", String(maximized));
       maximizeCivicAiButton.setAttribute("aria-label", maximized ? "Restore Civic AI size" : "Maximize Civic AI");
       maximizeCivicAiButton.title = maximized ? "Restore" : "Maximize";
