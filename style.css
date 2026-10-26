@@ -7347,3 +7347,21 @@ body.civic-ai-open .civic-ai-fab,
 body.civic-ai-maximized .civic-ai-fab {
   display: none !important;
 }
+
+
+/* Keep Civic OS navigation completely out of the way in full-screen Civic AI. */
+body.civic-ai-maximized .bottom-nav,
+body.civic-ai-maximized .top-nav,
+body.civic-ai-maximized header.site-header,
+body.civic-ai-maximized .mobile-navigation {
+  display: none !important;
+}
+body.civic-ai-maximized .civic-ai-panel.is-maximized {
+  z-index: 2147483000 !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  box-sizing: border-box !important;
+}
