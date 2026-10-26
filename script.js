@@ -5320,6 +5320,33 @@ function addCivicAiMessage(
   refreshIcons();
 }
 
+function civicAiPlainText(value) {
+  const node = document.createElement("div");
+  node.innerHTML = String(value || "");
+  return String(node.textContent || "").replace(/\s+/g, " ").trim();
+}
+
+function formatCivicAiReply(value) {
+  return String(value || "").split(/\n{2,}/)
+    .map((paragraph) => `<p>${civicAiText(paragraph).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+async function requestCivicAiReply(message, imageDataUrl, history) {
+  const client = window.civicSupabase;
+  if (!client) throw new Error("Secure Civic OS connection is unavailable. Refresh the page and sign in again.");
+  const { data, error } = await client.functions.invoke("civic-ai-chat", {
+    body: {
+      message: String(message || "").slice(0, 6000),
+      imageDataUrl: imageDataUrl || undefined,
+      history: Array.isArray(history) ? history.slice(-10) : []
+    }
+  });
+  if (error) throw new Error(data?.message || error.message || "Civic AI request failed.");
+  if (!data?.reply) throw new Error(data?.message || "Civic AI returned an empty response.");
+  return data.reply;
+}
+
 function civicAiText(value) {
   return String(value || "")
     .replace(
@@ -6720,6 +6747,11 @@ function bindEvents() {
           let attachmentMarkup = "";
           let attachmentNotice = "";
           let responsePrompt = prompt;
+          let imageDataUrlForModel = "";
+          const conversationHistory = state.civicAiMessages.slice(-10).map((item) => ({
+            role: item.role === "ai" ? "assistant" : "user",
+            content: civicAiPlainText(item.text).slice(0, 3000)
+          })).filter((item) => item.content);
 
           if (file) {
             const maxBytes = 8 * 1024 * 1024;
@@ -6743,8 +6775,16 @@ function bindEvents() {
             if (isCivicAiImageFile(file)) {
               // Read the selected image into the actual outgoing message,
               // rather than leaving it only in the local preview.
-              const imageDataUrl =
-                await readCivicAiFileAsDataUrl(file);
+              if (!/^image\/(jpeg|jpg|png|webp)$/i.test(file.type)) {
+                toast("For AI image analysis, please use a JPG, PNG, or WEBP image.", "triangle-alert");
+                return;
+              }
+              if (file.size > 4 * 1024 * 1024) {
+                toast("Please choose an image smaller than 4 MB for AI analysis.", "triangle-alert");
+                return;
+              }
+              const imageDataUrl = await readCivicAiFileAsDataUrl(file);
+              imageDataUrlForModel = imageDataUrl;
 
               attachmentMarkup = `
                 <div class="civic-ai-message-attachment civic-ai-image-attachment">
@@ -6760,13 +6800,7 @@ function bindEvents() {
                 </div>
               `;
 
-              attachmentNotice = `
-                <p class="civic-ai-attachment-note">
-                  Image received: <strong>${safeFileName}</strong>.
-                  This demo assistant does not yet inspect image pixels automatically.
-                  Include a written description of what the image shows for a targeted assessment.
-                </p>
-              `;
+              attachmentNotice = "";
             } else {
               attachmentMarkup = `
                 <div class="civic-ai-message-attachment civic-ai-file-attachment">
@@ -6853,18 +6887,29 @@ function bindEvents() {
             fileInput.value = "";
           }
 
-          setTimeout(
-            () => {
-              const response =
-                generateCivicAiResponse(responsePrompt);
-
-              addCivicAiMessage(
-                "ai",
-                `${attachmentNotice}${response}`
-              );
-            },
-            350
-          );
+          addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
+          try {
+            const reply = await requestCivicAiReply(responsePrompt, imageDataUrlForModel, conversationHistory);
+            const messages = document.getElementById("civicAiMessages");
+            const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
+            const formatted = `${attachmentNotice}${formatCivicAiReply(reply)}`;
+            if (thinking) {
+              const bubble = thinking.closest(".civic-ai-bubble");
+              if (bubble) bubble.innerHTML = formatted;
+            } else addCivicAiMessage("ai", formatted);
+            state.civicAiMessages[state.civicAiMessages.length - 1] = { role: "ai", text: formatted };
+            if (messages) messages.scrollTop = messages.scrollHeight;
+            refreshIcons();
+          } catch (error) {
+            const safeMessage = civicAiText(error?.message || "Civic AI could not respond. Please try again.");
+            const messages = document.getElementById("civicAiMessages");
+            const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
+            if (thinking) {
+              const bubble = thinking.closest(".civic-ai-bubble");
+              if (bubble) bubble.textContent = safeMessage;
+            } else addCivicAiMessage("ai", `<p>${safeMessage}</p>`);
+            state.civicAiMessages[state.civicAiMessages.length - 1] = { role: "ai", text: `<p>${safeMessage}</p>` };
+          }
         } catch (error) {
           toast(
             "The attachment could not be added. Please try again.",
@@ -6883,52 +6928,40 @@ function bindEvents() {
 
   /* ---------- Civic AI suggestions ---------- */
 
-  document
-    .querySelectorAll(
-      ".ai-suggestion"
-    )
-    .forEach(
-      (button) => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            const prompt =
-              button.dataset
-                .aiPrompt;
-
-            if (!prompt) {
-              return;
-            }
-
-            addCivicAiMessage(
-              "user",
-              civicAiText(
-                prompt
-              )
-            );
-
-            setTimeout(
-              () => {
-
-                const response =
-                  generateCivicAiResponse(
-                    prompt
-                  );
-
-                addCivicAiMessage(
-                  "ai",
-                  response
-                );
-
-              },
-              350
-            );
-          }
-        );
+  document.querySelectorAll(".ai-suggestion").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const prompt = button.dataset.aiPrompt;
+      if (!prompt) return;
+      const history = state.civicAiMessages.slice(-10).map((item) => ({
+        role: item.role === "ai" ? "assistant" : "user",
+        content: civicAiPlainText(item.text).slice(0, 3000)
+      })).filter((item) => item.content);
+      addCivicAiMessage("user", `<p class="civic-ai-user-copy">${civicAiText(prompt)}</p>`);
+      addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
+      try {
+        const reply = await requestCivicAiReply(prompt, "", history);
+        const messages = document.getElementById("civicAiMessages");
+        const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
+        const formatted = formatCivicAiReply(reply);
+        if (thinking) {
+          const bubble = thinking.closest(".civic-ai-bubble");
+          if (bubble) bubble.innerHTML = formatted;
+        }
+        state.civicAiMessages[state.civicAiMessages.length - 1] = { role: "ai", text: formatted };
+        if (messages) messages.scrollTop = messages.scrollHeight;
+        refreshIcons();
+      } catch (error) {
+        const safeMessage = civicAiText(error?.message || "Civic AI could not respond. Please try again.");
+        const messages = document.getElementById("civicAiMessages");
+        const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
+        if (thinking) {
+          const bubble = thinking.closest(".civic-ai-bubble");
+          if (bubble) bubble.textContent = safeMessage;
+        }
+        state.civicAiMessages[state.civicAiMessages.length - 1] = { role: "ai", text: `<p>${safeMessage}</p>` };
       }
-    );
+    });
+  });
   /* =======================================================
      CREATE CIVIC ACTIVITY
      ======================================================= */
