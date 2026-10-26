@@ -7340,3 +7340,10 @@ body.civic-auth-open { overflow: hidden; }
   .civic-ai-panel.is-maximized { inset: 0 !important; border-radius: 0; }
   .civic-ai-panel.is-maximized .civic-ai-header { padding-top: max(12px, env(safe-area-inset-top)); }
 }
+
+
+/* Hide the launcher whenever its chat panel is open; restore it only on close. */
+body.civic-ai-open .civic-ai-fab,
+body.civic-ai-maximized .civic-ai-fab {
+  display: none !important;
+}
