@@ -5335,16 +5335,46 @@ function formatCivicAiReply(value) {
 async function requestCivicAiReply(message, imageDataUrl, history) {
   const client = window.civicSupabase;
   if (!client) throw new Error("Secure Civic OS connection is unavailable. Refresh the page and sign in again.");
-  const { data, error } = await client.functions.invoke("civic-ai-chat", {
-    body: {
-      message: String(message || "").slice(0, 6000),
-      imageDataUrl: imageDataUrl || undefined,
-      history: Array.isArray(history) ? history.slice(-10) : []
+
+  const body = {
+    message: String(message || "").slice(0, 6000),
+    imageDataUrl: imageDataUrl || undefined,
+    history: Array.isArray(history) ? history.slice(-10) : []
+  };
+
+  let lastError = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const { data, error } = await client.functions.invoke("civic-ai-chat", { body });
+      if (error) {
+        let status = error.context?.status || error.status || 0;
+        let serverMessage = data?.message || "";
+        if (error.context && typeof error.context.json === "function") {
+          try {
+            const payload = await error.context.clone().json();
+            serverMessage = payload?.message || serverMessage;
+          } catch {}
+        }
+        const failure = new Error(serverMessage || error.message || "Civic AI request failed.");
+        failure.status = status;
+        throw failure;
+      }
+      if (!data?.reply) throw new Error(data?.message || "Civic AI returned an empty response.");
+      return data.reply;
+    } catch (error) {
+      lastError = error;
+      const retryable = [502, 503, 504].includes(Number(error?.status)) ||
+        /non-2xx status code/i.test(String(error?.message || ""));
+      if (!retryable || attempt === 1) break;
+      await new Promise((resolve) => setTimeout(resolve, 900));
     }
-  });
-  if (error) throw new Error(data?.message || error.message || "Civic AI request failed.");
-  if (!data?.reply) throw new Error(data?.message || "Civic AI returned an empty response.");
-  return data.reply;
+  }
+
+  if ([502, 503, 504].includes(Number(lastError?.status)) ||
+      /non-2xx status code/i.test(String(lastError?.message || ""))) {
+    throw new Error("Civic AI’s server is temporarily unavailable. Please try again in a moment. Your report has not been submitted by this chat.");
+  }
+  throw new Error(lastError?.message || "Civic AI request failed. Please try again.");
 }
 
 function civicAiText(value) {
