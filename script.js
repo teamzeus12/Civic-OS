@@ -5327,9 +5327,57 @@ function civicAiPlainText(value) {
 }
 
 function formatCivicAiReply(value) {
-  return String(value || "").split(/\n{2,}/)
-    .map((paragraph) => `<p>${civicAiText(paragraph).replace(/\n/g, "<br>")}</p>`)
-    .join("");
+  // Render a safe Markdown subset; escape source text before adding markup.
+  const source = String(value || "").replace(/\r\n?/g, "\n").trim();
+  if (!source) return "<p></p>";
+  const inline = (line) => {
+    let safe = civicAiText(line);
+    safe = safe.replace(/\x60([^\x60]+)\x60/g, "<code>$1</code>");
+    safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    safe = safe.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+    return safe;
+  };
+  const lines = source.split("\n");
+  const blocks = [];
+  let paragraph = [];
+  let listType = "";
+  let listItems = [];
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    blocks.push("<p>" + paragraph.map(inline).join("<br>") + "</p>");
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listItems.length) return;
+    const tag = listType === "ol" ? "ol" : "ul";
+    blocks.push("<" + tag + ">" + listItems.map(item => "<li>" + inline(item) + "</li>").join("") + "</" + tag + ">");
+    listItems = [];
+    listType = "";
+  };
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) { flushParagraph(); flushList(); continue; }
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    const bullet = line.match(/^[-*•]\s+(.+)$/);
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (heading) {
+      flushParagraph(); flushList();
+      const level = Math.min(heading[1].length + 1, 4);
+      blocks.push("<h" + level + ">" + inline(heading[2]) + "</h" + level + ">");
+    } else if (bullet || numbered) {
+      flushParagraph();
+      const nextType = numbered ? "ol" : "ul";
+      if (listType && listType !== nextType) flushList();
+      listType = nextType;
+      listItems.push((bullet || numbered)[1]);
+    } else {
+      flushList();
+      paragraph.push(line);
+    }
+  }
+  flushParagraph();
+  flushList();
+  return blocks.join("") + '<div class="civic-ai-response-actions"><button type="button" class="civic-ai-copy-response" data-civic-ai-copy><i data-lucide="copy"></i><span>Copy</span></button></div>';
 }
 
 async function requestCivicAiReply(message, imageDataUrl, history) {
@@ -6725,15 +6773,51 @@ function bindEvents() {
   }
 
 
-  if (
-    closeCivicAiButton
-  ) {
-    closeCivicAiButton.addEventListener(
-      "click",
-      () => {
-        closeCivicAi();
+  if (closeCivicAiButton) {
+    closeCivicAiButton.addEventListener("click", () => {
+      document.getElementById("civicAiPanel")?.classList.remove("is-maximized");
+      const button = document.getElementById("maximizeCivicAi");
+      button?.setAttribute("aria-pressed", "false");
+      button?.setAttribute("aria-label", "Maximize Civic AI");
+      closeCivicAi();
+    });
+  }
+
+  const maximizeCivicAiButton = document.getElementById("maximizeCivicAi");
+  if (maximizeCivicAiButton) {
+    maximizeCivicAiButton.addEventListener("click", () => {
+      const panel = document.getElementById("civicAiPanel");
+      if (!panel) return;
+      const maximized = panel.classList.toggle("is-maximized");
+      maximizeCivicAiButton.setAttribute("aria-pressed", String(maximized));
+      maximizeCivicAiButton.setAttribute("aria-label", maximized ? "Restore Civic AI size" : "Maximize Civic AI");
+      maximizeCivicAiButton.title = maximized ? "Restore" : "Maximize";
+      maximizeCivicAiButton.innerHTML = maximized
+        ? '<i data-lucide="minimize-2"></i>'
+        : '<i data-lucide="maximize-2"></i>';
+      refreshIcons();
+    });
+  }
+
+  const civicAiMessagesContainer = document.getElementById("civicAiMessages");
+  if (civicAiMessagesContainer) {
+    civicAiMessagesContainer.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-civic-ai-copy]");
+      if (!button) return;
+      const bubble = button.closest(".civic-ai-bubble");
+      if (!bubble) return;
+      const copy = bubble.cloneNode(true);
+      copy.querySelectorAll(".civic-ai-response-actions").forEach(node => node.remove());
+      const text = copy.innerText.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+        const label = button.querySelector("span");
+        if (label) label.textContent = "Copied";
+        setTimeout(() => { if (label) label.textContent = "Copy"; }, 1400);
+      } catch {
+        toast("Copy is unavailable in this browser. Select the response text and copy it manually.", "clipboard");
       }
-    );
+    });
   }
 
 
