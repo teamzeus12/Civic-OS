@@ -533,6 +533,7 @@ const state = {
   civicAiOpen: false,
   civicAiContext: null,
   civicAiMessages: [],
+  civicAiGeneration: 0,
   civicActionId: null
 };
 
@@ -5278,6 +5279,48 @@ function closeCivicAi() {
   );
 }
 
+function startNewCivicAiChat() {
+  // Invalidate any request still running for the previous chat.
+  state.civicAiGeneration += 1;
+  state.civicAiMessages = [];
+  state.civicAiContext = null;
+
+  const container = document.getElementById("civicAiMessages");
+  if (container) {
+    container.innerHTML = `
+      <div class="civic-ai-message ai">
+        <div class="civic-ai-message-avatar">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <div class="civic-ai-bubble">
+          <strong>Hi! I'm Civic AI.</strong>
+          <p>I can help you understand civic problems, think about possible causes, collect useful evidence and identify practical next steps.</p>
+        </div>
+      </div>
+    `;
+    container.scrollTop = 0;
+  }
+
+  const input = document.getElementById("civicAiInput");
+  if (input) input.value = "";
+
+  const fileInput = document.getElementById("civicAiFileInput");
+  if (fileInput) fileInput.value = "";
+
+  const preview = document.getElementById("civicAiFilePreview");
+  if (preview) {
+    const previewUrl = preview.dataset.previewUrl;
+    if (previewUrl) {
+      try { URL.revokeObjectURL(previewUrl); } catch {}
+    }
+    delete preview.dataset.previewUrl;
+    preview.innerHTML = "";
+  }
+
+  refreshIcons();
+  if (input) input.focus();
+}
+
 function addCivicAiMessage(
   role,
   text
@@ -6762,6 +6805,11 @@ function bindEvents() {
       "closeCivicAi"
     );
 
+  const newCivicAiChatButton = document.getElementById("newCivicAiChat");
+  if (newCivicAiChatButton) {
+    newCivicAiChatButton.addEventListener("click", startNewCivicAiChat);
+  }
+
   const civicAiForm =
     document.getElementById(
       "civicAiForm"
@@ -6840,6 +6888,7 @@ function bindEvents() {
       "submit",
       async (event) => {
         event.preventDefault();
+        const conversationGeneration = state.civicAiGeneration;
 
         const prompt =
           civicAiInput.value.trim();
@@ -6981,6 +7030,8 @@ function bindEvents() {
             }
           }
 
+          if (conversationGeneration !== state.civicAiGeneration) return;
+
           const messageText = prompt
             ? `<p class="civic-ai-user-copy">${civicAiText(prompt)}</p>`
             : `<p class="civic-ai-user-copy">Please review the attached ${file && isCivicAiImageFile(file) ? "image" : "file"}.</p>`;
@@ -7015,6 +7066,7 @@ function bindEvents() {
           addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
           try {
             const reply = await requestCivicAiReply(responsePrompt, imageDataUrlForModel, conversationHistory);
+            if (conversationGeneration !== state.civicAiGeneration) return;
             const messages = document.getElementById("civicAiMessages");
             const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
             const formatted = `${attachmentNotice}${formatCivicAiReply(reply)}`;
@@ -7026,6 +7078,7 @@ function bindEvents() {
             if (messages) messages.scrollTop = messages.scrollHeight;
             refreshIcons();
           } catch (error) {
+            if (conversationGeneration !== state.civicAiGeneration) return;
             const safeMessage = civicAiText(error?.message || "Civic AI could not respond. Please try again.");
             const messages = document.getElementById("civicAiMessages");
             const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
@@ -7036,6 +7089,7 @@ function bindEvents() {
             state.civicAiMessages[state.civicAiMessages.length - 1] = { role: "ai", text: `<p>${safeMessage}</p>` };
           }
         } catch (error) {
+          if (conversationGeneration !== state.civicAiGeneration) return;
           toast(
             "The attachment could not be added. Please try again.",
             "triangle-alert"
@@ -7057,6 +7111,7 @@ function bindEvents() {
     button.addEventListener("click", async () => {
       const prompt = button.dataset.aiPrompt;
       if (!prompt) return;
+      const conversationGeneration = state.civicAiGeneration;
       const history = state.civicAiMessages.slice(-10).map((item) => ({
         role: item.role === "ai" ? "assistant" : "user",
         content: civicAiPlainText(item.text).slice(0, 3000)
@@ -7065,6 +7120,7 @@ function bindEvents() {
       addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
       try {
         const reply = await requestCivicAiReply(prompt, "", history);
+        if (conversationGeneration !== state.civicAiGeneration) return;
         const messages = document.getElementById("civicAiMessages");
         const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
         const formatted = formatCivicAiReply(reply);
@@ -7076,6 +7132,7 @@ function bindEvents() {
         if (messages) messages.scrollTop = messages.scrollHeight;
         refreshIcons();
       } catch (error) {
+        if (conversationGeneration !== state.civicAiGeneration) return;
         const safeMessage = civicAiText(error?.message || "Civic AI could not respond. Please try again.");
         const messages = document.getElementById("civicAiMessages");
         const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
