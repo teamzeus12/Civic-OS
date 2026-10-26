@@ -534,6 +534,8 @@ const state = {
   civicAiContext: null,
   civicAiMessages: [],
   civicAiGeneration: 0,
+  civicAiConversationId: null,
+  civicAiPersistenceWarningShown: false
   civicActionId: null
 };
 
@@ -5284,6 +5286,7 @@ function startNewCivicAiChat() {
   state.civicAiGeneration += 1;
   state.civicAiMessages = [];
   state.civicAiContext = null;
+  state.civicAiConversationId = null;
 
   const container = document.getElementById("civicAiMessages");
   if (container) {
@@ -5325,6 +5328,111 @@ function startNewCivicAiChat() {
 
   refreshIcons();
   if (input) input.focus();
+}
+
+
+async function persistCivicAiMessage(role, content, generation, context = null, titleText = "") {
+  const client = window.civicSupabase;
+  if (!client || !["user", "assistant"].includes(role)) return null;
+
+  try {
+    let ownerId = context?.ownerId || null;
+    let conversationId = context?.conversationId || null;
+
+    if (!ownerId) {
+      const { data, error } = await client.auth.getUser();
+      if (error) throw error;
+      ownerId = data?.user?.id || null;
+    }
+    if (!ownerId) return null;
+
+    if (!conversationId && generation === state.civicAiGeneration) {
+      conversationId = state.civicAiConversationId;
+    }
+
+    if (!conversationId && role === "user") {
+      const title = String(titleText || "New chat").replace(/\s+/g, " ").trim().slice(0, 120) || "New chat";
+      const { data, error } = await client
+        .from("civic_ai_conversations")
+        .insert({ owner_id: ownerId, title })
+        .select("id")
+        .single();
+      if (error) throw error;
+      conversationId = data?.id || null;
+      if (!conversationId) throw new Error("Conversation could not be created.");
+      if (generation === state.civicAiGeneration) state.civicAiConversationId = conversationId;
+    }
+
+    if (!conversationId) return null;
+    const safeContent = String(content || "").trim().slice(0, 12000);
+    if (!safeContent) return { conversationId, ownerId };
+
+    const { error: messageError } = await client
+      .from("civic_ai_messages")
+      .insert({ conversation_id: conversationId, owner_id: ownerId, role, content: safeContent });
+    if (messageError) throw messageError;
+
+    const { error: updateError } = await client
+      .from("civic_ai_conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", conversationId)
+      .eq("owner_id", ownerId);
+    if (updateError) console.warn("Civic AI conversation timestamp could not be updated:", updateError);
+
+    return { conversationId, ownerId };
+  } catch (error) {
+    console.warn("Civic AI conversation could not be saved:", error);
+    if (!state.civicAiPersistenceWarningShown) {
+      state.civicAiPersistenceWarningShown = true;
+      toast("Civic AI replied, but this conversation could not be saved. Check your sign-in and try again.", "triangle-alert");
+    }
+    return context;
+  }
+}
+
+async function loadCivicAiConversation(conversationId) {
+  const client = window.civicSupabase;
+  if (!client || !conversationId) throw new Error("A saved conversation is required.");
+
+  const { data: userData, error: userError } = await client.auth.getUser();
+  if (userError) throw userError;
+  const ownerId = userData?.user?.id;
+  if (!ownerId) throw new Error("Sign in to open saved Civic AI conversations.");
+
+  const { data: conversation, error: conversationError } = await client
+    .from("civic_ai_conversations")
+    .select("id,title,owner_id")
+    .eq("id", conversationId)
+    .eq("owner_id", ownerId)
+    .single();
+  if (conversationError) throw conversationError;
+
+  const { data: rows, error: messagesError } = await client
+    .from("civic_ai_messages")
+    .select("id,role,content,created_at")
+    .eq("conversation_id", conversation.id)
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: true });
+  if (messagesError) throw messagesError;
+
+  state.civicAiGeneration += 1;
+  state.civicAiConversationId = conversation.id;
+  state.civicAiContext = null;
+  state.civicAiMessages = [];
+  const container = document.getElementById("civicAiMessages");
+  if (container) container.innerHTML = "";
+
+  for (const row of rows || []) {
+    const role = row.role === "assistant" ? "ai" : "user";
+    const formatted = role === "ai"
+      ? formatCivicAiReply(row.content)
+      : `<p class="civic-ai-user-copy">${civicAiText(row.content)}</p>`;
+    addCivicAiMessage(role, formatted);
+  }
+  const input = document.getElementById("civicAiInput");
+  if (input) input.value = "";
+  refreshIcons();
+  return conversation;
 }
 
 function addCivicAiMessage(
@@ -7046,6 +7154,11 @@ function bindEvents() {
             "user",
             `${messageText}${attachmentMarkup}`
           );
+          const persistedContext = await persistCivicAiMessage(
+            "user", prompt || (file && isCivicAiImageFile(file) ? "Image attached" : "File attached"),
+            conversationGeneration, null, prompt || (file && isCivicAiImageFile(file) ? "Image attached" : "File attached")
+          );
+          if (conversationGeneration !== state.civicAiGeneration) return;
 
           civicAiInput.value = "";
 
@@ -7073,6 +7186,7 @@ function bindEvents() {
           try {
             const reply = await requestCivicAiReply(responsePrompt, imageDataUrlForModel, conversationHistory);
             if (conversationGeneration !== state.civicAiGeneration) return;
+            await persistCivicAiMessage("assistant", reply, conversationGeneration, persistedContext);
             const messages = document.getElementById("civicAiMessages");
             const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
             const formatted = `${attachmentNotice}${formatCivicAiReply(reply)}`;
@@ -7123,10 +7237,13 @@ function bindEvents() {
         content: civicAiPlainText(item.text).slice(0, 3000)
       })).filter((item) => item.content);
       addCivicAiMessage("user", `<p class="civic-ai-user-copy">${civicAiText(prompt)}</p>`);
+      const persistedContext = await persistCivicAiMessage("user", prompt, conversationGeneration, null, prompt);
+      if (conversationGeneration !== state.civicAiGeneration) return;
       addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
       try {
         const reply = await requestCivicAiReply(prompt, "", history);
         if (conversationGeneration !== state.civicAiGeneration) return;
+        await persistCivicAiMessage("assistant", reply, conversationGeneration, persistedContext);
         const messages = document.getElementById("civicAiMessages");
         const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
         const formatted = formatCivicAiReply(reply);
