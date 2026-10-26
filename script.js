@@ -5304,6 +5304,12 @@ function startNewCivicAiChat() {
   const input = document.getElementById("civicAiInput");
   if (input) input.value = "";
 
+  const sendButton = document.querySelector('#civicAiForm button[type="submit"]');
+  if (sendButton) {
+    sendButton.disabled = false;
+    sendButton.removeAttribute("aria-busy");
+  }
+
   const fileInput = document.getElementById("civicAiFileInput");
   if (fileInput) fileInput.value = "";
 
