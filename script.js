@@ -2801,7 +2801,7 @@ async function loadPersistentCivicReports() {
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
     if (sessionError) throw sessionError;
 
-    // The public map intentionally exposes only reports approved for public display.
+    // Load the shared public-safe feed, including reports awaiting verification.
     const { data: publicRows, error: publicError } = await client.rpc("get_public_civic_reports");
     if (publicError) throw publicError;
 
@@ -2820,7 +2820,7 @@ async function loadPersistentCivicReports() {
     }
 
     const rowsById = new Map();
-    // This RPC exposes only approved public-facing report fields, across all citizens.
+    // The RPC exposes public-facing report fields across citizens, never reporter identity or internal notes.
     // Keep evidence private here until a separate public-evidence review flow is implemented.
     for (const row of publicRows || []) {
       if (row.public_id) rowsById.set(row.public_id, { ...row, verification_required: true });
