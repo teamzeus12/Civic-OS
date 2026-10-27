@@ -12,10 +12,28 @@
     document.querySelectorAll("[data-profile-pref]").forEach((el) => prefs[el.dataset.profilePref] = el.checked);
     try { localStorage.setItem(prefsKey, JSON.stringify(prefs)); } catch {}
   }
+  function activateTab(name) {
+    document.querySelectorAll("[data-profile-tab]").forEach((tab) => {
+      const active = tab.dataset.profileTab === name;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    document.querySelectorAll("[data-profile-section]").forEach((panel) => { panel.hidden = panel.dataset.profileSection !== name; });
+  }
+  function renderActivity(rows) {
+    const target = $("profileActivityTimeline");
+    if (!target) return;
+    if (!rows.length) { target.innerHTML = '<p class="profile-empty">No civic activity is available for this account yet.</p>'; return; }
+    target.innerHTML = rows.slice(0,8).map((row) => {
+      const date = row.reported_at ? new Date(row.reported_at).toLocaleDateString() : "Date unavailable";
+      return '<article class="profile-history-item"><span class="profile-history-symbol">↗</span><div class="profile-history-copy"><strong>' + escape(row.title || row.public_id || "Civic report") + '</strong><small>' + escape(date) + ' · ' + escape(row.category || "Civic report") + '</small><small>Latest status: ' + escape(row.status || "Reported") + '</small></div></article>';
+    }).join("");
+  }
   function renderHistory(rows) {
     const target = $("profileReportHistory");
     if (!target) return;
-    if (!rows.length) { target.innerHTML = '<p class="profile-empty">No saved reports found for this account yet.</p>'; return; }
+    if (!rows.length) { target.innerHTML = '<p class="profile-empty">No saved reports found for this account yet.</p>'; renderActivity(rows); return; }
     target.innerHTML = rows.slice(0,5).map((row) => {
       const status = String(row.status || "Reported");
       const statusClass = status.toLowerCase().replace(/[^a-z]+/g,"-");
@@ -23,6 +41,7 @@
       const date = row.reported_at ? new Date(row.reported_at).toLocaleDateString() : "Date unavailable";
       return '<article class="profile-history-item"><span class="profile-history-symbol">▤</span><div class="profile-history-copy"><strong>' + escape(row.title || row.public_id || "Civic report") + '</strong><small>' + escape(row.category || "General") + ' · ' + escape(location) + '</small><small>' + escape(date) + '</small></div><span class="profile-status-pill status-' + escape(statusClass) + '">' + escape(status) + '</span></article>';
     }).join("");
+    renderActivity(rows);
   }
   window.renderCivicProfile = async function() {
     const client = window.civicSupabase;
@@ -74,6 +93,24 @@
     if (window.lucide?.createIcons) window.lucide.createIcons();
   };
   document.addEventListener("DOMContentLoaded", () => {
+    activateTab("overview");
+    document.querySelectorAll("[data-profile-tab]").forEach((tab) => tab.addEventListener("click", () => activateTab(tab.dataset.profileTab)));
+    $("profileEditButton")?.addEventListener("click", () => {
+      activateTab("overview");
+      $("civicProfileForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      $("profileFullName")?.focus({ preventScroll: true });
+    });
+    $("profileShareButton")?.addEventListener("click", async () => {
+      const session = await window.civicSupabase?.auth.getSession();
+      if (!session?.data?.session?.user) { $("profileSaveMessage").textContent = "Sign in before sharing your civic profile summary."; activateTab("overview"); return; }
+      const name = $("citizenDisplayName")?.textContent || "Civic OS member";
+      const summary = name + " on Civic OS\\nCivic reports submitted: " + ($("profileReportCount")?.textContent || "—") + "\\nReports marked resolved: " + ($("profileResolvedCount")?.textContent || "—") + "\\nReport. Connect. Resolve.\\n" + window.location.href.split("#")[0];
+      try {
+        if (navigator.share) await navigator.share({ title: "My Civic OS profile", text: summary });
+        else if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(summary); $("profileSaveMessage").textContent = "A privacy-safe profile summary was copied to your clipboard."; }
+        else $("profileSaveMessage").textContent = "Sharing is not supported by this browser.";
+      } catch (error) { if (error?.name !== "AbortError") $("profileSaveMessage").textContent = "Could not open the share menu. Please try again."; }
+    });
     document.querySelectorAll("[data-profile-pref]").forEach((el) => el.addEventListener("change", savePrefs));
     $("profileSignInButton")?.addEventListener("click", async () => {
       const session = await window.civicSupabase?.auth.getSession();
