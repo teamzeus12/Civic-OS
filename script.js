@@ -2378,7 +2378,7 @@ function renderAnalysis() {
 
               ${escapeHtml(a.duplicate.status || "Reported")} ·
               ${Number.isFinite(Number(a.duplicate.distanceMeters)) ? escapeHtml(String(a.duplicate.distanceMeters) + " m away") : "nearby"} ·
-              ${escapeHtml(String(a.duplicate.confidence || 0) + "% match")}.
+              ${escapeHtml(Number(a.duplicate.confidence) > 0 ? String(a.duplicate.confidence) + "% match" : "keyword similarity")}.
               <br>${escapeHtml(a.duplicate.reason || "The report appears similar based on location and details.")}
             </span>
 
