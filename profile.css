@@ -21,3 +21,37 @@
 .profile-avatar-upload[aria-disabled="true"]{opacity:.55;pointer-events:none}
 .profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 @media(max-width:760px){.profile-avatar-wrap{align-items:start}.profile-avatar-upload{max-width:100%;font-size:9px;padding:6px 8px}}
+
+
+/* Central profile settings */
+.profile-settings-shell{display:grid;grid-template-columns:minmax(190px,240px) minmax(0,1fr);gap:15px;align-items:start;grid-column:1/-1;min-width:0}
+.profile-settings-nav,.profile-settings-content{min-width:0;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 8px 24px #11422b08}
+.profile-settings-nav{padding:13px;display:grid;gap:5px}
+.profile-settings-eyebrow{padding:8px 10px;color:#7c8980;font-size:9px;font-weight:850;letter-spacing:1.4px}
+.profile-settings-link{display:flex;align-items:center;min-height:43px;width:100%;padding:10px 12px;border-radius:10px;color:#536158;font-size:11px;font-weight:700;line-height:1.4;text-align:left;transition:background-color .15s,color .15s}
+.profile-settings-link:hover{background:#f2f8f4;color:#236747}
+.profile-settings-link.active{background:#eaf7ef;color:#17683f}
+.profile-settings-content{padding:21px}
+.profile-settings-panel h2{margin:0 0 6px;font-size:16px}
+.profile-settings-panel>p{margin:0 0 15px;color:var(--muted);font-size:11px;line-height:1.65}
+.profile-setting-control{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 0;border-top:1px solid #edf1ee}
+.profile-setting-control>span{display:grid;gap:4px;min-width:0;flex:1}
+.profile-setting-control strong{font-size:11px}
+.profile-setting-control small{font-size:10px;color:#7e8a82;line-height:1.5}
+.profile-setting-control select{max-width:145px;min-height:39px;padding:7px 10px;border:1px solid #dfe8e2;border-radius:10px;background:#fbfdfb;color:#33483b;font-size:11px}
+.profile-settings-panel[hidden]{display:none!important}
+body[data-civic-text-size="large"]{font-size:17px}
+body[data-civic-text-size="large"] .profile-page{font-size:1.05rem}
+body[data-civic-text-size="larger"]{font-size:18px}
+body[data-civic-text-size="larger"] .profile-page{font-size:1.1rem}
+body[data-civic-reduce-motion="true"] *,body[data-civic-reduce-motion="true"] *::before,body[data-civic-reduce-motion="true"] *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+body[data-civic-theme="light"]{--bg:#f3f7f4;--bg-2:#fff;--surface:rgba(15,55,33,.045);--surface-2:rgba(15,55,33,.075);--border:rgba(20,65,42,.13);--border-strong:rgba(20,65,42,.2);--text:#1c2b22;--muted:#5d6e62;--subtle:#77877c;--accent:#16834c;--accent-hover:#0e6b3d;--accent-ink:#fff;--accent-soft:rgba(22,131,76,.1);--accent-line:rgba(22,131,76,.25);color:var(--text);background:#f3f7f4}
+body[data-civic-theme="light"] .topbar{background:rgba(255,255,255,.9)}
+body[data-civic-theme="light"] .glass,body[data-civic-theme="light"] .profile-panel,body[data-civic-theme="light"] .profile-metric,body[data-civic-theme="light"] .profile-settings-nav,body[data-civic-theme="light"] .profile-settings-content{background:#fff;border-color:#dce7df}
+body[data-civic-theme="light"] .profile-hero-card{background:linear-gradient(115deg,#fff,#f2fbf5)}
+body[data-civic-theme="light"] .profile-form label,body[data-civic-theme="light"] .profile-settings-link{color:#33483b}
+body[data-civic-theme="light"] .profile-form input,body[data-civic-theme="light"] .profile-setting-control select{background:#fff;color:#1c2b22;border-color:#cbd9cf}
+body[data-civic-theme="light"] .profile-settings-link.active{background:#eaf7ef;color:#17683f}
+body[data-civic-theme="light"] .bottom-nav{background:rgba(255,255,255,.94);border-color:#dce7df}
+body[data-civic-theme="light"] .nav-item{color:#526258}
+@media(max-width:760px){.profile-settings-shell{grid-template-columns:minmax(0,1fr);gap:10px}.profile-settings-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:10px}.profile-settings-eyebrow{grid-column:1/-1;padding:4px 8px}.profile-settings-link{min-height:42px;padding:9px;font-size:10px}.profile-settings-content{padding:16px}.profile-setting-control{align-items:flex-start}.profile-setting-control select{max-width:125px}}
