@@ -6647,6 +6647,7 @@ function bindEvents() {
         }
 
         if (state.draft) {
+          state.duplicateOverride = false;
           state.analysis =
             analyzeReport({
               ...state.draft,
