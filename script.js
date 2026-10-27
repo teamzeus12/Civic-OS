@@ -4185,12 +4185,19 @@ function renderDashboard() {
     departments[0]?.[1] ||
     1;
 
-  const byArea = {};
+  // Group open reports by their actual saved location, not the generic report source label.
+  const byLocation = new Map();
   open.forEach((issue) => {
-    byArea[issue.area] = byArea[issue.area] || { count: 0 };
-    byArea[issue.area].count++;
+    const location = String(issue.location || "").trim();
+    if (!location || /^(location not specified|location not provided|location recorded|saved citizen report|unknown)$/i.test(location)) return;
+    const key = location.toLocaleLowerCase();
+    const current = byLocation.get(key);
+    if (current) current.count++;
+    else byLocation.set(key, { name: location, count: 1 });
   });
-  const hotspots = Object.entries(byArea).sort((a, b) => b[1].count - a[1].count).slice(0, 4);
+  const hotspots = [...byLocation.values()]
+    .map(({ name, count }) => [name, { count }])
+    .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]));
 
   const days = [];
 
@@ -4882,36 +4889,14 @@ function renderDashboard() {
 
         </div>
 
-        <ol class="hotspots">
-
-          ${hotspots
-            .map(
-              ([area, info], i) => `
-                <li class="hotspot">
-
-                  <span class="hotspot-rank">
-                    0${i + 1}
-                  </span>
-
-                  <span class="hotspot-name">
-
-                    ${escapeHtml(
-                      area
-                    )}
-
-                    <small>
-                      ${info.count}
-                      open ·
-                    </small>
-
-                  </span>
-
-                </li>
-              `
-            )
-            .join("")}
-
-        </ol>
+        <div class="hotspot-sort-control">
+          <label for="hotspotSort">Sort places</label>
+          <select id="hotspotSort" aria-label="Sort civic hotspots by report count">
+            <option value="most">Most reports</option>
+            <option value="least">Fewest reports</option>
+          </select>
+        </div>
+        <ol class="hotspots" id="hotspotsList" aria-live="polite"></ol>
 
       </section>
 
@@ -4924,6 +4909,26 @@ function renderDashboard() {
 
     </div>
   `;
+
+  const hotspotSort = $("#hotspotSort", body);
+  const hotspotList = $("#hotspotsList", body);
+  const renderHotspotList = () => {
+    if (!hotspotList) return;
+    const direction = hotspotSort?.value === "least" ? 1 : -1;
+    const sortedHotspots = [...hotspots].sort((a, b) =>
+      direction * (a[1].count - b[1].count) || a[0].localeCompare(b[0])
+    );
+    hotspotList.innerHTML = sortedHotspots.length
+      ? sortedHotspots.map(([area, info], i) => `
+          <li class="hotspot">
+            <span class="hotspot-rank">${String(i + 1).padStart(2, "0")}</span>
+            <span class="hotspot-name">${escapeHtml(area)}<small>${info.count} open ${info.count === 1 ? "report" : "reports"}</small></span>
+          </li>
+        `).join("")
+      : '<li class="hotspot-empty">No open reports with a known location yet.</li>';
+  };
+  if (hotspotSort) hotspotSort.addEventListener("change", renderHotspotList);
+  renderHotspotList();
 
   refreshIcons();
   initDashboardMap();
