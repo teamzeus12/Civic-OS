@@ -1189,156 +1189,65 @@
       class="screen"
       aria-labelledby="communityTitle"
     >
-
       <div class="container">
-
         <header class="screen-head">
-
-          <p class="kicker">
-            Connect
-          </p>
-
-          <h2
-            id="communityTitle"
-            class="screen-title"
-          >
-            Civic community
-          </h2>
-
+          <p class="kicker">Connect</p>
+          <h2 id="communityTitle" class="screen-title">Civic community</h2>
           <p class="screen-sub">
-            Some problems need more than a department.
-            Match civic problems with people, skills and organizations.
+            Meet people using Civic OS, discover community organisations,
+            and take part in civic work as it becomes available.
           </p>
-
         </header>
 
-
-        <ol
-          class="match-flow"
-          aria-label="How civic matching works"
-        >
-
-          <li>
-            <i data-lucide="flag"></i>
-            Problem
-          </li>
-
-          <li>
-            <i data-lucide="list-checks"></i>
-            Skills
-          </li>
-
-          <li>
-            <i data-lucide="users"></i>
-            People
-          </li>
-
-          <li>
-            <i data-lucide="git-merge"></i>
-            Match
-          </li>
-
-        </ol>
-
-
-        <div class="field-card glass skills-card">
-
-          <div class="skills-head">
-
-            <span class="field-label">
-
-              <span class="field-num">
-                You
-              </span>
-
-              What can you offer?
-
-            </span>
-
-            <span
-              class="counter"
-              id="skillCount"
-            >
-              0 selected
-            </span>
-
-          </div>
-
-          <div
-            class="chip-wrap"
-            id="skillPicker"
-            role="group"
-            aria-label="Your skills"
-          ></div>
-
-        </div>
-
-
-        <section
-          class="block block-tight"
-          aria-labelledby="missionsTitle"
-        >
-
+        <section class="block community-block" aria-labelledby="ongoingActionsTitle">
           <div class="block-head">
-
             <div>
-
-              <p class="kicker">
-                Open missions
-              </p>
-
-              <h3
-                id="missionsTitle"
-                class="block-title"
-              >
-                Civic missions near you
-              </h3>
-
+              <p class="kicker">In progress</p>
+              <h3 id="ongoingActionsTitle" class="block-title">Ongoing civic actions</h3>
+              <p class="block-subtitle">Community activities will appear here when they are published.</p>
             </div>
-
           </div>
-
-          <div
-            class="mission-list"
-            id="missionList"
-          ></div>
-
+          <div class="mission-list" id="missionList" aria-live="polite"></div>
         </section>
 
-
-        <section
-          class="block"
-          aria-labelledby="peopleTitle"
-        >
-
-          <div class="block-head">
-
+        <section class="block community-block" aria-labelledby="peopleTitle">
+          <div class="block-head community-directory-head">
             <div>
-
-              <p class="kicker">
-                Directory
-              </p>
-
-              <h3
-                id="peopleTitle"
-                class="block-title"
-              >
-                People &amp; organizations
-              </h3>
-
+              <p class="kicker">Directory</p>
+              <h3 id="peopleTitle" class="block-title">People</h3>
+              <p class="block-subtitle">Citizens who have signed in to Civic OS recently.</p>
             </div>
-
+            <button type="button" class="btn btn-ghost btn-sm" id="refreshCommunityPeople" aria-label="Refresh people directory">
+              <i data-lucide="refresh-cw"></i>
+              Refresh
+            </button>
           </div>
-
-          <div
-            class="people-grid"
-            id="peopleGrid"
-          ></div>
-
+          <div class="people-grid" id="peopleGrid" aria-live="polite"></div>
         </section>
 
+        <section class="block community-block" aria-labelledby="organisationsTitle">
+          <div class="block-head">
+            <div>
+              <p class="kicker">Organisations</p>
+              <h3 id="organisationsTitle" class="block-title">Build something together</h3>
+              <p class="block-subtitle">
+                Bring residents together around a shared local goal. Organisation setup is planned for the next community phase.
+              </p>
+            </div>
+          </div>
+          <div class="organisation-cta glass">
+            <span class="organisation-icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
+            <div class="organisation-copy">
+              <strong>Form your organisation</strong>
+              <p>Create a group for neighbours, volunteers, students, or people working on the same civic issue.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="createOrganisationBtn">
+              <i data-lucide="plus"></i>
+              Create organisation
+            </button>
+          </div>
+        </section>
       </div>
-
     </section>
 
 
