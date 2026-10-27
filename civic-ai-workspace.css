@@ -13,7 +13,7 @@
 .civic-ai-panel.is-expanded .civic-ai-header,
 .civic-ai-panel.is-maximized .civic-ai-header { flex:0 0 auto; }
 .civic-ai-sidebar { box-sizing:border-box; flex-direction:column; gap:12px; min-height:0; overflow:hidden; padding:14px 11px 10px; border-right:1px solid rgba(255,255,255,.09); background:rgba(0,0,0,.16); }
-.civic-ai-new-chat { display:flex; align-items:center; justify-content:center; gap:9px; min-height:42px; width:100%; border:1px solid rgba(62,224,143,.38); border-radius:12px; background:rgba(62,224,143,.1); color:#eafff1; font:600 13px/1.2 inherit; cursor:pointer; }
+.civic-ai-new-chat { display:flex; align-items:center; justify-content:center; gap:9px; min-height:42px; width:100%; border:1px solid rgba(62,224,143,.38); border-radius:12px; background:rgba(62,224,143,.1); color:#eafff1; font-family:inherit; font-size:13px; font-weight:600; line-height:1.2; cursor:pointer; }
 .civic-ai-new-chat:hover { background:rgba(62,224,143,.17); }
 .civic-ai-new-chat svg { width:16px; height:16px; color:#3ee08f; }
 .civic-ai-search-label { color:rgba(230,245,236,.7); font-size:11px; font-weight:650; }
