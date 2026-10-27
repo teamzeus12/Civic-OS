@@ -515,6 +515,7 @@ const state = {
   pendingEvidenceReport: null,
   draft: null,
   analysis: null,
+  duplicateOverride: false,
   analyzing: false,
   filters: {
     status: "All",
@@ -1720,6 +1721,7 @@ function invalidateAnalysis() {
   }
 
   state.analysis = null;
+  state.duplicateOverride = false;
 
   const panel =
     $("#aiPanel");
@@ -1995,6 +1997,7 @@ async function handleAnalyze(event) {
 
   showFormError(null);
 
+  state.duplicateOverride = false;
   state.analyzing = true;
   const analyzeBtn = $("#analyzeBtn");
   if (analyzeBtn) analyzeBtn.disabled = true;
@@ -2097,7 +2100,7 @@ async function handleAnalyze(event) {
       const imageDataUrls = [];
       for (const file of imageFiles) imageDataUrls.push(await civicImageToDataUrl(file));
       const { data, error } = await client.functions.invoke('civic-ai-analyze-dev', {
-        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
+        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, locationCoordinates: draft.coordinates, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
       });
       if (error) throw error;
       if (!data || !data.categoryKey) throw new Error('The AI service returned an incomplete result.');
@@ -2107,7 +2110,7 @@ async function handleAnalyze(event) {
         summary: data.summary, recommendation: data.recommendation,
         signals: data.signals, skills: data.skills, autoDetected: data.autoDetected,
         suggestion: data.suggestion, categoryNeedsReview: data.categoryNeedsReview,
-        imageNotAnalyzed: data.imageNotAnalyzed, mediaRelevant: data.mediaRelevant, mediaSummary: data.mediaSummary, mediaMismatchReason: data.mediaMismatchReason, duplicate: data.duplicate,
+        imageNotAnalyzed: data.imageNotAnalyzed, mediaRelevant: data.mediaRelevant, mediaSummary: data.mediaSummary, mediaMismatchReason: data.mediaMismatchReason, duplicate: data.duplicate, duplicateMatches: data.duplicateMatches || [], duplicateCheckAvailable: data.duplicateCheckAvailable === true,
         engine: data.engine || 'groq'
       };
     } catch (error) {
@@ -2345,6 +2348,10 @@ function renderAnalysis() {
       `
       : "";
 
+  const duplicateOverrideNote = state.duplicateOverride
+    ? '<p class="ai-note">You marked this as a different incident. Check the details carefully before submitting.</p>'
+    : '<button type="button" class="link-btn" data-action="confirm-distinct-issue">This is a different issue — continue</button>';
+
   const duplicate =
     a.duplicate
       ? `
@@ -2369,11 +2376,10 @@ function renderAnalysis() {
                 a.duplicate.title
               )}
 
-              (${a.duplicate.supporters}
-              supporters,
-              ${escapeHtml(
-                a.duplicate.status.toLowerCase()
-              )}).
+              ${escapeHtml(a.duplicate.status || "Reported")} ·
+              ${Number.isFinite(Number(a.duplicate.distanceMeters)) ? escapeHtml(String(a.duplicate.distanceMeters) + " m away") : "nearby"} ·
+              ${escapeHtml(Number(a.duplicate.confidence) > 0 ? String(a.duplicate.confidence) + "% match" : "keyword similarity")}.
+              <br>${escapeHtml(a.duplicate.reason || "The report appears similar based on location and details.")}
             </span>
 
             <span>
@@ -2381,15 +2387,15 @@ function renderAnalysis() {
               <button
                 type="button"
                 class="link-btn"
-                data-action="support-duplicate"
+                data-action="view-duplicate"
                 data-id="${escapeHtml(
                   a.duplicate.id
                 )}"
               >
-                Support existing report instead
+                View existing report
                 <i data-lucide="arrow-right"></i>
               </button>
-
+              ${duplicateOverrideNote}
             </span>
 
           </div>
@@ -2451,6 +2457,7 @@ function renderAnalysis() {
       ${note}
       ${photoNote}
       ${categoryReviewNote}
+      ${a.duplicateCheckAvailable === false ? `<div class="ai-warning ai-evidence-warning"><i data-lucide="shield-alert"></i><div class="ai-warning-body"><strong>Duplicate check could not be completed</strong><span>Civic AI could not search the shared report database this time. Check the public Issues list before submitting; no-match results cannot be guaranteed.</span></div></div>` : ""}
 
       <div class="ai-grid">
 
@@ -2570,9 +2577,10 @@ function renderAnalysis() {
           type="button"
           class="btn btn-primary btn-lg"
           data-action="submit-report"
+          ${a.duplicate && !state.duplicateOverride ? "disabled aria-disabled=\"true\"" : ""}
         >
           <i data-lucide="send"></i>
-          Submit report
+          ${a.duplicate && !state.duplicateOverride ? "Review possible duplicate first" : "Submit report"}
         </button>
 
         <button
@@ -2794,7 +2802,7 @@ async function loadPersistentCivicReports() {
     if (sessionError) throw sessionError;
 
     // The public map intentionally exposes only reports approved for public display.
-    const { data: publicRows, error: publicError } = await client.rpc("get_public_issue_map");
+    const { data: publicRows, error: publicError } = await client.rpc("get_public_civic_reports");
     if (publicError) throw publicError;
 
     // Citizens must still be able to reload their own reports while they await verification.
@@ -2812,12 +2820,13 @@ async function loadPersistentCivicReports() {
     }
 
     const rowsById = new Map();
-    // The public-map RPC returns only reports approved for public display.
+    // This RPC exposes only approved public-facing report fields, across all citizens.
+    // Keep evidence private here until a separate public-evidence review flow is implemented.
     for (const row of publicRows || []) {
-      if (row.public_id) rowsById.set(row.public_id, { ...row, verification_required: false });
+      if (row.public_id) rowsById.set(row.public_id, { ...row, verification_required: true });
     }
     for (const row of ownRows) {
-      if (row.public_id) rowsById.set(row.public_id, row);
+      if (row.public_id) rowsById.set(row.public_id, { ...(rowsById.get(row.public_id) || {}), ...row });
     }
 
     const existing = new Set(issues.map((issue) => issue.id));
@@ -2841,6 +2850,7 @@ async function loadPersistentCivicReports() {
         reportedAt: row.reported_at ? new Date(row.reported_at).getTime() : Date.now()
       });
       issue.databaseId = row.id;
+      issue.statusHistory = Array.isArray(row.status_history) ? row.status_history : [];
       issue.persisted = true;
       if (row.resolved_at) issue.resolvedAt = new Date(row.resolved_at).getTime();
       issues.unshift(issue);
@@ -3684,6 +3694,12 @@ function renderIssueSheet(issue) {
       <p class="report-status-footnote">
         Progress advances when the Government Portal records a status update. Pending stages remain marked until then.
       </p>
+      <div class="report-status-history" aria-label="Recorded status updates">
+        <strong>Recorded updates</strong>
+        ${Array.isArray(issue.statusHistory) && issue.statusHistory.length
+          ? `<ol>${[...issue.statusHistory].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((event) => `<li><span>${escapeHtml(event.to_status || "Status updated")}</span><time>${escapeHtml(event.created_at ? new Date(event.created_at).toLocaleString() : "Time unavailable")}</time></li>`).join("")}</ol>`
+          : `<p>No official status changes have been recorded yet.</p>`}
+      </div>
 
     </div>
 
@@ -6631,6 +6647,7 @@ function bindEvents() {
         }
 
         if (state.draft) {
+          state.duplicateOverride = false;
           state.analysis =
             analyzeReport({
               ...state.draft,
@@ -6645,6 +6662,24 @@ function bindEvents() {
         }
       }
 
+
+      if (action === "view-duplicate") {
+        const openCandidate = () => {
+          const issue = getIssue(id);
+          if (issue) openIssue(id);
+          else toast("The existing report is not loaded yet. Open the public Issues list and search for " + id + ".", "info");
+        };
+        if (getIssue(id)) openIssue(id);
+        else loadPersistentCivicReports().then(openCandidate);
+        return;
+      }
+
+      if (action === "confirm-distinct-issue") {
+        state.duplicateOverride = true;
+        renderAnalysis();
+        toast("You confirmed this describes a different issue. Review the details before submitting.");
+        return;
+      }
 
       if (
         action ===
