@@ -147,6 +147,53 @@
     if (target) target.innerHTML = '<div class="empty-state">No official notifications are available yet.</div>';
   }
 
+
+  const govPrefsKey = "civicOS.governmentProfilePreferences.v1";
+  function loadGovernmentProfilePreferences() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(govPrefsKey) || "{}"); } catch (error) {}
+    document.querySelectorAll("[data-gov-pref]").forEach(function(input) {
+      if (Object.prototype.hasOwnProperty.call(saved, input.dataset.govPref)) input.checked = Boolean(saved[input.dataset.govPref]);
+    });
+  }
+  function saveGovernmentProfilePreferences() {
+    const saved = {};
+    document.querySelectorAll("[data-gov-pref]").forEach(function(input) { saved[input.dataset.govPref] = input.checked; });
+    try { localStorage.setItem(govPrefsKey, JSON.stringify(saved)); } catch (error) {}
+    const message = document.querySelector("#govProfilePrefMessage");
+    if (message) message.textContent = "Preferences saved on this device.";
+  }
+  async function renderGovernmentProfile() {
+    loadGovernmentProfilePreferences();
+    const badge = document.querySelector("#govProfileAccessBadge");
+    if (!supabaseClient) { if (badge) badge.textContent = "Sign-in required"; return; }
+    const sessionResult = await supabaseClient.auth.getSession();
+    const user = sessionResult.data && sessionResult.data.session ? sessionResult.data.session.user : null;
+    if (!user || !liveMode || !officialProfile) { if (badge) badge.textContent = "Access not verified"; return; }
+    const profile = officialProfile;
+    const name = profile.full_name || (user.user_metadata && user.user_metadata.full_name) || "Government official";
+    const role = profile.role === "admin" ? "Administrator" : "Department official";
+    const department = profile.role === "admin" ? "All departments" : (profile.department_id || "Not assigned");
+    const total = reports.length;
+    const resolved = reports.filter(function(row) { return String(row.status).toLowerCase() === "resolved"; }).length;
+    const open = reports.filter(function(row) { return ["reported", "verified"].includes(String(row.status).toLowerCase()); }).length;
+    const setText = function(id, value) { const el = document.getElementById(id); if (el) el.textContent = value; };
+    setText("govProfileName", name);
+    setText("govProfileEmail", user.email || "Official email unavailable");
+    setText("govProfileAvatar", name.split(/\s+/).map(function(part) { return part[0]; }).slice(0,2).join("").toUpperCase());
+    setText("govProfileAccessBadge", "Authorized session");
+    setText("govProfileRoleBadge", role);
+    setText("govProfileDepartmentBadge", department);
+    setText("govProfileDetailName", name);
+    setText("govProfileDetailEmail", user.email || "Unavailable");
+    setText("govProfileDetailRole", role);
+    setText("govProfileDetailDepartment", department);
+    setText("govProfileDetailScope", profile.role === "admin" ? "All authorized departments" : "Assigned department only");
+    setText("govProfileReportCount", String(total));
+    setText("govProfileResolvedCount", String(resolved));
+    setText("govProfileOpenCount", String(open));
+  }
+
   async function connectGovernmentWorkspace() {
     const config = window.CIVIC_SUPABASE_CONFIG;
     if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) { showWorkspaceError("Supabase is not configured. Live reports cannot be loaded."); return; }
@@ -207,7 +254,7 @@
     reports = reportRows.map(r => ({ id:r.id, publicId:r.public_id, databaseId:r.id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "", photos:photosByReport.get(r.id) || [] }));
     liveMode = true; supabaseClient = client; officialProfile = profile;
     const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
-    renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications();
+    renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications(); renderGovernmentProfile();
     const small = document.querySelector(".profile-mini small"); if (small) small.textContent = profile.role === "admin" ? "Administrator" : profile.department_id.toUpperCase() + " official";
   }
 
@@ -232,7 +279,7 @@
 
   document.addEventListener("click", async (event) => {
     const nav = event.target.closest("[data-page]");
-    if (nav) { navigate(nav.dataset.page); return; }
+    if (nav) { navigate(nav.dataset.page); if (nav.dataset.page === "profile") renderGovernmentProfile(); return; }
     const deptCard = event.target.closest("[data-department]");
     if (deptCard) { openDepartment(deptCard.dataset.department); return; }
     const deptLink = event.target.closest("[data-open-department]");
@@ -314,6 +361,19 @@
     }
   });
 
+  document.querySelectorAll("[data-gov-pref]").forEach(function(input) { input.addEventListener("change", saveGovernmentProfilePreferences); });
+  document.querySelector("#govProfileResetPassword")?.addEventListener("click", async () => {
+    const message = document.querySelector("#govProfileSecurityMessage");
+    const session = supabaseClient ? await supabaseClient.auth.getSession() : null;
+    const email = session && session.data && session.data.session ? session.data.session.user.email : null;
+    if (!email) { if (message) message.textContent = "Sign in with an authorized government account first."; return; }
+    const result = await supabaseClient.auth.resetPasswordForEmail(email);
+    if (message) message.textContent = result.error ? "Password reset could not be requested. Try again." : "If password reset is enabled, a secure reset email will arrive shortly.";
+  });
+  document.querySelector("#governmentSignOutProfile")?.addEventListener("click", async () => {
+    if (supabaseClient) await supabaseClient.auth.signOut();
+    window.location.reload();
+  });
   document.querySelector("#governmentSignOut")?.addEventListener("click", async () => {
     if (supabaseClient) await supabaseClient.auth.signOut();
     liveMode = false; officialProfile = null; supabaseClient = null;
@@ -322,6 +382,6 @@
 
   connectGovernmentWorkspace().finally(() => {
     init();
-    if (liveMode) { renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); }
+    if (liveMode) { renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); renderGovernmentProfile(); }
   });
 })();
