@@ -2097,7 +2097,7 @@ async function handleAnalyze(event) {
       const imageDataUrls = [];
       for (const file of imageFiles) imageDataUrls.push(await civicImageToDataUrl(file));
       const { data, error } = await client.functions.invoke('civic-ai-analyze-dev', {
-        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
+        body: { categoryKey: draft.categoryKey || 'other', description: draft.description, location: draft.location, locationCoordinates: draft.coordinates, hasPhoto: draft.hasPhoto, evidenceTypes, imageDataUrls }
       });
       if (error) throw error;
       if (!data || !data.categoryKey) throw new Error('The AI service returned an incomplete result.');
@@ -2107,7 +2107,7 @@ async function handleAnalyze(event) {
         summary: data.summary, recommendation: data.recommendation,
         signals: data.signals, skills: data.skills, autoDetected: data.autoDetected,
         suggestion: data.suggestion, categoryNeedsReview: data.categoryNeedsReview,
-        imageNotAnalyzed: data.imageNotAnalyzed, mediaRelevant: data.mediaRelevant, mediaSummary: data.mediaSummary, mediaMismatchReason: data.mediaMismatchReason, duplicate: data.duplicate,
+        imageNotAnalyzed: data.imageNotAnalyzed, mediaRelevant: data.mediaRelevant, mediaSummary: data.mediaSummary, mediaMismatchReason: data.mediaMismatchReason, duplicate: data.duplicate, duplicateMatches: data.duplicateMatches || [], duplicateCheckAvailable: data.duplicateCheckAvailable === true,
         engine: data.engine || 'groq'
       };
     } catch (error) {
@@ -2369,11 +2369,10 @@ function renderAnalysis() {
                 a.duplicate.title
               )}
 
-              (${a.duplicate.supporters}
-              supporters,
-              ${escapeHtml(
-                a.duplicate.status.toLowerCase()
-              )}).
+              ${escapeHtml(a.duplicate.status || "Reported")} ·
+              ${Number.isFinite(Number(a.duplicate.distanceMeters)) ? escapeHtml(String(a.duplicate.distanceMeters) + " m away") : "nearby"} ·
+              ${escapeHtml(String(a.duplicate.confidence || 0) + "% match")}.
+              <br>${escapeHtml(a.duplicate.reason || "The report appears similar based on location and details.")}
             </span>
 
             <span>
@@ -2451,6 +2450,7 @@ function renderAnalysis() {
       ${note}
       ${photoNote}
       ${categoryReviewNote}
+      ${a.duplicateCheckAvailable === false ? `<div class="ai-warning ai-evidence-warning"><i data-lucide="shield-alert"></i><div class="ai-warning-body"><strong>Duplicate check could not be completed</strong><span>Civic AI could not search the shared report database this time. Check the public Issues list before submitting; no-match results cannot be guaranteed.</span></div></div>` : ""}
 
       <div class="ai-grid">
 
@@ -2818,7 +2818,7 @@ async function loadPersistentCivicReports() {
       if (row.public_id) rowsById.set(row.public_id, { ...row, verification_required: true });
     }
     for (const row of ownRows) {
-      if (row.public_id) rowsById.set(row.public_id, row);
+      if (row.public_id) rowsById.set(row.public_id, { ...(rowsById.get(row.public_id) || {}), ...row });
     }
 
     const existing = new Set(issues.map((issue) => issue.id));
@@ -2842,6 +2842,7 @@ async function loadPersistentCivicReports() {
         reportedAt: row.reported_at ? new Date(row.reported_at).getTime() : Date.now()
       });
       issue.databaseId = row.id;
+      issue.statusHistory = Array.isArray(row.status_history) ? row.status_history : [];
       issue.persisted = true;
       if (row.resolved_at) issue.resolvedAt = new Date(row.resolved_at).getTime();
       issues.unshift(issue);
@@ -3685,6 +3686,12 @@ function renderIssueSheet(issue) {
       <p class="report-status-footnote">
         Progress advances when the Government Portal records a status update. Pending stages remain marked until then.
       </p>
+      <div class="report-status-history" aria-label="Recorded status updates">
+        <strong>Recorded updates</strong>
+        ${Array.isArray(issue.statusHistory) && issue.statusHistory.length
+          ? `<ol>${[...issue.statusHistory].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((event) => `<li><span>${escapeHtml(event.to_status || "Status updated")}</span><time>${escapeHtml(event.created_at ? new Date(event.created_at).toLocaleString() : "Time unavailable")}</time></li>`).join("")}</ol>`
+          : `<p>No official status changes have been recorded yet.</p>`}
+      </div>
 
     </div>
 
