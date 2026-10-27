@@ -76,8 +76,58 @@
         <section class="panel"><div class="panel-head"><div><h2>Recent activity</h2><p>Latest report activity.</p></div></div><div id="dashboardActivity"></div></section>
       </section>
       <section class="page" id="page-notifications" data-page-view="notifications">
-        <header class="page-heading"><div><p class="eyebrow">Updates</p><h1>Notifications</h1><p>Official notifications from real events will appear here when connected.</p></div></header>
-        <div id="notificationList"></div>
+        <header class="page-heading"><div><p class="eyebrow">PUBLIC INFORMATION</p><h1>Notices &amp; announcements</h1><p>Create, publish and manage official information for citizens. Only authorized government accounts can publish notices.</p></div><button class="btn btn-primary" id="toggleNoticeForm" type="button">＋ Create notice</button></header>
+        <section class="panel notice-form-panel" id="noticeFormPanel" hidden aria-labelledby="noticeFormHeading">
+          <div class="panel-head"><div><h2 id="noticeFormHeading">Create official notice</h2><p>Provide the issuing authority, public instructions, dates and contact details before publishing.</p></div><span class="notice-form-badge">OFFICIAL</span></div>
+          <form id="governmentNoticeForm" class="government-notice-form">
+            <input type="hidden" id="noticeId" name="noticeId">
+            <div class="notice-form-section">
+              <div class="notice-form-section-head"><span>01</span><div><h3>Notice identity</h3><p>Core information shown at the top of the citizen notice.</p></div></div>
+              <div class="notice-form-grid">
+                <label class="notice-field notice-field-wide" for="noticeTitle">Notice title <span>Required</span><input id="noticeTitle" name="title" required minlength="5" maxlength="180" placeholder="e.g. Temporary water supply interruption in Imphal West"></label>
+                <label class="notice-field" for="noticeReference">Reference / order number <small>Optional</small><input id="noticeReference" name="referenceNumber" maxlength="120" placeholder="e.g. MAHUD/2026/014"></label>
+                <label class="notice-field" for="noticeType">Notice type <span>Required</span><select id="noticeType" name="noticeType" required><option>Public Notice</option><option>Public Advisory</option><option>Service Update</option><option>Emergency Information</option><option>Event / Programme</option><option>Recruitment / Tender</option><option>Traffic / Transport</option><option>Public Health</option><option>Education Notice</option><option>Other</option></select></label>
+                <label class="notice-field" for="noticeDepartment">Issuing department <span>Required</span><select id="noticeDepartment" name="department" required></select><small>Government accounts are restricted to their assigned department.</small></label>
+                <label class="notice-field" for="noticeOfficer">Issuing officer / authority <small>Optional</small><input id="noticeOfficer" name="officer" maxlength="160" placeholder="Name, designation or authorized office"></label>
+                <label class="notice-field notice-field-wide" for="noticeSummary">Short summary <small>Optional · up to 600 characters</small><textarea id="noticeSummary" name="summary" rows="2" maxlength="600" placeholder="A brief summary citizens can scan before opening the full notice."></textarea></label>
+              </div>
+            </div>
+            <div class="notice-form-section">
+              <div class="notice-form-section-head"><span>02</span><div><h3>Official notice text</h3><p>Include the announcement, instructions, affected services and any action citizens must take.</p></div></div>
+              <label class="notice-field" for="noticeBody">Full notice / announcement <span>Required</span><textarea id="noticeBody" name="body" required minlength="20" maxlength="20000" rows="8" placeholder="Write the complete official notice. Include clear instructions and any relevant conditions."></textarea></label>
+            </div>
+            <div class="notice-form-section">
+              <div class="notice-form-section-head"><span>03</span><div><h3>Audience &amp; dates</h3><p>Help citizens understand who the notice applies to and when it takes effect.</p></div></div>
+              <div class="notice-form-grid">
+                <label class="notice-field" for="noticeAudience">Intended audience <span>Required</span><select id="noticeAudience" name="audienceType"><option>All citizens</option><option>District-wide</option><option>Locality-specific</option><option>Specific group</option></select></label>
+                <label class="notice-field" for="noticeDistrict">District <small>Optional</small><input id="noticeDistrict" name="district" maxlength="120" placeholder="e.g. Imphal West"></label>
+                <label class="notice-field" for="noticeLocality">Locality / affected area <small>Optional</small><input id="noticeLocality" name="locality" maxlength="180" placeholder="Ward, village, road or locality"></label>
+                <label class="notice-field" for="noticeAudienceDetails">Audience details / eligibility <small>Optional</small><input id="noticeAudienceDetails" name="audienceDetails" maxlength="500" placeholder="e.g. residents of the listed wards"></label>
+                <label class="notice-field" for="noticeIssuedAt">Issue date <span>Required</span><input id="noticeIssuedAt" name="issuedAt" type="date" required></label>
+                <label class="notice-field" for="noticeEffectiveAt">Effective from <small>Optional</small><input id="noticeEffectiveAt" name="effectiveAt" type="date"></label>
+                <label class="notice-field" for="noticeExpiresAt">Expiry / valid until <small>Optional</small><input id="noticeExpiresAt" name="expiresAt" type="date"></label>
+                <label class="notice-check-field" for="noticePinned"><input id="noticePinned" name="isPinned" type="checkbox"><span><strong>Pin this notice</strong><small>Place it near the top of the citizen notice feed.</small></span></label>
+              </div>
+            </div>
+            <div class="notice-form-section">
+              <div class="notice-form-section-head"><span>04</span><div><h3>Attachments &amp; official contact</h3><p>Provide a link to the signed order, PDF, application page or official source.</p></div></div>
+              <div class="notice-form-grid">
+                <label class="notice-field" for="noticeAttachmentLabel">Attachment label <small>Optional</small><input id="noticeAttachmentLabel" name="attachmentLabel" maxlength="160" placeholder="e.g. Download signed order (PDF)"></label>
+                <label class="notice-field" for="noticeAttachmentUrl">Attachment / official URL <small>Optional · HTTPS preferred</small><input id="noticeAttachmentUrl" name="attachmentUrl" type="url" placeholder="https://official.gov.in/document.pdf"></label>
+                <label class="notice-field" for="noticeContactOffice">Contact office / help desk <small>Optional</small><input id="noticeContactOffice" name="contactOffice" maxlength="160" placeholder="Office or public help desk"></label>
+                <label class="notice-field" for="noticeContactPhone">Contact phone <small>Optional</small><input id="noticeContactPhone" name="contactPhone" type="tel" maxlength="50" placeholder="Official public contact number"></label>
+                <label class="notice-field" for="noticeContactEmail">Contact email <small>Optional</small><input id="noticeContactEmail" name="contactEmail" type="email" maxlength="254" placeholder="office@example.gov.in"></label>
+              </div>
+            </div>
+            <p id="noticeFormMessage" class="notice-form-message" role="status" aria-live="polite"></p>
+            <div class="notice-form-actions"><button class="btn" id="cancelNoticeForm" type="button">Cancel</button><button class="btn" type="submit" data-notice-action="draft">Save draft</button><button class="btn btn-primary" type="submit" data-notice-action="publish">Publish notice</button></div>
+          </form>
+        </section>
+        <section class="panel notice-management-panel">
+          <div class="panel-head"><div><h2>Notice register</h2><p>Review notices created by your department and their publication status.</p></div></div>
+          <div class="notice-register-tools"><input id="noticeSearch" class="search-input" type="search" placeholder="Search notices, reference or area…" aria-label="Search notices"><select id="noticeStatusFilter" class="filter-select" aria-label="Filter notices"><option value="all">All notices</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
+          <div id="notificationList" class="notice-register-list" aria-live="polite"><div class="empty-state">Sign in with an authorized government account to manage notices.</div></div>
+        </section>
       </section>
       <section class="page" id="page-profile" data-page-view="profile">
 <header class="page-heading"><div><p class="eyebrow">OFFICIAL ACCOUNT CENTRE</p><h1>Profile &amp; settings</h1><p>Manage official identity, department context, alerts and account security.</p></div><span class="profile-live-badge" id="govProfileAccessBadge">Sign-in required</span></header>
