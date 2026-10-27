@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="government-preview.css?v=20261027-dashboard-map1">
+<link rel="stylesheet" href="government-preview.css?v=20261028-ai-summary-hotspots1">
 </head>
 <body>
 <div class="app-shell">
@@ -69,6 +69,10 @@
           <div class="gov-map-legend" aria-label="Map status legend"><span><i class="legend-dot reported"></i>Reported</span><span><i class="legend-dot verified"></i>Verified</span><span><i class="legend-dot progress"></i>In progress</span><span><i class="legend-dot resolved"></i>Resolved</span></div>
         </section>
         <div class="grid analytics-grid"><section class="panel"><div class="panel-head"><div><h2>Reports by status</h2><p>Current report distribution.</p></div></div><div id="statusAnalytics"></div></section><section class="panel"><div class="panel-head"><div><h2>Reports by department</h2><p>Counts calculated from genuine database records.</p></div></div><div id="departmentAnalytics"></div></section></div>
+        <section class="panel gov-ai-summary-panel" aria-labelledby="govAiSummaryTitle">
+          <div class="gov-ai-summary-head"><span class="gov-ai-summary-icon" aria-hidden="true">✧</span><div><h2 id="govAiSummaryTitle">Civic issue summary</h2><p>Patterns identified from reports in your authorized workspace.</p></div></div>
+          <div id="governmentAiSummary" class="gov-ai-summary-copy" aria-live="polite"><p>Summary will appear after authorized report data loads.</p></div>
+        </section>
         <section class="panel"><div class="panel-head"><div><h2>Recent activity</h2><p>Latest report activity.</p></div></div><div id="dashboardActivity"></div></section>
       </section>
       <section class="page" id="page-notifications" data-page-view="notifications">
@@ -96,6 +100,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="government-preview.js?v=20261027-dashboard-map1" defer></script>
+<script src="government-preview.js?v=20261028-ai-summary-hotspots1" defer></script>
 </body>
 </html>
