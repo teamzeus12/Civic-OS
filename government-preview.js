@@ -20,6 +20,7 @@
   // Real records only; populated after authorized Supabase access.
   let reports = [];
   let officialNotices = [];
+  let governmentNoticeLoadError = "";
   let noticeFilter = "all";
   let noticeSearchQuery = "";
   let editingNoticeId = null;
@@ -308,6 +309,10 @@
       target.innerHTML = '<div class="empty-state">Sign in with an authorized government account to view or publish official notices. Citizen accounts cannot publish government announcements.</div>';
       return;
     }
+    if (governmentNoticeLoadError) {
+      target.innerHTML = '<div class="empty-state">Notices could not be loaded. Check that the civic_notices database migration is installed and that your account has department permissions.</div>';
+      return;
+    }
     const q = noticeSearchQuery.trim().toLowerCase();
     const list = officialNotices.filter((notice) => {
       const matchesStatus = noticeFilter === "all" || notice.status === noticeFilter;
@@ -436,6 +441,7 @@
   async function loadGovernmentNotices() {
     if (!supabaseClient || !liveMode || !officialProfile) {
       officialNotices = [];
+      governmentNoticeLoadError = "";
       renderNotifications();
       return;
     }
@@ -447,11 +453,15 @@
     if (error) {
       console.error("Government notices could not be loaded:", error);
       officialNotices = [];
-      const target = $("#notificationList");
-      if (target) target.innerHTML = '<div class="empty-state">Notices could not be loaded. Check the database migration and your department permissions.</div>';
+      governmentNoticeLoadError = error.message || "Notice feed unavailable";
+      renderNotifications();
       return;
     }
-    officialNotices = data || [];
+    governmentNoticeLoadError = "";
+    const scopedRows = data || [];
+    officialNotices = officialProfile.role === "admin"
+      ? scopedRows
+      : scopedRows.filter((notice) => notice.issuing_department === officialProfile.department_id || notice.created_by === officialProfile.id);
     renderNotifications();
   }
 
