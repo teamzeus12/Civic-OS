@@ -235,6 +235,49 @@
     }).join("");
     const departmentCounts = departments.map((dept) => ({ dept, count: countDepartment(dept.id) })).filter((item) => item.count).sort((a, b) => b.count - a.count);
     deptTarget.innerHTML = departmentCounts.map(({ dept, count }) => `<div class="bar-row"><span>${escapeHtml(dept.short)}</span><div class="bar-track"><div class="bar-fill" style="width:${reports.length ? count / reports.length * 100 : 0}%"></div></div><strong>${count}</strong></div>`).join("");
+
+    const summaryTarget = $("#governmentAiSummary");
+    if (summaryTarget) {
+      const openReports = reports.filter((report) => report.status !== "Resolved");
+      const categoryCounts = new Map();
+      reports.forEach((report) => {
+        const category = String(report.category || "").trim();
+        if (category) categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+      });
+      const topCategory = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+      const openByDepartment = new Map();
+      openReports.forEach((report) => {
+        const key = report.department || "other";
+        openByDepartment.set(key, (openByDepartment.get(key) || 0) + 1);
+      });
+      const topDepartment = [...openByDepartment.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+      const openByLocation = new Map();
+      openReports.forEach((report) => {
+        const location = String(report.location || "").trim();
+        if (!location || /^(location not provided|location recorded|location not specified|unknown)$/i.test(location)) return;
+        const key = location.toLocaleLowerCase();
+        const current = openByLocation.get(key);
+        if (current) current.count++;
+        else openByLocation.set(key, { name: location, count: 1 });
+      });
+      const topLocation = [...openByLocation.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))[0];
+      const summaryParts = [];
+      if (topCategory && reports.length) {
+        const label = topCategory[0].replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+        summaryParts.push(`<strong>${escapeHtml(label)}</strong> is the most reported category (${Math.round(topCategory[1] / reports.length * 100)}% of reports).`);
+      }
+      if (topDepartment) {
+        const deptName = deptById(topDepartment[0])?.short || topDepartment[0];
+        summaryParts.push(`<strong>${escapeHtml(deptName)}</strong> carries the largest open workload with ${topDepartment[1]} active ${topDepartment[1] === 1 ? "report" : "reports"}.`);
+      }
+      if (topLocation) {
+        summaryParts.push(`<strong>${escapeHtml(topLocation.name)}</strong> is the current hotspot with ${topLocation.count} open ${topLocation.count === 1 ? "report" : "reports"}.`);
+      }
+      summaryTarget.innerHTML = summaryParts.length
+        ? `<p>${summaryParts.join(" ")}</p><p class="gov-ai-summary-note">This summary uses only genuine reports available within your authorized government data scope. Officials determine the appropriate response and timing.</p>`
+        : '<div class="gov-ai-summary-empty">No report patterns are available yet. The summary will appear after genuine reports load.</div>';
+    }
+
     $("#dashboardActivity").innerHTML = reports.slice().reverse().slice(0, 5).map((report) => `<div class="activity-item"><span class="activity-dot"></span><div><strong>${escapeHtml(report.title)}</strong><p>${escapeHtml(deptById(report.department)?.short || "Other")} · ${escapeHtml(report.location)} · ${escapeHtml(report.status)}</p></div></div>`).join("");
     renderGovernmentMap();
   }
