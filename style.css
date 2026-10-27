@@ -7697,39 +7697,52 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
 @media (prefers-reduced-motion:reduce) { .organisation-friend-option { transition:none; } }
 
 
-/* Keep organisation invitee names inside their cards on narrow screens. */
+/* Match organisation invite rows to the existing Find People cards. */
+.organisation-friend-picker { min-width:0; }
 .organisation-friend-option {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  overflow: hidden;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  gap:12px;
+  padding:14px;
+  overflow:hidden;
+  text-align:left;
+  cursor:pointer;
+  background:transparent;
+}
+.organisation-friend-option input {
+  flex:0 0 18px;
+  width:18px;
+  height:18px;
+  margin:0;
 }
 .organisation-friend-option > .avatar {
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
 }
-.organisation-friend-option > span:last-child {
-  flex: 1 1 auto;
-  width: 0;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  word-break: normal;
+.organisation-friend-option > .person-body {
+  flex:1 1 auto;
+  width:auto;
+  min-width:0;
+  overflow-wrap:anywhere;
 }
-.organisation-friend-option strong,
-.organisation-friend-option small {
-  display: block;
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
+.organisation-friend-option .person-name,
+.organisation-friend-option .person-role {
+  display:block;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
 }
-@media (max-width: 600px) {
-  .organisation-friend-option {
-    gap: 9px;
-    padding: 12px;
-  }
-  .organisation-friend-option > span:last-child {
-    flex: 1 1 0;
-  }
+.organisation-friend-option:has(input:checked) {
+  border-color:var(--accent,#3ee08f);
+  background:color-mix(in srgb,var(--accent,#3ee08f) 9%,transparent);
+}
+.organisation-friend-option:focus-within {
+  outline:2px solid color-mix(in srgb,var(--accent,#3ee08f) 65%,transparent);
+  outline-offset:2px;
+}
+@media (max-width:600px) {
+  .organisation-friend-option { gap:9px; padding:12px; }
 }
