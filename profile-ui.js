@@ -91,7 +91,8 @@
     name = name || "Civic OS member";
     $("citizenDisplayName").textContent = name;
     $("citizenEmail").textContent = user.email || "Email unavailable";
-    $("citizenAvatar").textContent = name.split(/\s+/).map((part) => part[0]).slice(0,2).join("").toUpperCase();
+    const initials = name.split(/\s+/).map((part) => part[0]).slice(0,2).join("").toUpperCase();
+    await loadAvatar(client, user.id, !profileResult.error ? profileResult.data?.avatar_path : null, initials);
     $("citizenEmailBadge").textContent = user.email_confirmed_at ? "✓ Email confirmed" : "Email confirmation pending";
     $("citizenVerificationBadge").textContent = "Resident verification not completed";
     $("profileFullName").value = name === "Civic OS member" ? "" : name;
@@ -159,7 +160,7 @@
       const session = await window.civicSupabase?.auth.getSession();
       if (!session?.data?.session?.user) { $("profileSaveMessage").textContent = "Sign in before sharing your civic profile summary."; activateTab("overview"); return; }
       const name = $("citizenDisplayName")?.textContent || "Civic OS member";
-      const summary = name + " on Civic OS\\nCivic reports submitted: " + ($("profileReportCount")?.textContent || "—") + "\\nReports marked resolved: " + ($("profileResolvedCount")?.textContent || "—") + "\\nReport. Connect. Resolve.\\n" + window.location.href.split("#")[0];
+      const summary = name + " on Civic OS\nCivic reports submitted: " + ($("profileReportCount")?.textContent || "—") + "\nReports marked resolved: " + ($("profileResolvedCount")?.textContent || "—") + "\nReport. Connect. Resolve.\n" + window.location.href.split("#")[0];
       try {
         if (navigator.share) await navigator.share({ title: "My Civic OS profile", text: summary });
         else if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(summary); $("profileSaveMessage").textContent = "A privacy-safe profile summary was copied to your clipboard."; }
