@@ -526,9 +526,15 @@ const state = {
   mySkills: new Set(),
   joinedMissions: new Set(),
   communityMembers: [],
+  communityFriends: [],
+  communityRequests: [],
+  communityView: "find",
+  communitySearchQuery: "",
   communityDirectoryLoading: false,
   communityDirectoryLoaded: false,
   communityDirectoryError: false,
+  organisations: [],
+  organisationInvites: [],
   supported: new Set(),
   openIssueId: null,
   civicAiOpen: false,
@@ -1219,7 +1225,11 @@ function renderScreen(id) {
     renderCivicActions();
     renderPeople();
     loadCommunityDirectory();
+    loadOrganisations();
     setCommunityDirectoryTab("people");
+  }
+  if (id === "createOrganisationScreen") {
+    loadOrganisationFriendPicker();
   }
 
   refreshIcons();
@@ -5073,49 +5083,83 @@ function renderMissions() {
   refreshIcons();
 }
 
+function setPeopleView(view) {
+  state.communityView = ["find", "friends", "requests"].includes(view) ? view : "find";
+  document.querySelectorAll("[data-people-view]").forEach(button => {
+    const active = button.dataset.peopleView === state.communityView;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const searchForm = document.getElementById("communitySearchForm");
+  if (searchForm) searchForm.hidden = state.communityView !== "find";
+  const hint = document.getElementById("communityPeopleHint");
+  if (hint) hint.textContent = state.communityView === "find"
+    ? "Search citizen accounts by display name. Email addresses and private account details are never shown."
+    : state.communityView === "friends"
+      ? "Your accepted friend connections. Friends can be invited when you form an organisation."
+      : "Incoming requests need your decision. Outgoing requests remain pending until the other citizen responds.";
+  renderPeople();
+  if (state.communityView === "friends") loadMyFriends();
+  else if (state.communityView === "requests") loadFriendRequests();
+  else loadCommunityDirectory(true);
+}
+
 function renderPeople() {
   const grid = $("#peopleGrid");
   if (!grid) return;
-
-  if (state.communityDirectoryLoading && !state.communityDirectoryLoaded) {
-    grid.innerHTML = `<div class="community-empty glass"><span class="community-empty-icon"><i data-lucide="loader-circle"></i></span><strong>Loading people</strong><p>Checking recently active citizen accounts…</p></div>`;
-    refreshIcons();
+  if (state.communityDirectoryLoading) {
+    grid.innerHTML = `<div class="community-empty glass"><strong>Loading…</strong><p>Retrieving citizen connections securely.</p></div>`;
     return;
   }
-
   if (state.communityDirectoryError) {
-    grid.innerHTML = `<div class="community-empty glass"><strong>People directory unavailable</strong><p>We couldn't load the directory. Try refreshing in a moment.</p></div>`;
+    grid.innerHTML = `<div class="community-empty glass"><strong>Could not load this view</strong><p>Refresh and try again. If the problem continues, the database migration may not be available yet.</p></div>`;
+    return;
+  }
+  let rows = [];
+  if (state.communityView === "friends") rows = state.communityFriends || [];
+  else if (state.communityView === "requests") rows = state.communityRequests || [];
+  else rows = state.communityMembers || [];
+
+  if (!rows.length) {
+    const message = state.communityView === "friends"
+      ? "No friends yet. Search for people and send a friend request."
+      : state.communityView === "requests"
+        ? "You have no pending friend requests."
+        : "No matching citizens found. Try another name.";
+    grid.innerHTML = `<div class="community-empty glass"><span class="community-empty-icon"><i data-lucide="users-round"></i></span><strong>${escapeHtml(message)}</strong></div>`;
     refreshIcons();
     return;
   }
 
-  const members = state.communityMembers || [];
-  if (!members.length) {
-    grid.innerHTML = `<div class="community-empty glass"><span class="community-empty-icon"><i data-lucide="users"></i></span><strong>No recently active members to show yet</strong><p>As citizens sign in and have a display name on their profile, they will appear here. Email addresses and account details are never shown.</p></div>`;
-    refreshIcons();
-    return;
-  }
-
-  grid.innerHTML = members.map((person, i) => {
+  grid.innerHTML = rows.map((person, i) => {
     const name = String(person.display_name || "").trim();
     if (!name) return "";
-    return `
-      <article class="person-card glass">
-        <span class="avatar tone-${i % 4}" aria-hidden="true">${initials(name)}</span>
-        <div class="person-body">
-          <span class="person-name">${escapeHtml(name)}</span>
-          <span class="person-role">${escapeHtml(person.activity_label || "Recently active on Civic OS")}</span>
-        </div>
-      </article>
-    `;
+    let actions = "";
+    if (state.communityView === "find") {
+      const relation = person.relationship_status || "none";
+      if (relation === "friends") actions = `<span class="friend-state"><i data-lucide="check-check"></i> Friends</span>`;
+      else if (relation === "request_sent") actions = `<button type="button" class="btn btn-ghost btn-sm" disabled><i data-lucide="clock"></i> Request sent</button>`;
+      else if (relation === "request_received") actions = `<button type="button" class="btn btn-primary btn-sm" data-friend-action="accept" data-request-id="${escapeHtml(person.request_id || "")}" data-user-id="${escapeHtml(person.user_id || "")}"><i data-lucide="user-check"></i> Accept request</button>`;
+      else actions = `<button type="button" class="btn btn-ghost btn-sm" data-friend-action="send" data-user-id="${escapeHtml(person.user_id || "")}"><i data-lucide="user-plus"></i> Add friend</button>`;
+    } else if (state.communityView === "friends") {
+      actions = `<span class="friend-state"><i data-lucide="check-check"></i> Friend</span>`;
+    } else if (person.direction === "incoming") {
+      actions = `<div class="friend-request-actions"><button type="button" class="btn btn-primary btn-sm" data-friend-action="accept" data-request-id="${escapeHtml(person.request_id)}"><i data-lucide="check"></i> Accept</button><button type="button" class="btn btn-ghost btn-sm" data-friend-action="decline" data-request-id="${escapeHtml(person.request_id)}">Decline</button></div>`;
+    } else {
+      actions = `<span class="friend-state"><i data-lucide="clock"></i> Sent by you · Pending</span>`;
+    }
+    const subtitle = state.communityView === "requests"
+      ? (person.direction === "incoming" ? "Sent you a friend request" : "Friend request sent")
+      : state.communityView === "friends" ? "Connected on Civic OS" : "Civic OS citizen";
+    return `<article class="person-card glass"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(name)}</span><div class="person-body"><span class="person-name">${escapeHtml(name)}</span><span class="person-role">${escapeHtml(subtitle)}</span></div><div class="person-actions">${actions}</div></article>`;
   }).join("");
   refreshIcons();
 }
 
 async function loadCommunityDirectory(force = false) {
   if (state.communityDirectoryLoading) return;
+  if (state.communityView !== "find") return;
   if (state.communityDirectoryLoaded && !force) return;
-
   const client = window.civicSupabase;
   if (!client) {
     state.communityDirectoryError = true;
@@ -5123,21 +5167,16 @@ async function loadCommunityDirectory(force = false) {
     renderPeople();
     return;
   }
-
   state.communityDirectoryLoading = true;
   state.communityDirectoryError = false;
   renderPeople();
-
   try {
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
     if (sessionError) throw sessionError;
-    if (!sessionData.session?.user) {
-      state.communityMembers = [];
-      state.communityDirectoryLoaded = true;
-      return;
-    }
-
-    const { data, error } = await client.rpc("civic_get_recent_members", { p_limit: 12 });
+    if (!sessionData.session?.user) throw new Error("Sign in to find people.");
+    const query = String(document.getElementById("communitySearchInput")?.value || state.communitySearchQuery || "").trim().slice(0, 80);
+    state.communitySearchQuery = query;
+    const { data, error } = await client.rpc("civic_search_members", { p_search: query, p_limit: 50 });
     if (error) throw error;
     state.communityMembers = Array.isArray(data) ? data.filter(person => String(person.display_name || "").trim()) : [];
     state.communityDirectoryLoaded = true;
@@ -5152,6 +5191,145 @@ async function loadCommunityDirectory(force = false) {
   }
 }
 
+async function loadMyFriends() {
+  const client = window.civicSupabase;
+  if (!client) return;
+  state.communityDirectoryLoading = true; state.communityDirectoryError = false; renderPeople();
+  try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) throw new Error("Sign in to view friends.");
+    const { data, error } = await client.rpc("civic_get_my_friends");
+    if (error) throw error;
+    state.communityFriends = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Could not load friends:", error?.message || error);
+    state.communityDirectoryError = true;
+  } finally { state.communityDirectoryLoading = false; renderPeople(); }
+}
+
+async function loadFriendRequests() {
+  const client = window.civicSupabase;
+  if (!client) return;
+  state.communityDirectoryLoading = true; state.communityDirectoryError = false; renderPeople();
+  try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) throw new Error("Sign in to view friend requests.");
+    const { data, error } = await client.rpc("civic_get_friend_requests");
+    if (error) throw error;
+    state.communityRequests = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Could not load friend requests:", error?.message || error);
+    state.communityDirectoryError = true;
+  } finally { state.communityDirectoryLoading = false; renderPeople(); }
+}
+
+async function handleFriendAction(button) {
+  const client = window.civicSupabase;
+  if (!client) { toast("Civic OS connection is unavailable.", "triangle-alert"); return; }
+  const action = button.dataset.friendAction;
+  button.disabled = true;
+  try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) {
+      setCivicAuthMode("signin"); openCivicAuth(); civicAuthMessage("Sign in to connect with other citizens.");
+      return;
+    }
+    let result;
+    if (action === "send") {
+      result = await client.rpc("civic_send_friend_request", { p_recipient_id: button.dataset.userId });
+    } else {
+      result = await client.rpc("civic_respond_friend_request", { p_request_id: button.dataset.requestId, p_accept: action === "accept" });
+    }
+    if (result.error) throw result.error;
+    toast(action === "send" ? "Friend request sent." : action === "accept" ? "Friend request accepted." : "Friend request declined.", "users-round");
+    state.communityDirectoryLoaded = false;
+    if (state.communityView === "friends") await loadMyFriends();
+    else if (state.communityView === "requests") await loadFriendRequests();
+    else await loadCommunityDirectory(true);
+  } catch (error) {
+    console.error("Friend action failed:", error?.message || error);
+    toast(error?.message || "That friend action could not be completed.", "triangle-alert");
+    button.disabled = false;
+  }
+}
+
+async function loadOrganisationFriendPicker() {
+  const picker = document.getElementById("organisationFriendPicker");
+  if (!picker) return;
+  const client = window.civicSupabase;
+  if (!client) { picker.innerHTML = '<p class="block-subtitle">Civic OS connection is unavailable.</p>'; return; }
+  picker.innerHTML = '<p class="block-subtitle">Loading your friends…</p>';
+  try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) throw new Error("Sign in to form an organisation.");
+    const { data, error } = await client.rpc("civic_get_my_friends");
+    if (error) throw error;
+    const friends = Array.isArray(data) ? data : [];
+    if (!friends.length) {
+      picker.innerHTML = '<div class="community-empty glass"><strong>You have no accepted friends yet</strong><p>Go to People → Find people to send friend requests. You can form the organisation now and invite friends later only if a later invitation feature is added.</p></div>';
+      return;
+    }
+    picker.innerHTML = friends.map((friend, i) => `<label class="organisation-friend-option"><input type="checkbox" name="organisationInvitees" value="${escapeHtml(friend.friend_id)}"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(friend.display_name || "Citizen")}</span><span><strong>${escapeHtml(friend.display_name || "Civic OS citizen")}</strong><small>Send an organisation invitation</small></span></label>`).join("");
+  } catch (error) {
+    console.error("Could not load organisation invite list:", error?.message || error);
+    picker.innerHTML = '<p class="block-subtitle">Could not load your friends. Refresh and try again.</p>';
+  }
+}
+
+async function loadOrganisations() {
+  const list = document.getElementById("organisationsList");
+  const invites = document.getElementById("organisationInvitations");
+  if (!list || !invites) return;
+  const client = window.civicSupabase;
+  if (!client) return;
+  list.innerHTML = '<p class="block-subtitle">Loading organisations…</p>';
+  invites.innerHTML = '<p class="block-subtitle">Checking invitations…</p>';
+  try {
+    const [orgResult, inviteResult] = await Promise.all([
+      client.rpc("civic_get_organisations"),
+      client.rpc("civic_get_organisation_invites")
+    ]);
+    if (orgResult.error) throw orgResult.error;
+    if (inviteResult.error) throw inviteResult.error;
+    state.organisations = Array.isArray(orgResult.data) ? orgResult.data : [];
+    state.organisationInvites = Array.isArray(inviteResult.data) ? inviteResult.data : [];
+    invites.innerHTML = state.organisationInvites.length ? state.organisationInvites.map(invite => `
+      <article class="organisation-card glass"><div><strong>${escapeHtml(invite.organisation_name)}</strong><p>${escapeHtml(invite.organisation_description)}</p><small>Invitation received</small></div><div class="friend-request-actions"><button type="button" class="btn btn-primary btn-sm" data-org-invite-action="accept" data-membership-id="${escapeHtml(invite.membership_id)}"><i data-lucide="check"></i> Accept</button><button type="button" class="btn btn-ghost btn-sm" data-org-invite-action="decline" data-membership-id="${escapeHtml(invite.membership_id)}">Decline</button></div></article>`).join("") : '<p class="block-subtitle">No pending organisation invitations.</p>';
+    list.innerHTML = state.organisations.length ? state.organisations.map(org => {
+      const status = org.my_status === "active" ? "Member" : org.my_status === "invited" ? "Invitation pending" : "Open organisation";
+      return `<article class="organisation-card glass"><div><span class="organisation-card-meta">${escapeHtml(org.organisation_type)} · ${escapeHtml(org.focus_area)}</span><strong>${escapeHtml(org.name)}</strong><p>${escapeHtml(org.description)}</p><small><i data-lucide="map-pin"></i> ${escapeHtml(org.location)} · ${Number(org.member_count) || 0} member(s)</small></div><span class="organisation-status">${escapeHtml(status)}</span></article>`;
+    }).join("") : '<div class="community-empty glass"><strong>No organisations have been formed yet</strong><p>Start one around a shared civic goal and invite your friends.</p></div>';
+    refreshIcons();
+  } catch (error) {
+    console.error("Could not load organisations:", error?.message || error);
+    list.innerHTML = '<p class="block-subtitle">Organisations could not be loaded. Refresh the page and try again.</p>';
+    invites.innerHTML = '<p class="block-subtitle">Invitations could not be loaded.</p>';
+  }
+}
+
+async function handleOrganisationInvite(button) {
+  const client = window.civicSupabase;
+  if (!client) return;
+  button.disabled = true;
+  try {
+    const { error } = await client.rpc("civic_respond_organisation_invitation", {
+      p_membership_id: button.dataset.membershipId,
+      p_accept: button.dataset.orgInviteAction === "accept"
+    });
+    if (error) throw error;
+    toast(button.dataset.orgInviteAction === "accept" ? "You joined the organisation." : "Invitation declined.", "users-round");
+    await loadOrganisations();
+  } catch (error) {
+    console.error("Organisation invitation response failed:", error?.message || error);
+    toast(error?.message || "Could not respond to this invitation.", "triangle-alert");
+    button.disabled = false;
+  }
+}
+
 function renderCommunity() {
   renderPeople();
   loadCommunityDirectory();
@@ -5163,9 +5341,7 @@ function setCommunityDirectoryTab(tab) {
   const organisationsTab = document.getElementById("communityOrganisationsTab");
   const peoplePanel = document.getElementById("communityPeoplePanel");
   const organisationsPanel = document.getElementById("communityOrganisationsPanel");
-
   if (!peopleTab || !organisationsTab || !peoplePanel || !organisationsPanel) return;
-
   const peopleSelected = selected === "people";
   peopleTab.classList.toggle("is-active", peopleSelected);
   organisationsTab.classList.toggle("is-active", !peopleSelected);
@@ -6434,11 +6610,20 @@ function bindEvents() {
         return;
       }
 
+      const friendActionButton = event.target.closest("[data-friend-action]");
+      if (friendActionButton) { handleFriendAction(friendActionButton); return; }
+
+      const orgInviteButton = event.target.closest("[data-org-invite-action]");
+      if (orgInviteButton) { handleOrganisationInvite(orgInviteButton); return; }
+
+      const peopleViewButton = event.target.closest("[data-people-view]");
+      if (peopleViewButton) { setPeopleView(peopleViewButton.dataset.peopleView); return; }
+
       const createOrganisationButton = event.target.closest("#createOrganisationBtn");
-      if (createOrganisationButton) {
-        toast("Organisation creation will be enabled in the next community phase. No organisation has been created.", "users-round");
-        return;
-      }
+      if (createOrganisationButton) { showScreen("createOrganisationScreen"); loadOrganisationFriendPicker(); return; }
+
+      const refreshFriendsButton = event.target.closest("#refreshOrganisationFriends");
+      if (refreshFriendsButton) { loadOrganisationFriendPicker(); return; }
 
       const issueBtn =
         event.target.closest(
@@ -7424,6 +7609,65 @@ function bindEvents() {
       }
     });
   });
+  const communitySearchForm = document.getElementById("communitySearchForm");
+  if (communitySearchForm) {
+    communitySearchForm.addEventListener("submit", event => {
+      event.preventDefault();
+      state.communitySearchQuery = String(document.getElementById("communitySearchInput")?.value || "").trim();
+      state.communityDirectoryLoaded = false;
+      loadCommunityDirectory(true);
+    });
+  }
+
+  const createOrganisationForm = document.getElementById("createOrganisationForm");
+  if (createOrganisationForm) {
+    createOrganisationForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const client = window.civicSupabase;
+      const submit = createOrganisationForm.querySelector('button[type="submit"]');
+      if (!client) { toast("Civic OS connection is unavailable.", "triangle-alert"); return; }
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError || !sessionData.session?.user) {
+        setCivicAuthMode("signin"); openCivicAuth(); civicAuthMessage("Sign in to form an organisation.");
+        return;
+      }
+      const selected = [...createOrganisationForm.querySelectorAll('input[name="organisationInvitees"]:checked')].map(input => input.value);
+      if (selected.length > 30) { toast("Choose up to 30 friends to invite.", "triangle-alert"); return; }
+      const payload = {
+        p_name: document.getElementById("organisationName")?.value.trim(),
+        p_organisation_type: document.getElementById("organisationType")?.value,
+        p_focus_area: document.getElementById("organisationFocus")?.value,
+        p_location: document.getElementById("organisationLocation")?.value.trim(),
+        p_description: document.getElementById("organisationDescription")?.value.trim(),
+        p_invited_user_ids: selected
+      };
+      if (submit) { submit.disabled = true; submit.innerHTML = '<i data-lucide="loader-circle"></i> Creating…'; }
+      try {
+        const { data, error } = await client.rpc("civic_create_organisation", payload);
+        if (error) throw error;
+        if (!data) throw new Error("The organisation was not saved.");
+        createOrganisationForm.reset();
+        toast(selected.length ? "Organisation created and invitations sent." : "Organisation created successfully.", "users-round");
+        showScreen("actionsScreen");
+        setCommunityDirectoryTab("organisations");
+        await loadOrganisations();
+      } catch (error) {
+        console.error("Organisation creation failed:", error?.message || error);
+        toast(error?.message || "Could not create the organisation.", "triangle-alert");
+      } finally {
+        if (submit) { submit.disabled = false; submit.innerHTML = '<i data-lucide="users-round"></i> Create organisation'; refreshIcons(); }
+      }
+    });
+  }
+
+  const cancelCreateOrganisation = document.getElementById("cancelCreateOrganisation");
+  if (cancelCreateOrganisation) cancelCreateOrganisation.addEventListener("click", () => {
+    const form = document.getElementById("createOrganisationForm");
+    if (form) form.reset();
+    showScreen("actionsScreen");
+    setCommunityDirectoryTab("organisations");
+  });
+
   /* =======================================================
      CREATE CIVIC ACTIVITY
      ======================================================= */
