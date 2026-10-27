@@ -2348,6 +2348,10 @@ function renderAnalysis() {
       `
       : "";
 
+  const duplicateOverrideNote = state.duplicateOverride
+    ? '<p class="ai-note">You marked this as a different incident. Check the details carefully before submitting.</p>'
+    : '<button type="button" class="link-btn" data-action="confirm-distinct-issue">This is a different issue — continue</button>';
+
   const duplicate =
     a.duplicate
       ? `
@@ -2391,7 +2395,7 @@ function renderAnalysis() {
                 View existing report
                 <i data-lucide="arrow-right"></i>
               </button>
-              ${dupActions}
+              ${duplicateOverrideNote}
             </span>
 
           </div>
