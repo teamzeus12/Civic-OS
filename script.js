@@ -2348,61 +2348,43 @@ function renderAnalysis() {
       `
       : "";
 
+  const duplicateCandidates = Array.isArray(a.duplicateMatches) && a.duplicateMatches.length
+    ? a.duplicateMatches
+    : (a.duplicate ? [a.duplicate] : []);
   const duplicateOverrideNote = state.duplicateOverride
     ? '<p class="ai-note">You marked this as a different incident. Check the details carefully before submitting.</p>'
     : '<button type="button" class="link-btn" data-action="confirm-distinct-issue">This is a different issue — continue</button>';
 
-  const duplicate =
-    a.duplicate
-      ? `
+  const duplicate = duplicateCandidates.length
+    ? `
         <div class="ai-warning">
-
           <i data-lucide="copy-check"></i>
-
           <div class="ai-warning-body">
-
-            <span>
-              <strong>
-                Possible duplicate:
-              </strong>
-
-              ${escapeHtml(
-                a.duplicate.id
-              )}
-
-              ·
-
-              ${escapeHtml(
-                a.duplicate.title
-              )}
-
-              ${escapeHtml(a.duplicate.status || "Reported")} ·
-              ${Number.isFinite(Number(a.duplicate.distanceMeters)) ? escapeHtml(String(a.duplicate.distanceMeters) + " m away") : "nearby"} ·
-              ${escapeHtml(Number(a.duplicate.confidence) > 0 ? String(a.duplicate.confidence) + "% match" : "keyword similarity")}.
-              <br>${escapeHtml(a.duplicate.reason || "The report appears similar based on location and details.")}
-            </span>
-
-            <span>
-
-              <button
-                type="button"
-                class="link-btn"
-                data-action="view-duplicate"
-                data-id="${escapeHtml(
-                  a.duplicate.id
-                )}"
-              >
-                View existing report
-                <i data-lucide="arrow-right"></i>
-              </button>
-              ${duplicateOverrideNote}
-            </span>
-
+            <strong>Possible duplicate reports</strong>
+            <p>These are AI-assisted matches, not confirmed duplicates. Review the details before deciding whether to continue.</p>
+            <div class="ai-duplicate-candidates">
+              ${duplicateCandidates.slice(0, 3).map((candidate) => `
+                <article class="ai-duplicate-candidate">
+                  <strong>${escapeHtml(candidate.id || candidate.publicId || "Existing report")}</strong>
+                  <span>${escapeHtml(candidate.title || "Civic report")}</span>
+                  <small>
+                    ${escapeHtml(candidate.category || "Category unavailable")} ·
+                    ${escapeHtml(candidate.status || "Reported")} ·
+                    ${Number.isFinite(Number(candidate.distanceMeters)) ? escapeHtml(String(candidate.distanceMeters) + " m away") : "distance unavailable"} ·
+                    ${Number.isFinite(Number(candidate.confidence)) && Number(candidate.confidence) > 0 ? escapeHtml(String(candidate.confidence) + "% match") : "confidence unavailable"}
+                  </small>
+                  <p>${escapeHtml(candidate.reason || "The report appears similar based on available location and report details.")}</p>
+                  <button type="button" class="link-btn" data-action="view-duplicate" data-id="${escapeHtml(candidate.id || candidate.publicId || "")}">
+                    View existing report <i data-lucide="arrow-right"></i>
+                  </button>
+                </article>
+              `).join("")}
+            </div>
+            ${duplicateOverrideNote}
           </div>
         </div>
       `
-      : "";
-
+    : "";
   const signals =
     a.signals.length
       ? `
