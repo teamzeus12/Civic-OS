@@ -56,7 +56,7 @@
     crossorigin=""
   />
   <link rel="stylesheet" href="style.css?v=20261027-89bce82" />
-  <link rel="stylesheet" href="civic-ai-workspace.css?v=20261027-settingslayer1" />
+  <link rel="stylesheet" href="civic-ai-workspace.css?v=20261027-sidebarback1" />
 
   <style>
     /* =====================================================
@@ -2100,6 +2100,7 @@
 
     <div class="civic-ai-workspace-layout" id="civicAiWorkspaceLayout">
       <aside class="civic-ai-sidebar" id="civicAiSidebar" aria-label="Civic AI chat history">
+        <button type="button" class="civic-ai-sidebar-back" id="civicAiSidebarBack" aria-label="Back to Civic AI conversation"><i data-lucide="arrow-left"></i><span>Back to chat</span></button>
         <button type="button" class="civic-ai-new-chat" id="civicAiSidebarNewChat"><i data-lucide="plus"></i><span>New Chat</span></button>
         <label class="civic-ai-search-label" for="civicAiSearch">Search chats</label>
         <div class="civic-ai-search"><i data-lucide="search"></i><input id="civicAiSearch" type="search" placeholder="Search chats…" autocomplete="off" /></div>
@@ -2515,7 +2516,7 @@
     src="script.js?v=20261027-89bce82"
     defer
   ></script>
-  <script src="civic-ai-workspace.js?v=20261027-settingslayer1" defer></script>
+  <script src="civic-ai-workspace.js?v=20261027-sidebarback1" defer></script>
 
   <script>window.CIVIC_API = "http://localhost:5000";</script>
 <script src="auth-nav.js" defer></script>
