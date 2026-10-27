@@ -1056,7 +1056,8 @@ const SCREEN_HASH = {
   actionsScreen: "actions",
   createActivityScreen: "create-activity",
   actionDetailScreen: "action-detail",
-  dashboardScreen: "dashboard"
+  dashboardScreen: "dashboard",
+  profileScreen: "profile"
 };
 
 const SCREEN_TITLE = {
@@ -1082,7 +1083,9 @@ const SCREEN_TITLE = {
     "Civic Action · Civic OS",
 
   dashboardScreen:
-    "Civic dashboard · Civic OS"
+    "Civic dashboard · Civic OS",
+  profileScreen:
+    "My profile · Civic OS"
 };
 
 function screenFromHash() {
@@ -1195,6 +1198,9 @@ function renderScreen(id) {
 
   if (id === "dashboardScreen") {
     renderDashboard();
+  }
+  if (id === "profileScreen") {
+    window.renderCivicProfile?.();
   }
 
   if (id === "communityScreen") {

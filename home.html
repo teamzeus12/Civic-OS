@@ -55,7 +55,8 @@
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     crossorigin=""
   />
-  <link rel="stylesheet" href="style.css?v=20261027-89bce82" />
+  <link rel="stylesheet" href="style.css?v=20261027-profile-polish1" />
+  <link rel="stylesheet" href="profile.css?v=20261027-profile-polish1" />
   <link rel="stylesheet" href="civic-ai-workspace.css?v=20261027-sidebarback1" />
 
   <style>
@@ -297,7 +298,8 @@
           Report
         </button>
 
-      </nav>
+      <button type="button" class="top-link" data-nav data-goto="profileScreen">Profile</button>
+</nav>
 
 
       <span class="live-pill">
@@ -1922,7 +1924,17 @@
     </section>
 
 
-  </main>
+  <section id="profileScreen" class="screen" aria-labelledby="profileTitle"><div class="container profile-page">
+<header class="profile-page-heading"><div><p class="kicker">YOUR CIVIC IDENTITY</p><h1 id="profileTitle" class="block-title">My profile</h1><p>Manage your details, civic activity, notifications and account security.</p></div><span class="profile-live-label">◈ Private account</span></header>
+<section class="profile-hero-card"><div class="profile-avatar" id="citizenAvatar">C</div><div class="profile-hero-copy"><span class="profile-overline">PEOPLE'S PORTAL</span><h2 id="citizenDisplayName">Your civic profile</h2><p id="citizenEmail">Sign in to view your account details.</p><div class="profile-badges"><span class="profile-badge" id="citizenEmailBadge">Sign-in required</span><span class="profile-badge profile-badge-muted" id="citizenVerificationBadge">Resident verification not completed</span></div></div><button type="button" class="btn btn-primary" id="profileSignInButton">Sign in</button></section>
+<div class="profile-metric-grid"><article class="profile-metric"><span>Reports submitted</span><strong id="profileReportCount">—</strong><small>Your saved civic reports</small></article><article class="profile-metric"><span>Issues resolved</span><strong id="profileResolvedCount">—</strong><small>Marked resolved by officials</small></article><article class="profile-metric"><span>Feedback given</span><strong>—</strong><small>Available when feedback history is connected</small></article></div>
+<div class="profile-content-grid">
+<section class="profile-panel"><h2>Personal information</h2><p>Keep your contact and civic details current.</p><form id="civicProfileForm" class="profile-form"><label for="profileFullName">Full name</label><input id="profileFullName" autocomplete="name" maxlength="100" required placeholder="Full name"><label for="profilePhone">Contact phone <small>Optional</small></label><input id="profilePhone" type="tel" autocomplete="tel" maxlength="24" placeholder="Phone number"><div class="profile-divider"></div><h3>Civic jurisdiction</h3><p>Self-reported details for local context.</p><label for="profileWard">Ward / local area</label><input id="profileWard" maxlength="100" placeholder="e.g. Ward 7"><label for="profileMunicipality">Municipality / Panchayat</label><input id="profileMunicipality" maxlength="120" placeholder="Municipality or panchayat"><label for="profileDistrict">District</label><input id="profileDistrict" maxlength="100" placeholder="District"><p class="profile-note">These details are self-reported, not proof of residency. Do not enter Aadhaar or other sensitive ID numbers.</p><p id="profileSaveMessage" class="profile-message" role="status" aria-live="polite"></p><button type="submit" class="btn btn-primary" id="profileSaveButton">Save profile</button></form></section>
+<section class="profile-panel"><h2>My report history</h2><p>Track your own submissions and latest status.</p><div id="profileReportHistory" class="profile-history-list"><p class="profile-empty">Sign in to load your private report history.</p></div><div class="profile-divider"></div><h3>Feedback & community participation</h3><p>Resolved-issue ratings, community votes and civic achievements can be added as these records become available.</p><span class="profile-coming-soon">Feedback history · Coming soon</span></section>
+<section class="profile-panel"><h2>Notifications & preferences</h2><p>Choose what this browser remembers.</p><div class="profile-setting-row"><span><strong>Report status updates</strong><small>Verification, progress and resolution.</small></span><label class="profile-switch"><input type="checkbox" data-profile-pref="reportUpdates" checked><span></span></label></div><div class="profile-setting-row"><span><strong>Local notices & emergency alerts</strong><small>Important local notices when available.</small></span><label class="profile-switch"><input type="checkbox" data-profile-pref="localAlerts" checked><span></span></label></div><div class="profile-setting-row"><span><strong>Community activity</strong><small>Missions and engagement updates.</small></span><label class="profile-switch"><input type="checkbox" data-profile-pref="communityUpdates"><span></span></label></div><p class="profile-note">Preferences are stored on this device. SMS, email and push delivery controls will be added when integrated.</p></section>
+<section class="profile-panel"><h2>Security & privacy</h2><p>Manage access and understand how data is used.</p><div class="profile-security-row"><div><strong>Password</strong><small>Request a secure password reset link.</small></div><button class="btn btn-ghost btn-sm" id="profileResetPassword" type="button">Reset</button></div><div class="profile-security-row"><div><strong>Two-factor authentication</strong><small>Availability depends on authentication configuration.</small></div><span class="profile-coming-soon">Provider controlled</span></div><div class="profile-security-row"><div><strong>Location privacy</strong><small>Location supports report routing; public display follows visibility rules.</small></div><span class="profile-privacy-label">Protected</span></div><div class="profile-security-row"><div><strong>Sign out</strong><small>End this session on this device.</small></div><button class="btn btn-ghost btn-sm" id="profileSignOutButton" type="button">Sign out</button></div><p id="profileSecurityMessage" class="profile-message" role="status" aria-live="polite"></p></section>
+</div></div></section>
+</main>
 
 
   <!-- =====================================================
@@ -1980,7 +1992,8 @@
       <span>Dashboard</span>
     </button>
 
-  </nav>
+  <button type="button" class="nav-item" data-nav data-goto="profileScreen"><i data-lucide="user-round"></i><span>Profile</span></button>
+</nav>
 
 
   <!-- =====================================================
@@ -2513,10 +2526,11 @@
   </section>
 
   <script
-    src="script.js?v=20261027-89bce82"
+    src="script.js?v=20261027-profile-polish1"
     defer
   ></script>
   <script src="civic-ai-workspace.js?v=20261027-sidebarback1" defer></script>
+  <script src="profile-ui.js?v=20261027-profile-polish1" defer></script>
 
   <script>window.CIVIC_API = "http://localhost:5000";</script>
 <script src="auth-nav.js" defer></script>
