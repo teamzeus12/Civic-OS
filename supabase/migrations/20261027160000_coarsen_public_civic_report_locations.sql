@@ -63,3 +63,10 @@ $function$;
 
 revoke all on function public.get_public_civic_reports() from public;
 grant execute on function public.get_public_civic_reports() to anon, authenticated;
+
+-- This RPC returns full report text and precise coordinates for trusted server-side
+-- duplicate matching. Only the Edge Function's service-role client should call it.
+revoke all on function public.find_civic_duplicate_candidates(double precision, double precision, integer, integer)
+  from public, anon, authenticated;
+grant execute on function public.find_civic_duplicate_candidates(double precision, double precision, integer, integer)
+  to service_role;
