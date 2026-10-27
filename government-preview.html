@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="government-preview.css?v=20261027-profile-polish2">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="government-preview.css?v=20261027-dashboard-map1">
 </head>
 <body>
 <div class="app-shell">
@@ -21,8 +22,8 @@
     <aside class="sidebar" aria-label="Government portal navigation">
       <div class="nav-label">WORKSPACE</div>
       <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span>Home</button>
-      <button class="nav-btn" data-page="issues"><span class="nav-icon">☷</span>Issues</button>
       <button class="nav-btn" data-page="dashboard"><span class="nav-icon">▥</span>Dashboard</button>
+      <button class="nav-btn" data-page="issues"><span class="nav-icon">☷</span>Issues</button>
       <button class="nav-btn" data-page="notifications"><span class="nav-icon">♧</span>Notifications</button>
       <button class="nav-btn" data-page="profile"><span class="nav-icon">◎</span>Profile</button>
       <div class="sidebar-note"><strong>Real data only</strong><br>Reports load from Supabase only after authorized government sign-in. No fictional records are displayed.</div>
@@ -55,6 +56,18 @@
       <section class="page" id="page-dashboard" data-page-view="dashboard">
         <header class="page-heading"><div><p class="eyebrow">Service delivery overview</p><h1>Dashboard</h1><p>Review report volume, status distribution, and department workload in the workspace.</p></div></header>
         <div class="grid stats-grid" id="dashboardStats"></div>
+        <section class="panel dashboard-map-panel" aria-labelledby="govMapHeading">
+          <div class="panel-head"><div><h2 id="govMapHeading">Live civic issue map</h2><p>Explore reports in your authorized data scope. Pins appear only when a report includes usable coordinates.</p></div><span class="map-live-tag">DATABASE MAP</span></div>
+          <p class="gov-map-status" id="govDashboardMapStatus" role="status" aria-live="polite">Map data will appear after authorized reports load.</p>
+          <div class="gov-map-layout">
+            <div id="govDashboardMap" class="gov-dashboard-map" role="application" aria-label="Interactive map of authorized civic reports"></div>
+            <aside class="gov-map-side" aria-label="Selected report and reports without coordinates">
+              <section class="gov-map-selection" id="govMapSelection"><div class="map-selection-empty"><strong>Select a map pin</strong><p>Choose a report marker to inspect its status and location.</p></div></section>
+              <section class="gov-unpinned-section"><h3>Reports without map pins</h3><p>These reports have address text but no usable coordinates. Their locations are not guessed.</p><div id="govMapUnpinned" class="gov-map-unpinned"></div></section>
+            </aside>
+          </div>
+          <div class="gov-map-legend" aria-label="Map status legend"><span><i class="legend-dot reported"></i>Reported</span><span><i class="legend-dot verified"></i>Verified</span><span><i class="legend-dot progress"></i>In progress</span><span><i class="legend-dot resolved"></i>Resolved</span></div>
+        </section>
         <div class="grid analytics-grid"><section class="panel"><div class="panel-head"><div><h2>Reports by status</h2><p>Current report distribution.</p></div></div><div id="statusAnalytics"></div></section><section class="panel"><div class="panel-head"><div><h2>Reports by department</h2><p>Counts calculated from genuine database records.</p></div></div><div id="departmentAnalytics"></div></section></div>
         <section class="panel"><div class="panel-head"><div><h2>Recent activity</h2><p>Latest report activity.</p></div></div><div id="dashboardActivity"></div></section>
       </section>
@@ -78,10 +91,11 @@
   </div>
 </div>
 <nav class="mobile-nav" aria-label="Mobile government portal navigation">
-  <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span>Home</button><button class="nav-btn" data-page="issues"><span class="nav-icon">☷</span>Issues</button><button class="nav-btn" data-page="dashboard"><span class="nav-icon">▥</span>Dashboard</button><button class="nav-btn" data-page="notifications"><span class="nav-icon">♧</span>Alerts</button><button class="nav-btn" data-page="profile"><span class="nav-icon">◎</span>Profile</button>
+  <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span>Home</button><button class="nav-btn" data-page="dashboard"><span class="nav-icon">▥</span>Dashboard</button><button class="nav-btn" data-page="issues"><span class="nav-icon">☷</span>Issues</button><button class="nav-btn" data-page="notifications"><span class="nav-icon">♧</span>Alerts</button><button class="nav-btn" data-page="profile"><span class="nav-icon">◎</span>Profile</button>
 </nav>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
-<script src="government-preview.js?v=20261027-profile-polish2" defer></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="government-preview.js?v=20261027-dashboard-map1" defer></script>
 </body>
 </html>

@@ -139,3 +139,40 @@ h1,h2,h3,p{margin-top:0}
 @media(max-width:760px){.gov-profile-hero{align-items:flex-start;padding:16px;gap:12px}.gov-profile-avatar{width:53px;height:53px;border-radius:16px}.gov-profile-hero-copy h2{font-size:18px}.gov-profile-metrics{grid-template-columns:1fr;gap:9px}.gov-profile-metric{padding:13px}.gov-profile-metric strong{font-size:22px}.gov-profile-grid{grid-template-columns:1fr;gap:11px}.gov-profile-card{padding:16px}.gov-profile-security-row{align-items:flex-start;flex-wrap:wrap}.gov-profile-security-row>div{flex-basis:calc(100% - 20px)}.gov-profile-security-row>.btn,.gov-profile-security-row>.gov-profile-tag{margin-left:0}}
 
 .gov-profile-signin-form{display:grid;gap:8px}.gov-profile-signin-form label{margin-top:4px;font-size:11px;font-weight:700}.gov-profile-signin-form input{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#fbfdfb;color:var(--ink);font:inherit;font-size:12px}.gov-profile-signin-form input:focus{outline:2px solid #9bd8b3;border-color:#4aab78}.gov-profile-signin-form button{justify-content:center}.gov-profile-signin-form p{font-size:10px;line-height:1.5;color:var(--muted)}#govProfileSignInCard[hidden]{display:none!important}
+
+
+/* Government dashboard: dominant live issue map */
+.dashboard-map-panel{padding:clamp(14px,2vw,22px);overflow:hidden}
+.dashboard-map-panel>.panel-head{align-items:flex-start}
+.map-live-tag{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:7px 9px;border:1px solid #dcebe1;border-radius:999px;background:#f3fbf6;color:#28744d;font:700 9px "Geist Mono",monospace;letter-spacing:.4px}
+.map-live-tag:before{content:"";width:6px;height:6px;border-radius:50%;background:#279b63}
+.gov-map-status{margin:-4px 0 13px;color:var(--muted);font-size:10px;line-height:1.6}
+.gov-map-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(245px,.75fr);gap:14px;align-items:stretch}
+.gov-dashboard-map{width:100%;height:clamp(330px,39vw,520px);min-height:300px;z-index:1;border:1px solid var(--line);border-radius:15px;background:#edf4ef;overflow:hidden}
+.gov-map-side{display:flex;min-width:0;flex-direction:column;gap:12px}
+.gov-map-selection,.gov-unpinned-section{min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fbfdfb}
+.gov-map-selection{flex:0 0 auto}
+.gov-map-selection h3{margin:7px 0 6px;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.gov-map-selection p,.gov-unpinned-section>p{margin:0;color:var(--muted);font-size:10px;line-height:1.65;overflow-wrap:anywhere}
+.gov-map-selection .map-report-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:7px;color:#7c8b81;font:600 9px "Geist Mono",monospace}
+.gov-map-selection .map-report-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
+.gov-map-selection .map-location{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.gov-map-selection .map-open-link{display:inline-flex;margin-top:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--green-dark);font-size:10px;font-weight:750}
+.map-selection-empty{display:grid;gap:7px;min-height:95px;align-content:center}
+.map-selection-empty strong{font-size:12px}
+.gov-unpinned-section{flex:1;min-height:120px}
+.gov-unpinned-section h3{margin:0 0 6px;font-size:12px}
+.gov-map-unpinned{display:grid;gap:7px;max-height:230px;overflow:auto;margin-top:10px}
+.gov-map-unpinned button{display:grid;gap:4px;width:100%;padding:9px 10px;border:1px solid #e4ece6;border-radius:10px;background:#fff;text-align:left}
+.gov-map-unpinned button strong{font-size:10px;line-height:1.45}
+.gov-map-unpinned button span{color:var(--muted);font-size:9px;line-height:1.45;overflow-wrap:anywhere}
+.gov-map-unpinned button:hover{border-color:#a9d7bb;background:#f7fcf8}
+.gov-map-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:13px;padding-top:12px;border-top:1px solid #edf2ee}
+.gov-map-legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:9px;font-weight:650}
+.legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+.legend-dot.reported{background:#64748b}.legend-dot.verified{background:#2563eb}.legend-dot.progress{background:#b86c08}.legend-dot.resolved{background:#0f9f78}
+.gov-map-fallback{display:grid;place-content:center;gap:8px;height:100%;min-height:280px;padding:24px;text-align:center;color:var(--muted);font-size:11px}
+.gov-map-fallback strong{color:var(--ink);font-size:13px}
+.gov-map-fallback p{margin:0;line-height:1.6}
+@media(max-width:1000px){.gov-map-layout{grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr)}.gov-dashboard-map{height:400px}}
+@media(max-width:760px){.gov-map-layout{grid-template-columns:minmax(0,1fr)}.gov-dashboard-map{height:340px;min-height:300px}.gov-map-side{display:grid;grid-template-columns:minmax(0,1fr)}.gov-map-unpinned{max-height:180px}.map-live-tag{font-size:8px;padding:6px 7px}.gov-map-legend{gap:9px}}
