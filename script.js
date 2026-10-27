@@ -7697,11 +7697,18 @@ function bindEvents() {
   }
 
   const organisationPeopleSearchForm = document.getElementById("organisationPeopleSearchForm");
-  if (organisationPeopleSearchForm) {
-    organisationPeopleSearchForm.addEventListener("submit", event => {
-      event.preventDefault();
-      loadOrganisationPeople();
-    });
+  const organisationPeopleSearchSubmit = document.getElementById("organisationPeopleSearchSubmit");
+  if (organisationPeopleSearchForm && organisationPeopleSearchSubmit) {
+    organisationPeopleSearchSubmit.addEventListener("click", () => loadOrganisationPeople());
+    const organisationPeopleSearchInput = document.getElementById("organisationPeopleSearchInput");
+    if (organisationPeopleSearchInput) {
+      organisationPeopleSearchInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          loadOrganisationPeople();
+        }
+      });
+    }
   }
 
   const createOrganisationForm = document.getElementById("createOrganisationForm");
