@@ -1217,6 +1217,9 @@ function renderScreen(id) {
 
   if (id === "actionsScreen") {
     renderCivicActions();
+    renderPeople();
+    loadCommunityDirectory();
+    setCommunityDirectoryTab("people");
   }
 
   refreshIcons();
@@ -5150,9 +5153,26 @@ async function loadCommunityDirectory(force = false) {
 }
 
 function renderCommunity() {
-  renderMissions();
   renderPeople();
   loadCommunityDirectory();
+}
+
+function setCommunityDirectoryTab(tab) {
+  const selected = tab === "organisations" ? "organisations" : "people";
+  const peopleTab = document.getElementById("communityPeopleTab");
+  const organisationsTab = document.getElementById("communityOrganisationsTab");
+  const peoplePanel = document.getElementById("communityPeoplePanel");
+  const organisationsPanel = document.getElementById("communityOrganisationsPanel");
+
+  if (!peopleTab || !organisationsTab || !peoplePanel || !organisationsPanel) return;
+
+  const peopleSelected = selected === "people";
+  peopleTab.classList.toggle("is-active", peopleSelected);
+  organisationsTab.classList.toggle("is-active", !peopleSelected);
+  peopleTab.setAttribute("aria-selected", String(peopleSelected));
+  organisationsTab.setAttribute("aria-selected", String(!peopleSelected));
+  peoplePanel.hidden = !peopleSelected;
+  organisationsPanel.hidden = peopleSelected;
 }
 
 function toggleSkill(skill) {
@@ -6401,6 +6421,24 @@ function bindEvents() {
         return;
       }
 
+
+      const communityTab = event.target.closest("[data-community-tab]");
+      if (communityTab) {
+        setCommunityDirectoryTab(communityTab.dataset.communityTab);
+        return;
+      }
+
+      const refreshCommunityPeopleButton = event.target.closest("#refreshCommunityPeople");
+      if (refreshCommunityPeopleButton) {
+        loadCommunityDirectory(true);
+        return;
+      }
+
+      const createOrganisationButton = event.target.closest("#createOrganisationBtn");
+      if (createOrganisationButton) {
+        toast("Organisation creation will be enabled in the next community phase. No organisation has been created.", "users-round");
+        return;
+      }
 
       const issueBtn =
         event.target.closest(

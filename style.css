@@ -7541,3 +7541,53 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
     justify-content: center;
   }
 }
+
+
+/* Civic Actions: profile-style People / Organisations tabs */
+.action-community-directory { margin-top: 32px; }
+.community-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  margin: 18px 0 20px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface-soft, rgba(20, 40, 30, .035));
+}
+.community-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.community-tab svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.community-tab.is-active {
+  color: var(--text, var(--ink, #17241e));
+  background: var(--surface, #fff);
+  border-color: var(--border);
+  box-shadow: 0 2px 7px rgba(0,0,0,.045);
+}
+.community-tab-panel[hidden] { display: none !important; }
+.community-tab-panel { min-width: 0; }
+.community-tab-panel > .block-head { margin-bottom: 14px; }
+.organisation-phase-note {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (max-width: 480px) {
+  .community-tab { padding: 11px 8px; font-size: 12px; }
+}

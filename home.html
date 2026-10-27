@@ -496,7 +496,7 @@
             <button
               type="button"
               class="action-card glass"
-              data-goto="communityScreen"
+              data-goto="actionsScreen"
             >
 
               <span class="action-icon">
@@ -506,11 +506,11 @@
               <span class="action-text">
 
                 <span class="action-title">
-                  Join the community
+                  Join an action
                 </span>
 
                 <span class="action-desc">
-                  Meet active citizens and discover ongoing civic actions.
+                  Discover activities, create an action, and connect with people and organisations.
                 </span>
 
               </span>
@@ -1199,51 +1199,14 @@
           </p>
         </header>
 
-        <section class="block community-block" aria-labelledby="ongoingActionsTitle">
-          <div class="block-head">
-            <div>
-              <p class="kicker">In progress</p>
-              <h3 id="ongoingActionsTitle" class="block-title">Ongoing civic actions</h3>
-              <p class="block-subtitle">Community activities will appear here when they are published.</p>
-            </div>
-          </div>
-          <div class="mission-list" id="missionList" aria-live="polite"></div>
-        </section>
-
-        <section class="block community-block" aria-labelledby="peopleTitle">
-          <div class="block-head community-directory-head">
-            <div>
-              <p class="kicker">Directory</p>
-              <h3 id="peopleTitle" class="block-title">People</h3>
-              <p class="block-subtitle">Citizens who have signed in to Civic OS recently.</p>
-            </div>
-            <button type="button" class="btn btn-ghost btn-sm" id="refreshCommunityPeople" aria-label="Refresh people directory">
-              <i data-lucide="refresh-cw"></i>
-              Refresh
-            </button>
-          </div>
-          <div class="people-grid" id="peopleGrid" aria-live="polite"></div>
-        </section>
-
-        <section class="block community-block" aria-labelledby="organisationsTitle">
-          <div class="block-head">
-            <div>
-              <p class="kicker">Organisations</p>
-              <h3 id="organisationsTitle" class="block-title">Build something together</h3>
-              <p class="block-subtitle">
-                Bring residents together around a shared local goal. Organisation setup is planned for the next community phase.
-              </p>
-            </div>
-          </div>
-          <div class="organisation-cta glass">
-            <span class="organisation-icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
-            <div class="organisation-copy">
-              <strong>Form your organisation</strong>
-              <p>Create a group for neighbours, volunteers, students, or people working on the same civic issue.</p>
-            </div>
-            <button type="button" class="btn btn-primary" id="createOrganisationBtn">
-              <i data-lucide="plus"></i>
-              Create organisation
+        <section class="block community-block" aria-label="Community directory location">
+          <div class="community-empty glass">
+            <span class="community-empty-icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
+            <strong>Find your community through Civic Actions</strong>
+            <p>Open Civic Actions to browse recently active people or explore organisations. These are separate tabs, so each view has its own results.</p>
+            <button type="button" class="btn btn-primary" data-goto="actionsScreen">
+              <i data-lucide="arrow-right"></i>
+              Open Civic Actions
             </button>
           </div>
         </section>
@@ -1480,6 +1443,62 @@
 
           </div>
 
+        </section>
+
+        <section class="block community-block action-community-directory" aria-labelledby="actionCommunityTitle">
+          <div class="block-head">
+            <div>
+              <p class="kicker">Connect</p>
+              <h3 id="actionCommunityTitle" class="block-title">People &amp; Organisations</h3>
+              <p class="block-subtitle">Switch between the people directory and organisations without mixing their results.</p>
+            </div>
+          </div>
+
+          <div class="community-tabs" role="tablist" aria-label="Community directory">
+            <button type="button" class="community-tab is-active" id="communityPeopleTab" role="tab" aria-selected="true" aria-controls="communityPeoplePanel" data-community-tab="people">
+              <i data-lucide="users-round"></i>
+              People
+            </button>
+            <button type="button" class="community-tab" id="communityOrganisationsTab" role="tab" aria-selected="false" aria-controls="communityOrganisationsPanel" data-community-tab="organisations">
+              <i data-lucide="building-2"></i>
+              Organisations
+            </button>
+          </div>
+
+          <section id="communityPeoplePanel" class="community-tab-panel" role="tabpanel" aria-labelledby="communityPeopleTab">
+            <div class="block-head community-directory-head">
+              <div>
+                <h4 class="block-title">Recently active people</h4>
+                <p class="block-subtitle">Citizens who have signed in to Civic OS recently.</p>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" id="refreshCommunityPeople" aria-label="Refresh people directory">
+                <i data-lucide="refresh-cw"></i>
+                Refresh
+              </button>
+            </div>
+            <div class="people-grid" id="peopleGrid" aria-live="polite"></div>
+          </section>
+
+          <section id="communityOrganisationsPanel" class="community-tab-panel" role="tabpanel" aria-labelledby="communityOrganisationsTab" hidden>
+            <div class="block-head">
+              <div>
+                <h4 class="block-title">Build something together</h4>
+                <p class="block-subtitle">Discover or form a group around a shared local goal.</p>
+              </div>
+            </div>
+            <div class="organisation-cta glass">
+              <span class="organisation-icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
+              <div class="organisation-copy">
+                <strong>Form your organisation</strong>
+                <p>Create a group for neighbours, volunteers, students, or people working on the same civic issue.</p>
+              </div>
+              <button type="button" class="btn btn-primary" id="createOrganisationBtn">
+                <i data-lucide="plus"></i>
+                Create organisation
+              </button>
+            </div>
+            <p class="organisation-phase-note">Organisation creation is not active yet; this section is ready for that phase.</p>
+          </section>
         </section>
 
       </div>
