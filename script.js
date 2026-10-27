@@ -535,6 +535,11 @@ const state = {
   civicActionId: null
 };
 
+let reportLocationMap = null;
+let reportLocationMarker = null;
+let selectedReportCoordinates = null;
+let reportLocationSearchResults = [];
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -1186,6 +1191,8 @@ function renderScreen(id) {
 
   if (id === "reportScreen") {
     updateStepper();
+    initializeReportLocationMap();
+    window.setTimeout(() => reportLocationMap?.invalidateSize(), 100);
   }
 
   if (id === "issuesScreen") {
@@ -1596,6 +1603,7 @@ function getDraft() {
       state.draftEvidenceUrls.length > 0,
 
     coordinates:
+      selectedReportCoordinates ||
       parseIssueCoordinates(
         $("#location")?.value.trim() || ""
       )
@@ -1721,36 +1729,198 @@ function invalidateAnalysis() {
   }
 }
 
-async function geocodeCivicLocation(query) {
-  const textQuery = String(query || "").trim();
-  const existing = parseIssueCoordinates(textQuery);
-  if (!textQuery || existing) return existing;
+function reportLocationStatus(message, kind = "default") {
+  const status = $("#reportLocationPickerStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.kind = kind;
+}
 
-  // Best-effort address lookup. Reporting remains available if lookup fails.
-  try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("format", "jsonv2");
-    url.searchParams.set("limit", "1");
-    url.searchParams.set("countrycodes", "in");
-    url.searchParams.set("q", /manipur|india/i.test(textQuery)
-      ? textQuery
-      : `${textQuery}, Manipur, India`);
-    const response = await fetch(url.toString(), {
-      headers: { Accept: "application/json" }
-    });
-    if (!response.ok) return null;
-    const results = await response.json();
-    const match = Array.isArray(results) ? results[0] : null;
-    if (!match) return null;
-    const latitude = Number(match.lat);
-    const longitude = Number(match.lon);
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
-    if (latitude < 23 || latitude > 25.8 || longitude < 92 || longitude > 95.8) return null;
-    return { latitude, longitude };
-  } catch (error) {
-    console.warn("Location lookup unavailable; keeping the typed address:", error);
+function initializeReportLocationMap() {
+  const mapElement = $("#reportLocationMap");
+  if (!mapElement) return null;
+  if (!window.L) {
+    reportLocationStatus("The map library did not load. Refresh the page or use the location search again later.", "error");
     return null;
   }
+
+  if (!reportLocationMap) {
+    reportLocationMap = window.L.map(mapElement, {
+      scrollWheelZoom: false,
+      tap: true
+    }).setView([24.817, 93.9368], 10);
+
+    window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
+    }).addTo(reportLocationMap);
+
+    reportLocationMap.on("click", (event) => {
+      const coords = {
+        latitude: event.latlng.lat,
+        longitude: event.latlng.lng
+      };
+      if (!String($("#location")?.value || "").trim()) {
+        $("#location").value = `Map pin ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`;
+      }
+      setReportLocationPin(coords, "map");
+    });
+  }
+
+  window.setTimeout(() => reportLocationMap?.invalidateSize(), 80);
+  return reportLocationMap;
+}
+
+function setReportLocationPin(coords, source = "map", center = true) {
+  const latitude = Number(coords?.latitude);
+  const longitude = Number(coords?.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      latitude < 23 || latitude > 25.8 || longitude < 92 || longitude > 95.8) {
+    reportLocationStatus("Choose a point within Manipur so the report is mapped correctly.", "error");
+    return false;
+  }
+
+  selectedReportCoordinates = { latitude, longitude };
+  const map = initializeReportLocationMap();
+  if (!map) return false;
+
+  const point = [latitude, longitude];
+  if (!reportLocationMarker) {
+    reportLocationMarker = window.L.marker(point, { draggable: true }).addTo(map);
+    reportLocationMarker.on("dragend", () => {
+      const position = reportLocationMarker.getLatLng();
+      selectedReportCoordinates = { latitude: position.lat, longitude: position.lng };
+      reportLocationStatus(`Pin confirmed at ${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}. You can drag the marker to adjust it.`, "success");
+      invalidateAnalysis();
+      updateStepper();
+    });
+  } else {
+    reportLocationMarker.setLatLng(point);
+  }
+
+  if (center) map.setView(point, Math.max(map.getZoom(), 15));
+  reportLocationMarker.bindPopup("Issue location").openPopup();
+  reportLocationStatus(
+    `Pin confirmed at ${latitude.toFixed(5)}, ${longitude.toFixed(5)}. You can tap the map or drag the pin to adjust it.`,
+    "success"
+  );
+  invalidateAnalysis();
+  updateStepper();
+  return true;
+}
+
+function clearReportLocationPin() {
+  selectedReportCoordinates = null;
+  if (reportLocationMarker && reportLocationMap) {
+    reportLocationMap.removeLayer(reportLocationMarker);
+  }
+  reportLocationMarker = null;
+  reportLocationSearchResults = [];
+  const results = $("#reportLocationResults");
+  if (results) {
+    results.innerHTML = "";
+    results.hidden = true;
+  }
+  reportLocationStatus("No map pin selected yet. Search for a place or tap the map to pin the issue.");
+  invalidateAnalysis();
+  updateStepper();
+}
+
+function formatPhotonPlace(properties = {}) {
+  return [
+    properties.name,
+    properties.street,
+    properties.locality,
+    properties.district,
+    properties.city,
+    properties.county,
+    properties.state,
+    properties.country
+  ].filter((value, index, values) => value && values.indexOf(value) === index)
+   .join(", ");
+}
+
+async function searchReportLocation() {
+  const query = String($("#location")?.value || "").trim();
+  if (query.length < 3) {
+    reportLocationStatus("Type a locality, road, landmark, or address first.", "error");
+    $("#location")?.focus();
+    return;
+  }
+
+  const button = $("#searchLocationBtn");
+  const resultsContainer = $("#reportLocationResults");
+  if (button) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+  }
+  if (resultsContainer) {
+    resultsContainer.hidden = false;
+    resultsContainer.innerHTML = '<p class="report-location-searching">Searching for matching places…</p>';
+  }
+  reportLocationStatus("Searching map places. Choose the result that matches the issue location.");
+
+  try {
+    // Explicit, user-triggered search only; this is not an autocomplete request.
+    const url = new URL("https://photon.komoot.io/api/");
+    url.searchParams.set("q", /manipur|india/i.test(query) ? query : `${query}, Manipur, India`);
+    url.searchParams.set("limit", "5");
+    url.searchParams.set("lat", "24.817");
+    url.searchParams.set("lon", "93.9368");
+    url.searchParams.set("lang", "en");
+
+    const response = await fetch(url.toString(), { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error("The place search service is temporarily unavailable.");
+    const data = await response.json();
+    reportLocationSearchResults = (Array.isArray(data.features) ? data.features : [])
+      .map((feature) => {
+        const coordinates = feature?.geometry?.coordinates;
+        const longitude = Number(coordinates?.[0]);
+        const latitude = Number(coordinates?.[1]);
+        return { feature, latitude, longitude, label: formatPhotonPlace(feature?.properties || {}) };
+      })
+      .filter((item) => item.label && Number.isFinite(item.latitude) && Number.isFinite(item.longitude) &&
+        item.latitude >= 23 && item.latitude <= 25.8 && item.longitude >= 92 && item.longitude <= 95.8);
+
+    if (!resultsContainer) return;
+    if (!reportLocationSearchResults.length) {
+      resultsContainer.innerHTML = '<p class="report-location-searching">No matching place was found in Manipur. Try a nearby landmark or tap the map and place the pin manually.</p>';
+      reportLocationStatus("No match found. You can still pin the exact point directly on the map.", "error");
+      return;
+    }
+
+    resultsContainer.innerHTML = reportLocationSearchResults.map((item, index) =>
+      `<button type="button" class="report-location-result" data-location-result="${index}">
+        <span class="report-location-result-icon" aria-hidden="true">⌖</span>
+        <span><strong>${escapeHtml(item.label)}</strong><small>Tap to move the map and confirm this place</small></span>
+      </button>`
+    ).join("");
+    reportLocationStatus(`${reportLocationSearchResults.length} possible place(s) found. Select the best match, then adjust the pin on the map if needed.`, "success");
+  } catch (error) {
+    console.warn("Civic OS place search failed:", error);
+    if (resultsContainer) {
+      resultsContainer.hidden = false;
+      resultsContainer.innerHTML = '<p class="report-location-searching">Place search could not connect. You can still tap the map and place the pin manually.</p>';
+    }
+    reportLocationStatus("Place search is unavailable. Move the map to the right place and tap to add a pin.", "error");
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+    }
+  }
+}
+
+function selectReportLocationResult(index) {
+  const item = reportLocationSearchResults[Number(index)];
+  if (!item) return;
+  const input = $("#location");
+  if (input) input.value = item.label;
+  const results = $("#reportLocationResults");
+  if (results) results.hidden = true;
+  setReportLocationPin({ latitude: item.latitude, longitude: item.longitude }, "search");
+  invalidateAnalysis();
+  updateStepper();
 }
 
 async function handleAnalyze(event) {
@@ -1813,16 +1983,19 @@ async function handleAnalyze(event) {
     return;
   }
 
+  if (!draft.coordinates) {
+    showFormError("Please pin the exact issue location. Search for the place and select a result, or tap the map directly.");
+    initializeReportLocationMap();
+    $("#reportLocationMap")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
   showFormError(null);
 
   state.analyzing = true;
   const analyzeBtn = $("#analyzeBtn");
   if (analyzeBtn) analyzeBtn.disabled = true;
 
-  // GPS text already contains coordinates. Resolve typed places when possible.
-  if (!draft.coordinates) {
-    draft.coordinates = await geocodeCivicLocation(draft.location);
-  }
   state.draft = draft;
 
   const steps = [
@@ -2924,6 +3097,8 @@ function resetReportForm() {
 
   form.reset();
 
+  clearReportLocationPin();
+  if (reportLocationMap) reportLocationMap.setView([24.817, 93.9368], 10);
   clearPhoto({ revoke: true });
 
   const count =
@@ -3052,6 +3227,11 @@ function useCurrentLocation() {
             5
           )}`;
       }
+
+      setReportLocationPin({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude
+      }, "gps");
 
       if (btn) {
         btn.disabled = false;
@@ -6586,6 +6766,11 @@ function bindEvents() {
           }
         }
 
+        if (event.target.id === "location") {
+          clearReportLocationPin();
+          reportLocationStatus("Location text changed. Search for this place or tap the map again to confirm a matching pin.");
+        }
+
         if (
           event.target.matches(
             "[aria-invalid]"
@@ -6652,6 +6837,27 @@ function bindEvents() {
       useCurrentLocation
     );
   }
+
+  const searchLocationBtn = $("#searchLocationBtn");
+  if (searchLocationBtn) {
+    searchLocationBtn.addEventListener("click", searchReportLocation);
+  }
+
+  const clearLocationPinBtn = $("#clearLocationPinBtn");
+  if (clearLocationPinBtn) {
+    clearLocationPinBtn.addEventListener("click", clearReportLocationPin);
+  }
+
+  const locationResults = $("#reportLocationResults");
+  if (locationResults) {
+    locationResults.addEventListener("click", (event) => {
+      const resultButton = event.target.closest("[data-location-result]");
+      if (!resultButton) return;
+      selectReportLocationResult(resultButton.dataset.locationResult);
+    });
+  }
+
+  initializeReportLocationMap();
 
 
   /* ---------- Issue search ---------- */
