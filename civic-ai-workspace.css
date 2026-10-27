@@ -313,3 +313,17 @@
     font-size: 18px;
   }
 }
+
+
+/* Explicit return path from chat history drawer to the conversation. */
+.civic-ai-sidebar-back {
+  display:flex; align-items:center; justify-content:flex-start; gap:9px;
+  width:100%; min-height:38px; padding:8px 9px; margin-bottom:2px;
+  border:1px solid rgba(255,255,255,.13); border-radius:10px;
+  background:rgba(255,255,255,.045); color:#effaf2;
+  font:inherit; font-size:12px; font-weight:650; text-align:left; cursor:pointer;
+}
+.civic-ai-sidebar-back:hover { background:rgba(255,255,255,.1); }
+.civic-ai-sidebar-back svg { width:15px; height:15px; flex:0 0 auto; color:#3ee08f; }
+.civic-ai-panel.is-light .civic-ai-sidebar-back { color:#173523; border-color:#cad8ce; background:#fff; }
+.civic-ai-panel.is-light .civic-ai-sidebar-back:hover { background:#e8f2eb; }
