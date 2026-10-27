@@ -263,3 +263,53 @@
     overflow-y: auto !important;
   }
 }
+
+
+/* Settings should be a full workspace layer, never underneath the sidebar drawer. */
+.civic-ai-panel.civic-ai-settings-open .civic-ai-settings-view {
+  inset: 68px 0 0 !important;
+  z-index: 30 !important;
+  width: auto !important;
+  border-left: 0 !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.16);
+}
+.civic-ai-panel.civic-ai-settings-open .civic-ai-settings-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: inherit;
+}
+.civic-ai-panel.civic-ai-settings-open .civic-ai-settings-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid rgba(140,160,145,.35);
+  border-radius: 10px;
+  background: rgba(120,145,128,.1);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.civic-ai-settings-back svg { width: 15px; height: 15px; }
+.civic-ai-panel.is-light.civic-ai-settings-open .civic-ai-settings-back {
+  border-color: #cad8ce;
+  background: #f2f7f3;
+  color: #173523;
+}
+@media (max-width: 760px) {
+  .civic-ai-panel.civic-ai-settings-open .civic-ai-settings-view {
+    inset: 64px 0 0 !important;
+  }
+  .civic-ai-panel.civic-ai-settings-open .civic-ai-settings-header {
+    padding: 15px 14px;
+  }
+  .civic-ai-panel.civic-ai-settings-open .civic-ai-settings-header h3 {
+    font-size: 18px;
+  }
+}

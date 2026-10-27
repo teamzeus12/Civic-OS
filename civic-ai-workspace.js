@@ -116,7 +116,7 @@
   }
   function showSettings(show = true) {
     const view = $("civicAiSettingsView"); if (!view) return; view.hidden = !show;
-    if (show) applyPrefs(); if (typeof window.refreshIcons === "function") window.refreshIcons();
+    const panel = getPanel(); if (panel) { panel.classList.toggle("civic-ai-settings-open", show); if (show) panel.classList.remove("civic-ai-show-sidebar"); } if (show) applyPrefs(); if (typeof window.refreshIcons === "function") window.refreshIcons();
   }
   function openWorkspace() {
     const panel = getPanel(); if (!panel) return;
