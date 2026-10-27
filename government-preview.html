@@ -119,13 +119,14 @@
                 <label class="notice-field" for="noticeContactEmail">Contact email <small>Optional</small><input id="noticeContactEmail" name="contactEmail" type="email" maxlength="254" placeholder="office@example.gov.in"></label>
               </div>
             </div>
+            <div id="noticePreviewPanel" class="notice-preview-panel" hidden aria-live="polite"><p class="eyebrow">PREVIEW · NOT PUBLISHED</p><h3 id="noticePreviewTitle"></h3><p id="noticePreviewMeta" class="notice-preview-meta"></p><p id="noticePreviewSummary"></p><div id="noticePreviewBody" class="notice-preview-body"></div><p id="noticePreviewDates" class="notice-preview-meta"></p></div>
             <p id="noticeFormMessage" class="notice-form-message" role="status" aria-live="polite"></p>
-            <div class="notice-form-actions"><button class="btn" id="cancelNoticeForm" type="button">Cancel</button><button class="btn" type="submit" data-notice-action="draft">Save draft</button><button class="btn btn-primary" type="submit" data-notice-action="publish">Publish notice</button></div>
+            <div class="notice-form-actions"><button class="btn" id="cancelNoticeForm" type="button">Cancel</button><button class="btn" id="previewNoticeButton" type="button">Preview notice</button><button class="btn" type="submit" data-notice-action="draft">Save draft</button><button class="btn btn-primary" type="submit" data-notice-action="publish">Publish notice</button></div>
           </form>
         </section>
         <section class="panel notice-management-panel">
           <div class="panel-head"><div><h2>Notice register</h2><p>Review notices created by your department and their publication status.</p></div></div>
-          <div class="notice-register-tools"><input id="noticeSearch" class="search-input" type="search" placeholder="Search notices, reference or area…" aria-label="Search notices"><select id="noticeStatusFilter" class="filter-select" aria-label="Filter notices"><option value="all">All notices</option><option value="draft">Drafts</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
+          <div class="notice-register-tools"><input id="noticeSearch" class="search-input" type="search" placeholder="Search notices, reference or area…" aria-label="Search notices"><select id="noticeStatusFilter" class="filter-select" aria-label="Filter notices"><option value="all">All notices</option><option value="draft">Drafts</option><option value="published">Published</option><option value="withdrawn">Withdrawn</option><option value="archived">Archived</option></select></div>
           <div id="notificationList" class="notice-register-list" aria-live="polite"><div class="empty-state">Sign in with an authorized government account to manage notices.</div></div>
         </section>
       </section>
