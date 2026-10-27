@@ -336,7 +336,7 @@
     setText("govProfileOpenCount", String(open));
   }
 
-  async function connectGovernmentWorkspace() {
+  async function connectGovernmentWorkspace(options = {}) {
     const config = window.CIVIC_SUPABASE_CONFIG;
     if (!window.supabase?.createClient || !config?.url || !config?.publishableKey) { showWorkspaceError("Supabase is not configured. Live reports cannot be loaded."); return; }
     const client = window.supabase.createClient(config.url, config.publishableKey);
@@ -397,7 +397,8 @@
     liveMode = true; supabaseClient = client; officialProfile = profile;
     const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
     renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications(); renderGovernmentProfile();
-    navigate("dashboard");
+    if (selectedDepartment) renderDepartmentReports();
+    if (options.navigateToDashboard !== false) navigate("dashboard");
     const small = document.querySelector(".profile-mini small"); if (small) small.textContent = profile.role === "admin" ? "Administrator" : profile.department_id.toUpperCase() + " official";
   }
 
@@ -524,6 +525,26 @@
     liveMode = false; officialProfile = null; supabaseClient = null;
     window.location.reload();
   });
+
+  let governmentRefreshLastAt = Date.now();
+  let governmentRefreshInFlight = false;
+  async function refreshGovernmentReportsOnReturn() {
+    if (
+      document.visibilityState !== "visible" ||
+      !liveMode ||
+      governmentRefreshInFlight ||
+      Date.now() - governmentRefreshLastAt < 30000
+    ) return;
+    governmentRefreshInFlight = true;
+    governmentRefreshLastAt = Date.now();
+    try {
+      await connectGovernmentWorkspace({ navigateToDashboard: false });
+    } finally {
+      governmentRefreshInFlight = false;
+    }
+  }
+  document.addEventListener("visibilitychange", refreshGovernmentReportsOnReturn);
+  window.addEventListener("focus", refreshGovernmentReportsOnReturn);
 
   connectGovernmentWorkspace().finally(() => {
     init();
