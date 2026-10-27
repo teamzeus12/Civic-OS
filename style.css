@@ -7401,3 +7401,16 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
 .report-status-history time{font-size:.76rem;color:var(--muted,#9aa5a0);text-align:right;}
 .report-status-history p{margin:0;color:var(--muted,#9aa5a0);font-size:.88rem;}
 @media(max-width:560px){.report-status-history li{flex-direction:column;gap:4px}.report-status-history time{text-align:left}}
+
+
+/* Civic report community activity: persistent comments and citizen support. */
+.report-community-section .community-comment-count { color: var(--muted, #64748b); font-size: .82rem; font-weight: 600; }
+.report-comments-list { display: grid; gap: 10px; margin: 12px 0 16px; }
+.report-comment { border: 1px solid var(--border, #e2e8f0); border-radius: 12px; padding: 12px 14px; background: var(--surface-2, #f8fafc); overflow-wrap: anywhere; }
+.report-comment-author { display: flex; justify-content: space-between; gap: 12px; color: var(--text, #334155); font-size: .82rem; font-weight: 700; }
+.report-comment-author time { color: var(--muted, #64748b); font-size: .72rem; font-weight: 500; }
+.report-comment p { margin: 8px 0 0; white-space: pre-wrap; line-height: 1.5; }
+.report-comment-form { display: grid; gap: 10px; }
+.report-comment-form textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 76px; border: 1px solid var(--border, #cbd5e1); border-radius: 12px; padding: 12px; background: var(--surface, #fff); color: var(--text, #0f172a); font: inherit; }
+.report-comment-form .btn { justify-self: start; }
+.report-comment-note { margin: 0; color: var(--muted, #64748b); font-size: .76rem; line-height: 1.4; }
