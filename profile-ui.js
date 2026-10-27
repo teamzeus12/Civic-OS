@@ -12,6 +12,24 @@
     document.querySelectorAll("[data-profile-pref]").forEach((el) => prefs[el.dataset.profilePref] = el.checked);
     try { localStorage.setItem(prefsKey, JSON.stringify(prefs)); } catch {}
   }
+  function setAvatar(initials, signedUrl) {
+    const avatar = $("citizenAvatar");
+    if (!avatar) return;
+    avatar.replaceChildren();
+    if (signedUrl) {
+      const image = document.createElement("img");
+      image.src = signedUrl;
+      image.alt = "Profile photo";
+      image.loading = "lazy";
+      image.onerror = () => { avatar.replaceChildren(); avatar.textContent = initials || "C"; };
+      avatar.appendChild(image);
+    } else avatar.textContent = initials || "C";
+  }
+  async function loadAvatar(client, userId, path, initials) {
+    if (!path) { setAvatar(initials); return; }
+    const result = await client.storage.from("civic-profile-avatars").createSignedUrl(path, 3600);
+    setAvatar(initials, result.error ? null : result.data?.signedUrl || null);
+  }
   function activateTab(name) {
     document.querySelectorAll("[data-profile-tab]").forEach((tab) => {
       const active = tab.dataset.profileTab === name;
@@ -56,7 +74,8 @@
     if (!user) {
       $("citizenDisplayName").textContent = "Your civic profile";
       $("citizenEmail").textContent = "Sign in to manage your profile and view your private report history.";
-      $("citizenAvatar").textContent = "C";
+      setAvatar("C");
+      const avatarInput = $("profileAvatarInput"); if (avatarInput) avatarInput.value = "";
       $("citizenEmailBadge").textContent = "Sign-in required";
       $("citizenVerificationBadge").textContent = "Resident verification not completed";
       ["profileFullName","profilePhone","profileWard","profileMunicipality","profileDistrict"].forEach((id) => { if ($(id)) $(id).value = ""; });
@@ -67,12 +86,13 @@
     }
     const meta = user.user_metadata || {};
     let name = String(meta.full_name || "").trim();
-    const profileResult = await client.from("profiles").select("full_name").eq("id",user.id).maybeSingle();
+    const profileResult = await client.from("profiles").select("full_name,avatar_path").eq("id",user.id).maybeSingle();
     if (!profileResult.error && profileResult.data?.full_name) name = profileResult.data.full_name;
     name = name || "Civic OS member";
     $("citizenDisplayName").textContent = name;
     $("citizenEmail").textContent = user.email || "Email unavailable";
-    $("citizenAvatar").textContent = name.split(/\s+/).map((part) => part[0]).slice(0,2).join("").toUpperCase();
+    const initials = name.split(/\s+/).map((part) => part[0]).slice(0,2).join("").toUpperCase();
+    await loadAvatar(client, user.id, !profileResult.error ? profileResult.data?.avatar_path : null, initials);
     $("citizenEmailBadge").textContent = user.email_confirmed_at ? "✓ Email confirmed" : "Email confirmation pending";
     $("citizenVerificationBadge").textContent = "Resident verification not completed";
     $("profileFullName").value = name === "Civic OS member" ? "" : name;
@@ -100,11 +120,47 @@
       $("civicProfileForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
       $("profileFullName")?.focus({ preventScroll: true });
     });
+    $("profileAvatarInput")?.addEventListener("change", async (event) => {
+      const input = event.currentTarget, file = input.files?.[0];
+      if (!file) return;
+      const msg = $("profileSaveMessage"), label = document.querySelector('label[for="profileAvatarInput"]');
+      const sessionResult = await window.civicSupabase?.auth.getSession();
+      const user = sessionResult?.data?.session?.user;
+      if (!user) { msg.textContent = "Sign in before changing your profile photo."; input.value = ""; return; }
+      if (!["image/jpeg","image/png","image/webp"].includes(file.type)) { msg.textContent = "Choose a JPG, PNG or WebP image."; input.value = ""; return; }
+      if (file.size > 3 * 1024 * 1024) { msg.textContent = "Profile photos must be 3 MB or smaller."; input.value = ""; return; }
+      const client = window.civicSupabase;
+      const oldProfile = await client.from("profiles").select("avatar_path").eq("id",user.id).maybeSingle();
+      if (oldProfile.error) { msg.textContent = "Could not load your current photo settings."; input.value = ""; return; }
+      const ext = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
+      const path = user.id + "/avatar-" + Date.now() + "." + ext;
+      if (label) { label.setAttribute("aria-disabled","true"); label.textContent = "Uploading…"; }
+      msg.textContent = "Uploading your private profile photo…";
+      try {
+        const upload = await client.storage.from("civic-profile-avatars").upload(path,file,{ upsert:false, contentType:file.type, cacheControl:"3600" });
+        if (upload.error) throw upload.error;
+        const saved = await client.from("profiles").update({ avatar_path:path }).eq("id",user.id).select("id").maybeSingle();
+        if (saved.error || !saved.data) {
+          await client.storage.from("civic-profile-avatars").remove([path]);
+          throw saved.error || new Error("Profile record was not updated.");
+        }
+        const oldPath = oldProfile.data?.avatar_path;
+        if (oldPath && oldPath !== path) await client.storage.from("civic-profile-avatars").remove([oldPath]);
+        msg.textContent = "Profile photo updated. It is stored in your private account space.";
+        await window.renderCivicProfile();
+      } catch (error) {
+        console.error("Profile photo upload failed:",error);
+        msg.textContent = "Photo upload failed. Check your connection and try again.";
+      } finally {
+        if (label) { label.removeAttribute("aria-disabled"); label.textContent = "Change photo"; }
+        input.value = "";
+      }
+    });
     $("profileShareButton")?.addEventListener("click", async () => {
       const session = await window.civicSupabase?.auth.getSession();
       if (!session?.data?.session?.user) { $("profileSaveMessage").textContent = "Sign in before sharing your civic profile summary."; activateTab("overview"); return; }
       const name = $("citizenDisplayName")?.textContent || "Civic OS member";
-      const summary = name + " on Civic OS\\nCivic reports submitted: " + ($("profileReportCount")?.textContent || "—") + "\\nReports marked resolved: " + ($("profileResolvedCount")?.textContent || "—") + "\\nReport. Connect. Resolve.\\n" + window.location.href.split("#")[0];
+      const summary = name + " on Civic OS\nCivic reports submitted: " + ($("profileReportCount")?.textContent || "—") + "\nReports marked resolved: " + ($("profileResolvedCount")?.textContent || "—") + "\nReport. Connect. Resolve.\n" + window.location.href.split("#")[0];
       try {
         if (navigator.share) await navigator.share({ title: "My Civic OS profile", text: summary });
         else if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(summary); $("profileSaveMessage").textContent = "A privacy-safe profile summary was copied to your clipboard."; }
