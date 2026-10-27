@@ -44,7 +44,7 @@
       longitude = longitude ?? raw.longitude ?? raw.lng ?? raw.lon;
     }
     if ((latitude === null || latitude === undefined || longitude === null || longitude === undefined) && typeof raw === "string") {
-      const match = raw.trim().match(/^(?:GPS\\s*)?(-?\\d{1,2}(?:\\.\\d+)?)\\s*,\\s*(-?\\d{1,3}(?:\\.\\d+)?)$/i);
+      const match = raw.trim().match(/^(?:GPS\s*)?(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/i);
       if (match) { latitude = Number(match[1]); longitude = Number(match[2]); }
     }
     latitude = Number(latitude); longitude = Number(longitude);
