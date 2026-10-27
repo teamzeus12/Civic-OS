@@ -3897,18 +3897,15 @@ function renderDashboard() {
 
     const resolved =
       (WEEKLY_BASELINE.resolved[idx] || 0) +
-      issues.filter(
-        (i) =>
-          i.updates.some(
-            (u) =>
-              u.status ===
-                "Resolved" &&
-              u.time >=
-                start &&
-              u.time <
-                end
-          )
-      ).length;
+      issues.filter((issue) => {
+        // Use the database's resolved_at timestamp when available. The report
+        // timeline may contain only the original submission event.
+        const timelineResolvedAt = Array.isArray(issue.updates)
+          ? issue.updates.find((update) => update.status === "Resolved")?.time
+          : null;
+        const resolvedAt = issue.resolvedAt ?? timelineResolvedAt;
+        return Number.isFinite(resolvedAt) && resolvedAt >= start && resolvedAt < end;
+      }).length;
 
     days.push({
       label:
