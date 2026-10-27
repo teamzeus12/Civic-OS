@@ -1067,6 +1067,7 @@ const SCREEN_HASH = {
   communityScreen: "community",
   actionsScreen: "actions",
   createActivityScreen: "create-activity",
+  createOrganisationScreen: "create-organisation",
   actionDetailScreen: "action-detail",
   dashboardScreen: "dashboard",
   profileScreen: "profile"
@@ -1090,6 +1091,9 @@ const SCREEN_TITLE = {
 
   createActivityScreen: 
     "Civic OS — Create Activity",
+
+  createOrganisationScreen:
+    "Form an organisation · Civic OS",
 
   actionDetailScreen:
     "Civic Action · Civic OS",
@@ -5270,7 +5274,7 @@ async function loadOrganisationFriendPicker() {
     if (error) throw error;
     const friends = Array.isArray(data) ? data : [];
     if (!friends.length) {
-      picker.innerHTML = '<div class="community-empty glass"><strong>You have no accepted friends yet</strong><p>Go to People → Find people to send friend requests. You can form the organisation now and invite friends later only if a later invitation feature is added.</p></div>';
+      picker.innerHTML = '<div class="community-empty glass"><strong>You have no accepted friends yet</strong><p>Accept friend requests first, then return here to invite them. You can also create the organisation without inviting anyone yet.</p></div>';
       return;
     }
     picker.innerHTML = friends.map((friend, i) => `<label class="organisation-friend-option"><input type="checkbox" name="organisationInvitees" value="${escapeHtml(friend.friend_id)}"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(friend.display_name || "Citizen")}</span><span><strong>${escapeHtml(friend.display_name || "Civic OS citizen")}</strong><small>Send an organisation invitation</small></span></label>`).join("");
