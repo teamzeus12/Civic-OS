@@ -19,6 +19,10 @@
 
   // Real records only; populated after authorized Supabase access.
   let reports = [];
+  let officialNotices = [];
+  let noticeFilter = "all";
+  let noticeSearchQuery = "";
+  let editingNoticeId = null;
 
   const statusOptions = ["Reported", "Verified", "In Progress", "Resolved"];
   let selectedDepartment = null;
@@ -282,9 +286,327 @@
     renderGovernmentMap();
   }
 
+  function noticeDepartmentLabel(id) {
+    return departments.find((dept) => dept.id === id)?.name || String(id || "Government department").replace(/_/g, " ").toUpperCase();
+  }
+
+  function formatNoticeDate(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  }
+
+  function noticeStatusBadge(status) {
+    const label = status === "published" ? "PUBLISHED" : status === "archived" ? "ARCHIVED" : "DRAFT";
+    return `<span class="notice-status-badge" data-status="${escapeHtml(status)}">${label}</span>`;
+  }
+
   function renderNotifications() {
     const target = $("#notificationList");
-    if (target) target.innerHTML = '<div class="empty-state">No official notifications are available yet.</div>';
+    if (!target) return;
+    if (!liveMode || !officialProfile) {
+      target.innerHTML = '<div class="empty-state">Sign in with an authorized government account to view or publish official notices. Citizen accounts cannot publish government announcements.</div>';
+      return;
+    }
+    const q = noticeSearchQuery.trim().toLowerCase();
+    const list = officialNotices.filter((notice) => {
+      const matchesStatus = noticeFilter === "all" || notice.status === noticeFilter;
+      const haystack = [notice.title, notice.reference_number, notice.notice_type, notice.issuing_department, notice.summary, notice.body, notice.district, notice.locality].join(" ").toLowerCase();
+      return matchesStatus && (!q || haystack.includes(q));
+    });
+    if (!list.length) {
+      target.innerHTML = `<div class="empty-state">${officialNotices.length ? "No notices match these filters." : "No notices have been created in your authorized scope yet. Use Create notice to draft the first official announcement."}</div>`;
+      return;
+    }
+    target.innerHTML = list.map((notice) => {
+      const area = [notice.district, notice.locality].filter(Boolean).join(" · ");
+      const dates = [
+        notice.issued_at ? "Issued " + formatNoticeDate(notice.issued_at) : "",
+        notice.effective_at ? "Effective " + formatNoticeDate(notice.effective_at) : "",
+        notice.expires_at ? "Valid until " + formatNoticeDate(notice.expires_at) : ""
+      ].filter(Boolean);
+      const actions = [
+        `<button type="button" class="btn" data-notice-edit="${escapeHtml(notice.id)}">Edit</button>`,
+        notice.status === "draft" || notice.status === "archived"
+          ? `<button type="button" class="btn btn-primary" data-notice-status="${escapeHtml(notice.id)}" data-next-status="published">${notice.status === "archived" ? "Republish" : "Publish"}</button>`
+          : `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="archived">Archive</button>`,
+        notice.status === "draft" ? `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="archived">Discard / archive</button>` : ""
+      ].join("");
+      return `<article class="government-notice-card ${notice.is_pinned ? "is-pinned" : ""}">
+        <div class="government-notice-card-head"><div class="government-notice-card-copy">
+          <div class="government-notice-kicker"><span>${escapeHtml(notice.notice_type)}</span>${notice.reference_number ? `<span>· ${escapeHtml(notice.reference_number)}</span>` : ""}${notice.is_pinned ? "<span>· PINNED</span>" : ""}</div>
+          <h3>${escapeHtml(notice.title)}</h3>
+          <p class="government-notice-summary">${escapeHtml(notice.summary || notice.body.slice(0, 240) + (notice.body.length > 240 ? "…" : ""))}</p>
+        </div>${noticeStatusBadge(notice.status)}</div>
+        <div class="government-notice-meta"><span>${escapeHtml(noticeDepartmentLabel(notice.issuing_department))}</span>${area ? `<span>${escapeHtml(area)}</span>` : ""}${dates.map((date) => `<span>${escapeHtml(date)}</span>`).join("")}</div>
+        <div class="government-notice-actions">${actions}</div>
+      </article>`;
+    }).join("");
+  }
+
+  function setNoticeFormMessage(message, kind = "") {
+    const target = $("#noticeFormMessage");
+    if (!target) return;
+    target.textContent = message || "";
+    if (kind) target.dataset.kind = kind;
+    else delete target.dataset.kind;
+  }
+
+  function populateNoticeDepartmentOptions() {
+    const select = $("#noticeDepartment");
+    if (!select) return;
+    const currentDepartment = officialProfile?.department_id || "";
+    const list = departments.map((dept) => ({ value: dept.id, label: dept.name }));
+    if (currentDepartment && !list.some((dept) => dept.value === currentDepartment)) {
+      list.push({ value: currentDepartment, label: noticeDepartmentLabel(currentDepartment) });
+    }
+    select.innerHTML = list.map((dept) => `<option value="${escapeHtml(dept.value)}">${escapeHtml(dept.label)}</option>`).join("");
+    if (officialProfile?.role === "admin") {
+      select.disabled = false;
+      if (!select.value && list.length) select.value = list[0].value;
+    } else if (currentDepartment) {
+      select.value = currentDepartment;
+      select.disabled = true;
+    } else {
+      select.disabled = true;
+    }
+  }
+
+  function dateInputValue(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+  }
+
+  function dateInputToIso(value) {
+    return value ? new Date(value + "T12:00:00.000Z").toISOString() : null;
+  }
+
+  function resetNoticeForm() {
+    const form = $("#governmentNoticeForm");
+    if (!form) return;
+    form.reset();
+    editingNoticeId = null;
+    $("#noticeId").value = "";
+    $("#noticeFormHeading").textContent = "Create official notice";
+    const issued = $("#noticeIssuedAt");
+    if (issued) issued.value = new Date().toISOString().slice(0, 10);
+    populateNoticeDepartmentOptions();
+    setNoticeFormMessage("");
+  }
+
+  function openNoticeForm(notice = null) {
+    if (!liveMode || !officialProfile) {
+      setNoticeFormMessage("Sign in with an authorized government account before creating a notice.", "error");
+      return;
+    }
+    const panel = $("#noticeFormPanel");
+    if (!panel) return;
+    resetNoticeForm();
+    if (notice) {
+      editingNoticeId = notice.id;
+      $("#noticeId").value = notice.id;
+      $("#noticeTitle").value = notice.title || "";
+      $("#noticeReference").value = notice.reference_number || "";
+      $("#noticeType").value = notice.notice_type || "Public Notice";
+      $("#noticeDepartment").value = notice.issuing_department || officialProfile.department_id || "";
+      $("#noticeOfficer").value = notice.issuing_officer || "";
+      $("#noticeSummary").value = notice.summary || "";
+      $("#noticeBody").value = notice.body || "";
+      $("#noticeAudience").value = notice.audience_type || "All citizens";
+      $("#noticeAudienceDetails").value = notice.audience_details || "";
+      $("#noticeDistrict").value = notice.district || "";
+      $("#noticeLocality").value = notice.locality || "";
+      $("#noticeIssuedAt").value = dateInputValue(notice.issued_at);
+      $("#noticeEffectiveAt").value = dateInputValue(notice.effective_at);
+      $("#noticeExpiresAt").value = dateInputValue(notice.expires_at);
+      $("#noticeContactOffice").value = notice.contact_office || "";
+      $("#noticeContactPhone").value = notice.contact_phone || "";
+      $("#noticeContactEmail").value = notice.contact_email || "";
+      $("#noticeAttachmentLabel").value = notice.attachment_label || "";
+      $("#noticeAttachmentUrl").value = notice.attachment_url || "";
+      $("#noticePinned").checked = Boolean(notice.is_pinned);
+      $("#noticeFormHeading").textContent = notice.status === "published" ? "Edit published notice" : "Edit official notice";
+    }
+    panel.hidden = false;
+    $("#toggleNoticeForm").textContent = notice ? "Editing notice" : "Create notice";
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function loadGovernmentNotices() {
+    if (!supabaseClient || !liveMode || !officialProfile) {
+      officialNotices = [];
+      renderNotifications();
+      return;
+    }
+    const { data, error } = await supabaseClient
+      .from("civic_notices")
+      .select("*")
+      .order("is_pinned", { ascending: false })
+      .order("updated_at", { ascending: false });
+    if (error) {
+      console.error("Government notices could not be loaded:", error);
+      officialNotices = [];
+      const target = $("#notificationList");
+      if (target) target.innerHTML = '<div class="empty-state">Notices could not be loaded. Check the database migration and your department permissions.</div>';
+      return;
+    }
+    officialNotices = data || [];
+    renderNotifications();
+  }
+
+  async function updateNoticeStatus(noticeId, nextStatus) {
+    if (!liveMode || !supabaseClient || !officialProfile) return;
+    const notice = officialNotices.find((item) => item.id === noticeId);
+    if (!notice) return;
+    const actionLabel = nextStatus === "published" ? "publish" : "archive";
+    if (!window.confirm(`Are you sure you want to ${actionLabel} “${notice.title}”?`)) return;
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !userData?.user) {
+      setNoticeFormMessage("Your session could not be verified. Sign in again.", "error");
+      return;
+    }
+    const patch = {
+      status: nextStatus,
+      updated_by: userData.user.id
+    };
+    if (nextStatus === "published") patch.published_at = notice.published_at || new Date().toISOString();
+    const { error } = await supabaseClient.from("civic_notices").update(patch).eq("id", noticeId);
+    if (error) {
+      console.error("Notice status update failed:", error);
+      window.alert("The notice was not updated. Check your authorization and try again.");
+      return;
+    }
+    await loadGovernmentNotices();
+  }
+
+  async function submitGovernmentNotice(event) {
+    event.preventDefault();
+    if (!liveMode || !supabaseClient || !officialProfile) {
+      setNoticeFormMessage("Only an authorized government account can save or publish notices.", "error");
+      return;
+    }
+    const form = event.currentTarget;
+    const action = event.submitter?.dataset.noticeAction || "draft";
+    const noticeId = $("#noticeId").value || editingNoticeId;
+    const existing = noticeId ? officialNotices.find((item) => item.id === noticeId) : null;
+    const body = $("#noticeBody").value.trim();
+    const effectiveDate = $("#noticeEffectiveAt").value;
+    const expiryDate = $("#noticeExpiresAt").value;
+    if (effectiveDate && expiryDate && expiryDate < effectiveDate) {
+      setNoticeFormMessage("Expiry date must be on or after the effective date.", "error");
+      return;
+    }
+    const attachmentUrl = $("#noticeAttachmentUrl").value.trim();
+    if (attachmentUrl && !/^https?:\/\//i.test(attachmentUrl)) {
+      setNoticeFormMessage("The attachment must use a valid http:// or https:// URL.", "error");
+      return;
+    }
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !userData?.user) {
+      setNoticeFormMessage("Your session could not be verified. Please sign in again.", "error");
+      return;
+    }
+    const userId = userData.user.id;
+    const nextStatus = action === "publish" ? "published" : (existing?.status || "draft");
+    const payload = {
+      title: $("#noticeTitle").value.trim(),
+      reference_number: $("#noticeReference").value.trim() || null,
+      notice_type: $("#noticeType").value,
+      issuing_department: $("#noticeDepartment").value || officialProfile.department_id,
+      issuing_officer: $("#noticeOfficer").value.trim() || null,
+      summary: $("#noticeSummary").value.trim() || null,
+      body,
+      audience_type: $("#noticeAudience").value,
+      audience_details: $("#noticeAudienceDetails").value.trim() || null,
+      district: $("#noticeDistrict").value.trim() || null,
+      locality: $("#noticeLocality").value.trim() || null,
+      issued_at: dateInputToIso($("#noticeIssuedAt").value) || new Date().toISOString(),
+      effective_at: dateInputToIso(effectiveDate),
+      expires_at: dateInputToIso(expiryDate),
+      contact_office: $("#noticeContactOffice").value.trim() || null,
+      contact_phone: $("#noticeContactPhone").value.trim() || null,
+      contact_email: $("#noticeContactEmail").value.trim() || null,
+      attachment_label: $("#noticeAttachmentLabel").value.trim() || null,
+      attachment_url: attachmentUrl || null,
+      is_pinned: $("#noticePinned").checked,
+      status: nextStatus,
+      published_at: nextStatus === "published" ? (existing?.published_at || new Date().toISOString()) : null,
+      updated_by: userId
+    };
+    if (!existing) payload.created_by = userId;
+    const submitButtons = form.querySelectorAll('button[type="submit"]');
+    submitButtons.forEach((button) => { button.disabled = true; });
+    setNoticeFormMessage(action === "publish" ? "Publishing official notice…" : "Saving notice…");
+    try {
+      const result = existing
+        ? await supabaseClient.from("civic_notices").update(payload).eq("id", existing.id).select("id").maybeSingle()
+        : await supabaseClient.from("civic_notices").insert(payload).select("id").maybeSingle();
+      if (result.error || !result.data?.id) throw result.error || new Error("No notice was saved. Confirm that your account can manage this department.");
+      await loadGovernmentNotices();
+      setNoticeFormMessage(action === "publish" ? "Notice published. It is now available in the People’s Portal notice page." : (existing ? "Notice changes saved." : "Draft saved. It is not visible to citizens until published."), "success");
+      $("#noticeId").value = existing?.id || result.data.id;
+      editingNoticeId = existing?.id || result.data.id;
+      $("#noticeFormHeading").textContent = nextStatus === "published" ? "Edit published notice" : "Edit official notice";
+      $("#noticeFormPanel").hidden = false;
+    } catch (error) {
+      console.error("Could not save government notice:", error);
+      setNoticeFormMessage(error?.message || "The notice could not be saved. Check required fields and department access.", "error");
+    } finally {
+      submitButtons.forEach((button) => { button.disabled = false; });
+    }
+  }
+
+  function bindNoticeEvents() {
+    const toggle = $("#toggleNoticeForm");
+    if (toggle && toggle.dataset.bound !== "true") {
+      toggle.dataset.bound = "true";
+      toggle.addEventListener("click", () => {
+        const panel = $("#noticeFormPanel");
+        if (!liveMode) {
+          setNoticeFormMessage("Sign in with an authorized government account before creating a notice.", "error");
+          navigate("profile");
+          return;
+        }
+        if (!panel.hidden) {
+          panel.hidden = true;
+          resetNoticeForm();
+          toggle.textContent = "＋ Create notice";
+        } else openNoticeForm();
+      });
+    }
+    $("#cancelNoticeForm")?.addEventListener("click", () => {
+      $("#noticeFormPanel").hidden = true;
+      resetNoticeForm();
+      if (toggle) toggle.textContent = "＋ Create notice";
+    });
+    const form = $("#governmentNoticeForm");
+    if (form && form.dataset.bound !== "true") {
+      form.dataset.bound = "true";
+      form.addEventListener("submit", submitGovernmentNotice);
+    }
+    $("#noticeSearch")?.addEventListener("input", (event) => {
+      noticeSearchQuery = event.target.value || "";
+      renderNotifications();
+    });
+    $("#noticeStatusFilter")?.addEventListener("change", (event) => {
+      noticeFilter = event.target.value || "all";
+      renderNotifications();
+    });
+    const target = $("#notificationList");
+    if (target && target.dataset.bound !== "true") {
+      target.dataset.bound = "true";
+      target.addEventListener("click", (event) => {
+        const edit = event.target.closest("[data-notice-edit]");
+        if (edit) {
+          const notice = officialNotices.find((item) => item.id === edit.dataset.noticeEdit);
+          if (notice) openNoticeForm(notice);
+          return;
+        }
+        const statusButton = event.target.closest("[data-notice-status]");
+        if (statusButton) updateNoticeStatus(statusButton.dataset.noticeStatus, statusButton.dataset.nextStatus);
+      });
+    }
   }
 
 
@@ -395,6 +717,8 @@
     }
     reports = reportRows.map(r => ({ id:r.id, publicId:r.public_id, databaseId:r.id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", rawLocation:r.location, latitude:r.location && typeof r.location === "object" ? (r.location.latitude ?? r.location.lat ?? null) : null, longitude:r.location && typeof r.location === "object" ? (r.location.longitude ?? r.location.lng ?? r.location.lon ?? null) : null, location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "", photos:photosByReport.get(r.id) || [] }));
     liveMode = true; supabaseClient = client; officialProfile = profile;
+    populateNoticeDepartmentOptions();
+    await loadGovernmentNotices();
     const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
     renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications(); renderGovernmentProfile();
     if (selectedDepartment) renderDepartmentReports();
@@ -545,6 +869,7 @@
   }
   document.addEventListener("visibilitychange", refreshGovernmentReportsOnReturn);
   window.addEventListener("focus", refreshGovernmentReportsOnReturn);
+  bindNoticeEvents();
 
   connectGovernmentWorkspace().finally(() => {
     init();
