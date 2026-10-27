@@ -56,6 +56,7 @@
     crossorigin=""
   />
   <link rel="stylesheet" href="style.css?v=20261027-89bce82" />
+  <link rel="stylesheet" href="civic-ai-workspace.css?v=20261027-phase3" />
 
   <style>
     /* =====================================================
@@ -2085,6 +2086,7 @@
         <button type="button" class="icon-btn" id="newCivicAiChat" aria-label="Start a new chat" title="New chat">
           <i data-lucide="plus"></i>
         </button>
+        <button type="button" class="icon-btn" id="expandCivicAi" aria-label="Expand Civic AI" aria-pressed="false" title="Expand workspace"><i data-lucide="panel-left"></i></button>
         <button type="button" class="icon-btn" id="maximizeCivicAi" aria-label="Maximize Civic AI" aria-pressed="false" title="Maximize">
           <i data-lucide="maximize-2"></i>
         </button>
@@ -2096,6 +2098,34 @@
     </div>
 
 
+    <div class="civic-ai-workspace-layout" id="civicAiWorkspaceLayout">
+      <aside class="civic-ai-sidebar" id="civicAiSidebar" aria-label="Civic AI chat history">
+        <button type="button" class="civic-ai-new-chat" id="civicAiSidebarNewChat"><i data-lucide="plus"></i><span>New Chat</span></button>
+        <label class="civic-ai-search-label" for="civicAiSearch">Search chats</label>
+        <div class="civic-ai-search"><i data-lucide="search"></i><input id="civicAiSearch" type="search" placeholder="Search chats…" autocomplete="off" /></div>
+        <div class="civic-ai-history-section">
+          <div class="civic-ai-history-heading"><i data-lucide="pin"></i><span>Pinned</span></div>
+          <div class="civic-ai-history-list" id="civicAiPinnedChats"><p class="civic-ai-history-empty">Pinned chats appear here.</p></div>
+        </div>
+        <div class="civic-ai-history-section civic-ai-recent-section">
+          <div class="civic-ai-history-heading"><i data-lucide="clock-3"></i><span>Recent</span></div>
+          <div class="civic-ai-history-list" id="civicAiRecentChats"><p class="civic-ai-history-empty">Your saved chats appear here.</p></div>
+        </div>
+        <div class="civic-ai-sidebar-footer">
+          <button type="button" id="civicAiSettingsButton" class="civic-ai-sidebar-action"><i data-lucide="settings-2"></i><span>Settings</span></button>
+        </div>
+      </aside>
+      <section class="civic-ai-settings-view" id="civicAiSettingsView" hidden aria-label="Civic AI settings">
+        <header class="civic-ai-settings-header"><div><p class="civic-ai-settings-eyebrow">PREFERENCES</p><h3>Civic AI Settings</h3></div><button type="button" class="icon-btn" id="civicAiSettingsClose" aria-label="Close settings"><i data-lucide="x"></i></button></header>
+        <div class="civic-ai-settings-content">
+          <section class="civic-ai-setting-group"><h4>Appearance</h4><label class="civic-ai-setting-row"><span><strong>Theme</strong><small>Choose how the workspace looks.</small></span><select id="civicAiTheme"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></label></section>
+          <section class="civic-ai-setting-group"><h4>Fonts and Text Size</h4><label class="civic-ai-setting-row"><span><strong>Message text size</strong><small>Adjust readability.</small></span><select id="civicAiTextSize"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label></section>
+          <section class="civic-ai-setting-group"><h4>Notifications</h4><label class="civic-ai-setting-row"><span><strong>Response notifications</strong><small>Show a notice when a response is ready.</small></span><input id="civicAiNotifications" type="checkbox" checked /></label></section>
+          <section class="civic-ai-setting-group"><h4>Storage</h4><p class="civic-ai-setting-note">Conversations are stored in your signed-in Civic OS account.</p><button type="button" class="civic-ai-danger-action" id="civicAiClearHistory">Clear all chat history</button></section>
+          <section class="civic-ai-setting-group"><h4>Privacy and Data</h4><p class="civic-ai-setting-note">Your saved conversations are loaded for the signed-in account. Never share sensitive personal information in a chat.</p><button type="button" class="civic-ai-secondary-action" id="civicAiExportHistory">Export my chat history</button></section>
+        </div>
+      </section>
+      <div class="civic-ai-main" id="civicAiMain">
     <div
       class="civic-ai-context"
       id="civicAiContext"
@@ -2251,6 +2281,8 @@
       </button>
 
     </form>
+      </div>
+    </div>
 
   </aside>
 
@@ -2473,6 +2505,7 @@
     src="script.js?v=20261027-89bce82"
     defer
   ></script>
+  <script src="civic-ai-workspace.js?v=20261027-phase3" defer></script>
 
   <script>window.CIVIC_API = "http://localhost:5000";</script>
 <script src="auth-nav.js" defer></script>
