@@ -7414,3 +7414,130 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
 .report-comment-form textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 76px; border: 1px solid var(--border, #cbd5e1); border-radius: 12px; padding: 12px; background: var(--surface, #fff); color: var(--text, #0f172a); font: inherit; }
 .report-comment-form .btn { justify-self: start; }
 .report-comment-note { margin: 0; color: var(--muted, #64748b); font-size: .76rem; line-height: 1.4; }
+
+
+/* ---------- Community directory and future civic actions ---------- */
+.community-block {
+  margin-top: 28px;
+}
+
+.community-block .block-head {
+  align-items: flex-end;
+}
+
+.block-subtitle {
+  margin-top: 7px;
+  max-width: 620px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.community-directory-head {
+  gap: 14px;
+}
+
+.community-directory-head .btn {
+  flex-shrink: 0;
+}
+
+.community-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 16px);
+}
+
+.community-empty strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.community-empty p {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.community-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.community-empty-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.organisation-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 16px);
+}
+
+.organisation-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.organisation-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.organisation-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.organisation-copy strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.organisation-copy p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+@media (max-width: 600px) {
+  .community-directory-head {
+    align-items: flex-start !important;
+  }
+
+  .organisation-cta {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .organisation-copy {
+    flex-basis: calc(100% - 64px);
+  }
+
+  .organisation-cta > .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
