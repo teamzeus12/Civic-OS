@@ -26,6 +26,8 @@
   let supabaseClient = null;
   let liveMode = false;
   let officialProfile = null;
+  let governmentMap = null;
+  const governmentMapMarkers = new Map();
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
@@ -33,10 +35,34 @@
   const countStatus = (status) => reports.filter((report) => report.status === status).length;
   const countDepartment = (id) => reports.filter((report) => report.department === id).length;
 
+  function getReportCoordinates(report) {
+    const raw = report?.rawLocation;
+    let latitude = report?.latitude;
+    let longitude = report?.longitude;
+    if (raw && typeof raw === "object") {
+      latitude = latitude ?? raw.latitude ?? raw.lat;
+      longitude = longitude ?? raw.longitude ?? raw.lng ?? raw.lon;
+    }
+    if ((latitude === null || latitude === undefined || longitude === null || longitude === undefined) && typeof raw === "string") {
+      const match = raw.trim().match(/^(?:GPS\\s*)?(-?\\d{1,2}(?:\\.\\d+)?)\\s*,\\s*(-?\\d{1,3}(?:\\.\\d+)?)$/i);
+      if (match) { latitude = Number(match[1]); longitude = Number(match[2]); }
+    }
+    latitude = Number(latitude); longitude = Number(longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+    return { latitude, longitude };
+  }
+
+  function getReportLocationUrl(report) {
+    const coords = getReportCoordinates(report);
+    const query = coords ? coords.latitude + "," + coords.longitude : String(report?.location || "").trim();
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query || "Manipur");
+  }
+
   function navigate(page) {
     $$(".page").forEach((section) => section.classList.toggle("active", section.dataset.pageView === page));
     $$(".nav-btn[data-page]").forEach((button) => button.classList.toggle("active", button.dataset.page === page));
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (page === "dashboard" && governmentMap) requestAnimationFrame(() => governmentMap && governmentMap.invalidateSize());
   }
 
   function statsMarkup(items) {
@@ -129,6 +155,76 @@
     if (chips) chips.innerHTML = [["all", "All"], ...statusOptions.map((statusName) => [statusName, statusName])].map(([value, label]) => `<button type="button" class="filter-chip ${activeStatus === value ? "active" : ""}" data-status-chip="${escapeHtml(value)}">${escapeHtml(label)} · ${value === "all" ? reports.length : countStatus(value)}</button>`).join("");
   }
 
+  function renderGovernmentMapSelection(report) {
+    const panel = $("#govMapSelection");
+    if (!panel || !report) return;
+    const coords = getReportCoordinates(report);
+    const dept = deptById(report.department);
+    panel.innerHTML = `<div class="map-report-top"><span>${escapeHtml(report.publicId || report.id)}</span><span>${escapeHtml(report.status)}</span></div>
+      <h3>${escapeHtml(report.title)}</h3>
+      <div class="map-report-meta"><span class="pill">${escapeHtml(dept?.short || report.department || "Other")}</span><span class="pill">${escapeHtml(report.category || "General")}</span></div>
+      <p>${escapeHtml(report.description || "No description supplied.")}</p>
+      <div class="map-location"><strong>Location</strong><br>${escapeHtml(report.location || "Location not provided")}<br><span>${coords ? "Coordinates: " + coords.latitude.toFixed(5) + ", " + coords.longitude.toFixed(5) : "No usable GPS coordinates recorded"}</span></div>
+      <a class="map-open-link" href="${escapeHtml(getReportLocationUrl(report))}" target="_blank" rel="noopener noreferrer">Open location ↗</a>`;
+    governmentMapMarkers.forEach((entry, id) => entry.marker.setStyle({ radius: id === report.id ? 10 : 7, weight: id === report.id ? 4 : 2 }));
+  }
+
+  function renderGovernmentMap() {
+    const mapElement = $("#govDashboardMap");
+    const statusElement = $("#govDashboardMapStatus");
+    const unpinnedTarget = $("#govMapUnpinned");
+    if (!mapElement) return;
+    const mapped = reports.map((report) => ({ report, coords: getReportCoordinates(report) })).filter((item) => item.coords);
+    const unpinned = reports.filter((report) => !getReportCoordinates(report));
+
+    if (statusElement) statusElement.textContent = liveMode
+      ? mapped.length + " of " + reports.length + " authorized reports have usable map coordinates. Address-only reports are listed separately; no locations are guessed."
+      : "Sign in with an authorized government account to load the real report map.";
+
+    if (unpinnedTarget) {
+      unpinnedTarget.innerHTML = unpinned.length
+        ? unpinned.map((report) => `<button type="button" data-gov-map-report="${escapeHtml(report.id)}"><strong>${escapeHtml(report.title)}</strong><span>${escapeHtml(report.location || "Location not provided")} · ${escapeHtml(report.status)}</span></button>`).join("")
+        : '<p class="gov-map-status">No address-only reports in this data scope.</p>';
+    }
+
+    if (!window.L || typeof window.L.map !== "function") {
+      mapElement.innerHTML = '<div class="gov-map-fallback"><strong>Map library unavailable</strong><p>Report records remain available in Issues. Check the network connection and reload to use the map.</p></div>';
+      return;
+    }
+
+    if (governmentMap) { governmentMap.remove(); governmentMap = null; }
+    governmentMapMarkers.clear();
+    mapElement.innerHTML = "";
+    governmentMap = window.L.map(mapElement, { scrollWheelZoom: false }).setView([24.817, 93.9368], 9);
+    window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
+    }).addTo(governmentMap);
+
+    const statusColors = { "Reported": "#64748b", "Verified": "#2563eb", "In Progress": "#b86c08", "Resolved": "#0f9f78" };
+    const points = [];
+    mapped.forEach(({ report, coords }) => {
+      const color = statusColors[report.status] || "#0f766e";
+      const marker = window.L.circleMarker([coords.latitude, coords.longitude], {
+        radius: 7, color, weight: 2, opacity: 1, fillColor: color, fillOpacity: .9
+      }).addTo(governmentMap);
+      marker.bindTooltip(escapeHtml(report.title || report.id), { direction: "top", offset: [0, -6] });
+      marker.on("click", () => renderGovernmentMapSelection(report));
+      governmentMapMarkers.set(report.id, { marker });
+      points.push([coords.latitude, coords.longitude]);
+    });
+
+    if (points.length === 1) governmentMap.setView(points[0], 14);
+    else if (points.length > 1) governmentMap.fitBounds(points, { padding: [24, 24], maxZoom: 14 });
+
+    const selection = $("#govMapSelection");
+    if (selection) {
+      if (mapped.length) renderGovernmentMapSelection(mapped[0].report);
+      else selection.innerHTML = '<div class="map-selection-empty"><strong>No GPS pins available yet</strong><p>Reports will appear here when their saved location includes usable coordinates. Address-only reports remain listed separately.</p></div>';
+    }
+    requestAnimationFrame(() => governmentMap && governmentMap.invalidateSize());
+  }
+
   function renderDashboard() {
     renderStats("dashboardStats");
     const statusTarget = $("#statusAnalytics");
@@ -140,6 +236,7 @@
     const departmentCounts = departments.map((dept) => ({ dept, count: countDepartment(dept.id) })).filter((item) => item.count).sort((a, b) => b.count - a.count);
     deptTarget.innerHTML = departmentCounts.map(({ dept, count }) => `<div class="bar-row"><span>${escapeHtml(dept.short)}</span><div class="bar-track"><div class="bar-fill" style="width:${reports.length ? count / reports.length * 100 : 0}%"></div></div><strong>${count}</strong></div>`).join("");
     $("#dashboardActivity").innerHTML = reports.slice().reverse().slice(0, 5).map((report) => `<div class="activity-item"><span class="activity-dot"></span><div><strong>${escapeHtml(report.title)}</strong><p>${escapeHtml(deptById(report.department)?.short || "Other")} · ${escapeHtml(report.location)} · ${escapeHtml(report.status)}</p></div></div>`).join("");
+    renderGovernmentMap();
   }
 
   function renderNotifications() {
@@ -253,10 +350,11 @@
         }
       }
     }
-    reports = reportRows.map(r => ({ id:r.id, publicId:r.public_id, databaseId:r.id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "", photos:photosByReport.get(r.id) || [] }));
+    reports = reportRows.map(r => ({ id:r.id, publicId:r.public_id, databaseId:r.id, title:r.title || "Untitled civic report", category:r.category || "General", department:deptMap[r.primary_department_id] || r.primary_department_id || "other", rawLocation:r.location, latitude:r.location && typeof r.location === "object" ? (r.location.latitude ?? r.location.lat ?? null) : null, longitude:r.location && typeof r.location === "object" ? (r.location.longitude ?? r.location.lng ?? r.location.lon ?? null) : null, location:place(r.location), description:r.description || "", status:r.status || "Submitted", updated:r.updated_at || r.reported_at || "", photos:photosByReport.get(r.id) || [] }));
     liveMode = true; supabaseClient = client; officialProfile = profile;
     const pill = document.querySelector(".demo-pill"); if (pill) pill.textContent = "LIVE · AUTHENTICATED";
     renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments", $("#departmentSearch")?.value || ""); renderReports("homeRecent", reports.slice(0, 4)); renderDashboard(); renderIssues(); renderNotifications(); renderGovernmentProfile();
+    navigate("dashboard");
     const small = document.querySelector(".profile-mini small"); if (small) small.textContent = profile.role === "admin" ? "Administrator" : profile.department_id.toUpperCase() + " official";
   }
 
@@ -282,6 +380,8 @@
   document.addEventListener("click", async (event) => {
     const nav = event.target.closest("[data-page]");
     if (nav) { navigate(nav.dataset.page); if (nav.dataset.page === "profile") renderGovernmentProfile(); return; }
+    const mapReportButton = event.target.closest("[data-gov-map-report]");
+    if (mapReportButton) { const report = reports.find((item) => item.id === mapReportButton.dataset.govMapReport); if (report) renderGovernmentMapSelection(report); return; }
     const deptCard = event.target.closest("[data-department]");
     if (deptCard) { openDepartment(deptCard.dataset.department); return; }
     const deptLink = event.target.closest("[data-open-department]");
@@ -384,6 +484,6 @@
 
   connectGovernmentWorkspace().finally(() => {
     init();
-    if (liveMode) { renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); renderGovernmentProfile(); }
+    if (liveMode) { renderStats("homeStats"); renderStats("dashboardStats"); renderDepartments("homeDepartments"); renderDepartments("allDepartments"); renderReports("homeRecent", reports.slice().reverse().slice(0, 4)); renderDashboard(); renderIssues(); renderGovernmentProfile(); navigate("dashboard"); }
   });
 })();
