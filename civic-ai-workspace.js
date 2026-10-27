@@ -213,6 +213,19 @@
   function bind() {
     const panel = getPanel(); if (!panel) return; applyPrefs();
     $("expandCivicAi")?.addEventListener("click",onExpandClick);
+    $("civicAiSidebarBack")?.addEventListener("click",() => {
+      showSettings(false);
+      if (window.matchMedia("(max-width: 520px)").matches) {
+        panel.classList.remove("civic-ai-show-sidebar");
+      } else {
+        panel.classList.remove("civic-ai-show-sidebar","is-expanded","is-maximized");
+        const maxButton = $("maximizeCivicAi");
+        if (maxButton) { maxButton.setAttribute("aria-pressed","false"); maxButton.setAttribute("aria-label","Maximize Civic AI"); maxButton.title = "Maximize"; const icon = maxButton.querySelector("i"); if (icon) icon.setAttribute("data-lucide","maximize-2"); }
+        const expandButton = $("expandCivicAi");
+        if (expandButton) { expandButton.setAttribute("aria-pressed","false"); expandButton.setAttribute("aria-label","Expand Civic AI"); expandButton.title = "Expand workspace"; }
+      }
+      if (typeof window.refreshIcons === "function") window.refreshIcons();
+    });
     $("civicAiSidebarNewChat")?.addEventListener("click",() => { if (typeof window.startNewCivicAiChat === "function") window.startNewCivicAiChat(); showSettings(false); if (typeof window.refreshIcons === "function") window.refreshIcons(); });
     $("civicAiSearch")?.addEventListener("input",refreshChatHistory);
     $("civicAiSettingsButton")?.addEventListener("click",() => showSettings(true));
