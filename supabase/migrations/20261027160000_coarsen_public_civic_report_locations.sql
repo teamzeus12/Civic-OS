@@ -70,3 +70,57 @@ revoke all on function public.find_civic_duplicate_candidates(double precision, 
   from public, anon, authenticated;
 grant execute on function public.find_civic_duplicate_candidates(double precision, double precision, integer, integer)
   to service_role;
+
+-- The verified-only public map RPC also returned the stored exact location.
+-- Preserve its existing result schema for compatibility, but coarsen coordinates
+-- in the public response just as we do for the citizen feed.
+create or replace function public.get_public_issue_map()
+returns table (
+  id uuid,
+  public_id text,
+  title text,
+  category text,
+  status text,
+  priority text,
+  public_impact text,
+  location jsonb,
+  reported_at timestamptz,
+  resolved_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+  select
+    r.id,
+    r.public_id,
+    r.title,
+    r.category,
+    r.status,
+    r.priority,
+    r.public_impact,
+    case
+      when jsonb_typeof(r.location -> 'latitude') = 'number'
+       and jsonb_typeof(r.location -> 'longitude') = 'number'
+      then jsonb_build_object(
+        'address', 'Approximate area',
+        'latitude', round((r.location ->> 'latitude')::numeric, 2),
+        'longitude', round((r.location ->> 'longitude')::numeric, 2),
+        'precision', 'approximate'
+      )
+      else jsonb_build_object(
+        'address', 'Exact location withheld for privacy',
+        'precision', 'withheld'
+      )
+    end as location,
+    r.reported_at,
+    r.resolved_at
+  from public.reports as r
+  where r.verification_required = false
+  order by r.reported_at desc
+  limit 200;
+$function$;
+
+revoke all on function public.get_public_issue_map() from public;
+grant execute on function public.get_public_issue_map() to anon, authenticated;
