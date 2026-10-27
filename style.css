@@ -7746,3 +7746,26 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
 @media (max-width:600px) {
   .organisation-friend-option { gap:9px; padding:12px; }
 }
+
+
+/* Civic hotspot sorting: keep the control compact and the full location list usable. */
+.hotspot-panel-head { align-items:flex-start; }
+.hotspot-sort-control { display:grid; gap:4px; flex:0 0 auto; min-width:120px; }
+.hotspot-sort-control label { color:var(--muted); font-size:10px; line-height:1.3; }
+.hotspot-sort-control select {
+  max-width:150px;
+  min-height:36px;
+  padding:7px 28px 7px 10px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface,#fff);
+  color:var(--text,var(--ink,#17241e));
+  font:inherit;
+  font-size:11px;
+}
+#hotspotsList { max-height:440px; overflow-y:auto; padding-right:3px; }
+.hotspot-empty { list-style:none; padding:14px 0; color:var(--muted); font-size:12px; line-height:1.5; }
+@media(max-width:480px) {
+  .hotspot-sort-control { min-width:0; }
+  .hotspot-sort-control select { max-width:130px; }
+}
