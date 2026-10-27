@@ -10,7 +10,8 @@
   function applyUiPreferences(prefs = readPrefs()) {
     const theme = ["system","dark","light"].includes(prefs.theme) ? prefs.theme : "system";
     const textSize = ["standard","large","larger"].includes(prefs.textSize) ? prefs.textSize : "standard";
-    document.body.dataset.civicTheme = theme;
+    const prefersLight = Boolean(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
+    document.body.dataset.civicTheme = theme === "system" ? (prefersLight ? "light" : "dark") : theme;
     document.body.dataset.civicTextSize = textSize;
     document.body.dataset.civicReduceMotion = prefs.reduceMotion ? "true" : "false";
     if ($("profileThemePreference")) $("profileThemePreference").value = theme;
@@ -136,6 +137,12 @@
   };
   document.addEventListener("DOMContentLoaded", () => {
     applyUiPreferences();
+    if (window.matchMedia) {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: light)");
+      const refreshSystemTheme = () => { if (readPrefs().theme === "system") applyUiPreferences(); };
+      if (systemTheme.addEventListener) systemTheme.addEventListener("change", refreshSystemTheme);
+      else if (systemTheme.addListener) systemTheme.addListener(refreshSystemTheme);
+    }
     activateTab("overview");
     activateSettingsTab("appearance");
     document.querySelectorAll("[data-settings-tab]").forEach((tab) => tab.addEventListener("click", () => activateSettingsTab(tab.dataset.settingsTab)));
