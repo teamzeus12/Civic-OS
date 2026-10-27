@@ -238,3 +238,6 @@ h1,h2,h3,p{margin-top:0}
 .notice-status-badge[data-status="archived"]{color:#59665f;background:#f3f5f4}
 .notice-form-panel .panel-head{align-items:center}
 @media(max-width:640px){.notice-form-panel,.notice-management-panel{padding:14px}.notice-form-section{padding:13px;gap:14px}.notice-form-grid{grid-template-columns:minmax(0,1fr);gap:13px}.notice-field-wide{grid-column:auto}.notice-register-tools{grid-template-columns:minmax(0,1fr)}.government-notice-card-head{flex-direction:column}.government-notice-card-head>.notice-status-badge{align-self:flex-start}.notice-form-actions{flex-direction:column-reverse}.notice-form-actions .btn{width:100%;justify-content:center}}
+
+/* Safe, readable in-form preview before an official notice is saved or published. */
+.notice-preview-panel[hidden]{display:none!important}.notice-preview-panel{margin:4px 0;padding:18px;border:1px solid #b8d8c6;border-radius:14px;background:#f5fbf7;overflow-wrap:anywhere}.notice-preview-panel h3{margin:8px 0;font-size:20px;line-height:1.35;color:var(--ink)}.notice-preview-meta{font-size:11px;color:var(--muted);line-height:1.6}.notice-preview-body{white-space:pre-wrap;line-height:1.75;font-size:13px;color:var(--ink)}.notice-status-badge[data-status="withdrawn"]{color:#9b2c2c;background:#fff1f1;border-color:#f0cccc}
