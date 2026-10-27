@@ -6610,7 +6610,9 @@ function bindEvents() {
 
       const refreshCommunityPeopleButton = event.target.closest("#refreshCommunityPeople");
       if (refreshCommunityPeopleButton) {
-        loadCommunityDirectory(true);
+        if (state.communityView === "friends") loadMyFriends();
+        else if (state.communityView === "requests") loadFriendRequests();
+        else loadCommunityDirectory(true);
         return;
       }
 
