@@ -1780,10 +1780,13 @@ function setReportLocationPin(coords, source = "map", center = true) {
     return false;
   }
 
-  selectedReportCoordinates = { latitude, longitude };
   const map = initializeReportLocationMap();
-  if (!map) return false;
+  if (!map) {
+    selectedReportCoordinates = null;
+    return false;
+  }
 
+  selectedReportCoordinates = { latitude, longitude };
   const point = [latitude, longitude];
   if (!reportLocationMarker) {
     reportLocationMarker = window.L.marker(point, { draggable: true }).addTo(map);
