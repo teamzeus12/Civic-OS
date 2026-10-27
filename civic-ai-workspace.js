@@ -120,7 +120,7 @@
   }
   function openWorkspace() {
     const panel = getPanel(); if (!panel) return;
-    panel.classList.add("is-open","is-expanded"); panel.classList.remove("civic-ai-show-sidebar");
+    panel.classList.add("is-open","is-expanded"); panel.classList.toggle("civic-ai-show-sidebar", window.matchMedia("(max-width: 520px)").matches);
     document.body.classList.add("civic-ai-open"); panel.setAttribute("aria-hidden","false");
     const fab = $("civicAiFab"); if (fab) fab.setAttribute("aria-expanded","true");
     refreshChatHistory(); if (typeof window.refreshIcons === "function") window.refreshIcons();
@@ -129,7 +129,7 @@
     const panel = getPanel(); if (!panel) return;
     if (panel.classList.contains("is-maximized")) { panel.classList.toggle("civic-ai-show-sidebar"); return; }
     if (!panel.classList.contains("is-open")) { openWorkspace(); return; }
-    if (!panel.classList.contains("is-expanded")) { panel.classList.add("is-expanded"); refreshChatHistory(); return; }
+    if (!panel.classList.contains("is-expanded")) { panel.classList.add("is-expanded"); if (window.matchMedia("(max-width: 520px)").matches) panel.classList.add("civic-ai-show-sidebar"); refreshChatHistory(); return; }
     if (window.matchMedia("(max-width: 520px)").matches) panel.classList.toggle("civic-ai-show-sidebar");
     else { panel.classList.remove("is-expanded","civic-ai-show-sidebar"); }
   }

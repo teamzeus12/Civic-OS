@@ -111,3 +111,155 @@
 .civic-ai-image-gen-open:hover { background:rgba(62,224,143,.12); }
 .civic-ai-image-gen-open svg { width:14px; height:14px; }
 .civic-ai-panel.is-light .civic-ai-image-gen-open { color:#17623b; }
+
+
+/* Sidebar visibility and contrast refinement — Phase 3 follow-up */
+.civic-ai-panel.is-expanded .civic-ai-sidebar,
+.civic-ai-panel.is-maximized .civic-ai-sidebar {
+  box-sizing: border-box !important;
+  flex: 0 0 250px !important;
+  width: 250px !important;
+  min-width: 0 !important;
+  padding: 16px 12px 12px !important;
+  background: #101d15 !important;
+  border-right: 1px solid #2b4334 !important;
+  color: #f3fff6 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-new-chat,
+.civic-ai-panel.is-maximized .civic-ai-new-chat {
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  background: #173d29 !important;
+  border: 1px solid #39865b !important;
+  color: #f4fff7 !important;
+  font-size: 13px !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-search,
+.civic-ai-panel.is-maximized .civic-ai-search {
+  min-height: 40px !important;
+  background: #0a120d !important;
+  border: 1px solid #365140 !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-search input,
+.civic-ai-panel.is-maximized .civic-ai-search input {
+  color: #f5fff7 !important;
+  font-size: 13px !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-search input::placeholder,
+.civic-ai-panel.is-maximized .civic-ai-search input::placeholder {
+  color: #a5b8aa !important;
+  opacity: 1 !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-history-heading,
+.civic-ai-panel.is-maximized .civic-ai-history-heading {
+  color: #c4d7ca !important;
+  font-size: 12px !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-history-empty,
+.civic-ai-panel.is-maximized .civic-ai-history-empty {
+  color: #afc2b4 !important;
+  font-size: 12px !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-history-item,
+.civic-ai-panel.is-maximized .civic-ai-history-item {
+  grid-template-columns: minmax(0,1fr) auto auto !important;
+  min-width: 0 !important;
+  background: transparent;
+}
+.civic-ai-panel.is-expanded .civic-ai-history-open,
+.civic-ai-panel.is-maximized .civic-ai-history-open {
+  min-width: 0 !important;
+  color: #effaf2 !important;
+  padding: 9px 8px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-history-tool,
+.civic-ai-panel.is-maximized .civic-ai-history-tool {
+  color: #c5d8ca !important;
+  width: 30px !important;
+  min-width: 30px !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-history-tool:hover,
+.civic-ai-panel.is-maximized .civic-ai-history-tool:hover {
+  background: #294332 !important;
+  color: #ffffff !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-sidebar-action,
+.civic-ai-panel.is-maximized .civic-ai-sidebar-action {
+  color: #effaf2 !important;
+  font-size: 13px !important;
+  padding: 11px 10px !important;
+}
+.civic-ai-panel.is-expanded .civic-ai-sidebar-action:hover,
+.civic-ai-panel.is-maximized .civic-ai-sidebar-action:hover {
+  background: #20392a !important;
+}
+.civic-ai-panel.is-light.is-expanded .civic-ai-sidebar,
+.civic-ai-panel.is-light.is-maximized .civic-ai-sidebar {
+  background: #f0f6f1 !important;
+  border-right-color: #d0ded3 !important;
+  color: #173523 !important;
+}
+.civic-ai-panel.is-light.is-expanded .civic-ai-search,
+.civic-ai-panel.is-light.is-maximized .civic-ai-search {
+  background: #ffffff !important;
+  border-color: #c5d7ca !important;
+}
+.civic-ai-panel.is-light.is-expanded .civic-ai-search input,
+.civic-ai-panel.is-light.is-maximized .civic-ai-search input,
+.civic-ai-panel.is-light.is-expanded .civic-ai-history-open,
+.civic-ai-panel.is-light.is-maximized .civic-ai-history-open,
+.civic-ai-panel.is-light.is-expanded .civic-ai-sidebar-action,
+.civic-ai-panel.is-light.is-maximized .civic-ai-sidebar-action {
+  color: #173523 !important;
+}
+.civic-ai-panel.is-light.is-expanded .civic-ai-history-heading,
+.civic-ai-panel.is-light.is-maximized .civic-ai-history-heading,
+.civic-ai-panel.is-light.is-expanded .civic-ai-history-empty,
+.civic-ai-panel.is-light.is-maximized .civic-ai-history-empty {
+  color: #526b5a !important;
+}
+@media (max-width: 760px) {
+  .civic-ai-panel.is-expanded .civic-ai-workspace-layout {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .civic-ai-panel.is-expanded .civic-ai-sidebar,
+  .civic-ai-panel.is-maximized .civic-ai-sidebar {
+    width: min(300px, 86vw) !important;
+    flex-basis: auto !important;
+    background: #101d15 !important;
+    border: 1px solid #35513f !important;
+    border-radius: 0 14px 14px 0 !important;
+    box-shadow: 16px 0 40px rgba(0,0,0,.48) !important;
+  }
+  .civic-ai-panel.is-light.is-expanded .civic-ai-sidebar,
+  .civic-ai-panel.is-light.is-maximized .civic-ai-sidebar {
+    background: #f0f6f1 !important;
+    border-color: #d0ded3 !important;
+  }
+  .civic-ai-panel.is-expanded .civic-ai-history-open,
+  .civic-ai-panel.is-maximized .civic-ai-history-open {
+    font-size: 13px !important;
+  }
+  .civic-ai-panel.is-expanded .civic-ai-history-tool,
+  .civic-ai-panel.is-maximized .civic-ai-history-tool {
+    width: 30px !important;
+    min-width: 30px !important;
+  }
+}
+@media (max-width: 520px) {
+  .civic-ai-panel.is-expanded.civic-ai-show-sidebar .civic-ai-sidebar,
+  .civic-ai-panel.is-maximized.civic-ai-show-sidebar .civic-ai-sidebar {
+    display: flex !important;
+    position: absolute !important;
+    z-index: 20 !important;
+    inset: 0 auto 0 0 !important;
+    width: min(300px, 86vw) !important;
+    max-width: 86vw !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+}
