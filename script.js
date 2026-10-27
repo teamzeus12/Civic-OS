@@ -4865,7 +4865,7 @@ function renderDashboard() {
         aria-labelledby="hotspotPanelTitle"
       >
 
-        <div class="panel-head">
+        <div class="panel-head hotspot-panel-head">
 
           <div>
 
@@ -4877,7 +4877,7 @@ function renderDashboard() {
             </h3>
 
             <p class="panel-sub">
-              Areas with the most open reports
+              All places with open reports
             </p>
 
           </div>
