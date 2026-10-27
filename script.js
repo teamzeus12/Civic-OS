@@ -2717,6 +2717,34 @@ function setupCivicBackend() {
   } else {
     console.warn("Civic OS Supabase config or client is missing.");
   }
+  document.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-report-comment-form]");
+    if (!form) return;
+    event.preventDefault();
+    const issue = getIssue(form.dataset.reportCommentForm);
+    const input = form.querySelector('textarea[name="comment"]');
+    const body = input?.value.trim() || "";
+    if (!issue?.databaseId || !body || !window.civicSupabase) return;
+    const client = window.civicSupabase;
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError || !sessionData.session?.user) {
+      setCivicAuthMode("signin"); openCivicAuth();
+      civicAuthMessage("Sign in to comment on a civic report.");
+      return;
+    }
+    const submit = form.querySelector('button[type="submit"]');
+    if (submit) { submit.disabled = true; submit.textContent = "Posting…"; }
+    const { error } = await client.rpc("civic_add_report_comment", { p_report_id: issue.databaseId, p_body: body });
+    if (error) {
+      console.error("Could not post report comment:", error);
+      toast(error.message || "Comment could not be posted. Please try again.", "triangle-alert");
+    } else {
+      if (input) input.value = "";
+      toast("Comment posted for all citizens to see.");
+    }
+    if (submit) { submit.disabled = false; submit.textContent = "Post comment"; }
+    await loadReportCommunityActivity(issue);
+  });
   document.getElementById("civicAuthForm")?.addEventListener("submit", handleCivicAuth);
   document.getElementById("civicAuthSignInTab")?.addEventListener("click", () => setCivicAuthMode("signin"));
   document.getElementById("civicAuthSignUpTab")?.addEventListener("click", () => setCivicAuthMode("signup"));
@@ -2773,8 +2801,9 @@ async function attachReportEvidence(client, reportRows) {
           pathOwnerId === currentUserId
         )
       );
-      // Never expose unapproved evidence to other citizens. Storage stays private.
-      const isPublic = report?.verification_required === false;
+      // Images attached to reports in the public civic feed are public evidence.
+      // Storage remains private; database policies authorize short-lived signed URLs.
+      const isPublic = Boolean(report?.public_id);
       if (!isOwner && !isPublic) continue;
 
       const { data: signed, error: signedError } = await client
@@ -2830,7 +2859,7 @@ async function loadPersistentCivicReports() {
 
     const rowsById = new Map();
     // The RPC exposes public-facing report fields across citizens, never reporter identity or internal notes.
-    // Keep evidence private here until a separate public-evidence review flow is implemented.
+    // Images are shared through RLS-controlled signed URLs; raw storage paths remain private.
     for (const row of publicRows || []) {
       if (row.public_id) rowsById.set(row.public_id, { ...row, verification_required: true });
     }
@@ -2882,7 +2911,7 @@ async function loadPersistentCivicReports() {
         locationPrecision,
         area: "Saved citizen report",
         status: row.status || "Reported",
-        supporters: 1,
+        supporters: 0,
         reportedAt
       });
       issue.databaseId = row.id;
@@ -3064,7 +3093,7 @@ async function submitReport() {
       locationPrecision: d.coordinates ? (parseIssueCoordinates(d.location) ? "gps" : "geocoded") : null,
       area: "Saved citizen report",
       status: saved.status || "Reported",
-      supporters: 1,
+      supporters: 0,
       photo: null,
       reportedAt: saved.reported_at ? new Date(saved.reported_at).getTime() : Date.now()
     });
@@ -3074,8 +3103,6 @@ async function submitReport() {
     issue.persisted = true;
     issue.photos = [];
     issues.unshift(issue);
-    state.supported.add(saved.public_id);
-
     if (!evidenceError && evidenceCount) {
       await attachReportEvidence(window.civicSupabase, [{ ...saved, reported_by: user.id, verification_required: true }]);
     }
@@ -3825,7 +3852,7 @@ function renderIssueSheet(issue) {
 
         <div>
 
-          <div class="support-count">
+          <div class="support-count" data-support-count>
             ${issue.supporters}
           </div>
 
@@ -3871,6 +3898,17 @@ function renderIssueSheet(issue) {
 
       </div>
 
+    </div>
+
+    <div class="sheet-section report-community-section">
+      <div class="sheet-section-title"><span>Comments</span><span class="community-comment-count" data-comment-count>Loading…</span></div>
+      <div class="report-comments-list" data-report-comments aria-live="polite"><p class="sheet-desc">Loading comments…</p></div>
+      <form class="report-comment-form" data-report-comment-form="${escapeHtml(issue.id)}">
+        <label class="sr-only" for="comment-${escapeHtml(issue.id)}">Add a comment to this civic report</label>
+        <textarea id="comment-${escapeHtml(issue.id)}" name="comment" maxlength="1000" rows="3" placeholder="Share useful information about this issue…" required></textarea>
+        <button type="submit" class="btn btn-primary btn-sm">Post comment</button>
+        <p class="report-comment-note">Comments are visible to other citizens. Do not include private contact details.</p>
+      </form>
     </div>
 
     ${
@@ -3951,6 +3989,7 @@ function renderIssueSheet(issue) {
   `;
 
   refreshIcons();
+  loadReportCommunityActivity(issue);
 }
 
 function advanceIssue(id) {
@@ -3961,37 +4000,71 @@ function advanceIssue(id) {
   toast("Report status can only be updated by an authorized government account.", "shield-alert");
 }
 
-function toggleSupport(id) {
-  const issue =
-    getIssue(id);
-
-  if (!issue) return;
-
-  if (
-    state.supported.has(id)
-  ) {
-    state.supported.delete(id);
-
-    issue.supporters =
-      Math.max(
-        0,
-        issue.supporters - 1
-      );
-  } else {
-    state.supported.add(id);
-
-    issue.supporters++;
-
-    toast(
-      "Thanks — your support raises this issue's visibility"
-    );
+async function loadReportCommunityActivity(issue) {
+  if (!issue?.databaseId || !window.civicSupabase) return;
+  const { data, error } = await window.civicSupabase.rpc("civic_get_report_activity", { p_report_id: issue.databaseId });
+  if (error) {
+    console.warn("Report community activity could not be loaded:", error);
+    const list = document.querySelector("[data-report-comments]");
+    if (list && state.openIssueId === issue.id) list.innerHTML = '<p class="sheet-desc">Comments are temporarily unavailable. Please retry.</p>';
+    return;
   }
+  const activity = typeof data === "string" ? JSON.parse(data) : (data || {});
+  issue.supporters = Number(activity.support_count) || 0;
+  if (activity.supported_by_me) state.supported.add(issue.id);
+  else state.supported.delete(issue.id);
+  if (state.openIssueId === issue.id) {
+    const count = document.querySelector("[data-support-count]");
+    if (count) count.textContent = String(issue.supporters);
+    const supportButton = document.querySelector('[data-action="support"][data-id="' + CSS.escape(issue.id) + '"]');
+    if (supportButton) {
+      supportButton.disabled = false;
+      supportButton.setAttribute("aria-pressed", String(Boolean(activity.supported_by_me)));
+      supportButton.classList.toggle("btn-ghost", Boolean(activity.supported_by_me));
+      supportButton.classList.toggle("btn-primary", !activity.supported_by_me);
+      supportButton.innerHTML = '<i data-lucide="' + (activity.supported_by_me ? "check" : "thumbs-up") + '"></i> ' + (activity.supported_by_me ? "Supported" : "I\'m affected too");
+    }
+    const comments = document.querySelector("[data-report-comments]");
+    const commentCount = document.querySelector("[data-comment-count]");
+    const rows = Array.isArray(activity.comments) ? activity.comments : [];
+    if (commentCount) commentCount.textContent = rows.length + (rows.length === 1 ? " comment" : " comments");
+    if (comments) comments.innerHTML = rows.length ? rows.map((comment) => '<article class="report-comment"><div class="report-comment-author">Citizen <time>' + escapeHtml(comment.created_at ? new Date(comment.created_at).toLocaleString() : "Recently") + '</time></div><p>' + escapeHtml(comment.body || "") + '</p></article>').join("") : '<p class="sheet-desc">No comments yet. Share useful information to help others understand this issue.</p>';
+    refreshIcons();
+  }
+  renderIssueList();
+}
 
+async function toggleSupport(id) {
+  const issue = getIssue(id);
+  if (!issue) return;
+  const client = window.civicSupabase;
+  if (!client || !issue.databaseId) {
+    toast("Sign in and reload this saved report before marking that you are affected.", "shield-alert");
+    return;
+  }
+  const { data: sessionData, error: sessionError } = await client.auth.getSession();
+  if (sessionError || !sessionData.session?.user) {
+    setCivicAuthMode("signin");
+    openCivicAuth();
+    civicAuthMessage("Sign in to mark that you are affected by this report.");
+    return;
+  }
+  const button = document.querySelector('[data-action="support"][data-id="' + CSS.escape(id) + '"]');
+  if (button) { button.disabled = true; button.textContent = "Saving…"; }
+  const { data, error } = await client.rpc("civic_toggle_report_support", { p_report_id: issue.databaseId });
+  if (error) {
+    console.error("Could not save report support:", error);
+    toast(error.message || "Your response could not be saved. Please try again.", "triangle-alert");
+    renderIssueSheet(issue);
+    return;
+  }
+  const result = typeof data === "string" ? JSON.parse(data) : data;
+  issue.supporters = Number(result?.support_count) || 0;
+  if (result?.supported_by_me) state.supported.add(id);
+  else state.supported.delete(id);
   renderIssueSheet(issue);
-
-  renderScreen(
-    state.screen
-  );
+  renderIssueList();
+  if (result?.supported_by_me) toast("Your response is saved and counted across citizen accounts.");
 }
 
 
