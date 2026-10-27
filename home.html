@@ -1806,6 +1806,16 @@
               </div>
               <button type="button" class="btn btn-ghost btn-sm" id="refreshOrganisationFriends"><i data-lucide="refresh-cw"></i> Refresh</button>
             </div>
+            <div class="organisation-picker-tabs" role="group" aria-label="Choose organisation invitees">
+              <button type="button" class="organisation-picker-tab is-active" data-org-picker-view="friends" aria-pressed="true">My friends</button>
+              <button type="button" class="organisation-picker-tab" data-org-picker-view="find" aria-pressed="false">Find people</button>
+            </div>
+            <form id="organisationPeopleSearchForm" class="community-search-form organisation-people-search" hidden>
+              <label class="sr-only" for="organisationPeopleSearchInput">Search Civic OS citizens</label>
+              <input type="search" id="organisationPeopleSearchInput" maxlength="80" placeholder="Find people by name…" autocomplete="off">
+              <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="search"></i> Search</button>
+            </form>
+            <p id="organisationPeopleHint" class="block-subtitle">Select accepted friends to invite. You can invite up to 30 friends.</p>
             <div id="organisationFriendPicker" class="organisation-friend-picker" aria-live="polite">
               <p class="block-subtitle">Loading your friends…</p>
             </div>

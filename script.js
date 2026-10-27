@@ -530,6 +530,9 @@ const state = {
   communityRequests: [],
   communityView: "find",
   communitySearchQuery: "",
+  organisationPickerView: "friends",
+  organisationPeople: [],
+  organisationPeopleLoading: false,
   communityDirectoryLoading: false,
   communityDirectoryLoaded: false,
   communityDirectoryError: false,
@@ -1233,7 +1236,7 @@ function renderScreen(id) {
     setCommunityDirectoryTab("people");
   }
   if (id === "createOrganisationScreen") {
-    loadOrganisationFriendPicker();
+    setOrganisationPickerView("friends");
   }
 
   refreshIcons();
@@ -5253,6 +5256,10 @@ async function handleFriendAction(button) {
     if (state.communityView === "friends") await loadMyFriends();
     else if (state.communityView === "requests") await loadFriendRequests();
     else await loadCommunityDirectory(true);
+    if (document.getElementById("createOrganisationScreen")?.classList.contains("active")) {
+      if (state.organisationPickerView === "find") await loadOrganisationPeople();
+      else await loadOrganisationFriendPicker();
+    }
   } catch (error) {
     console.error("Friend action failed:", error?.message || error);
     toast(error?.message || "That friend action could not be completed.", "triangle-alert");
@@ -5260,9 +5267,26 @@ async function handleFriendAction(button) {
   }
 }
 
+function setOrganisationPickerView(view) {
+  state.organisationPickerView = view === "find" ? "find" : "friends";
+  document.querySelectorAll("[data-org-picker-view]").forEach(button => {
+    const active = button.dataset.orgPickerView === state.organisationPickerView;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const searchForm = document.getElementById("organisationPeopleSearchForm");
+  const hint = document.getElementById("organisationPeopleHint");
+  if (searchForm) searchForm.hidden = state.organisationPickerView !== "find";
+  if (hint) hint.textContent = state.organisationPickerView === "find"
+    ? "Search citizen accounts by display name. You can send a friend request here; only accepted friends can be invited to this organisation."
+    : "Select accepted friends to invite. They will receive an invitation and must accept before joining.";
+  if (state.organisationPickerView === "find") loadOrganisationPeople();
+  else loadOrganisationFriendPicker();
+}
+
 async function loadOrganisationFriendPicker() {
   const picker = document.getElementById("organisationFriendPicker");
-  if (!picker) return;
+  if (!picker || state.organisationPickerView !== "friends") return;
   const client = window.civicSupabase;
   if (!client) { picker.innerHTML = '<p class="block-subtitle">Civic OS connection is unavailable.</p>'; return; }
   picker.innerHTML = '<p class="block-subtitle">Loading your friends…</p>';
@@ -5272,15 +5296,55 @@ async function loadOrganisationFriendPicker() {
     if (!sessionData.session?.user) throw new Error("Sign in to form an organisation.");
     const { data, error } = await client.rpc("civic_get_my_friends");
     if (error) throw error;
+    if (state.organisationPickerView !== "friends") return;
     const friends = Array.isArray(data) ? data : [];
     if (!friends.length) {
-      picker.innerHTML = '<div class="community-empty glass"><strong>You have no accepted friends yet</strong><p>Accept friend requests first, then return here to invite them. You can also create the organisation without inviting anyone yet.</p></div>';
+      picker.innerHTML = '<div class="community-empty glass"><strong>You have no accepted friends yet</strong><p>Use Find people to discover citizens and send friend requests. Once they accept, you can invite them here. You can also create the organisation without invitations.</p></div>';
       return;
     }
-    picker.innerHTML = friends.map((friend, i) => `<label class="organisation-friend-option"><input type="checkbox" name="organisationInvitees" value="${escapeHtml(friend.friend_id)}"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(friend.display_name || "Citizen")}</span><span><strong>${escapeHtml(friend.display_name || "Civic OS citizen")}</strong><small>Send an organisation invitation</small></span></label>`).join("");
+    picker.innerHTML = friends.map((friend, i) => `<label class="organisation-friend-option"><input type="checkbox" name="organisationInvitees" value="${escapeHtml(friend.friend_id)}"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(friend.display_name || "Citizen")}</span><span><strong>${escapeHtml(friend.display_name || "Civic OS citizen")}</strong><small>Invite to this organisation</small></span></label>`).join("");
   } catch (error) {
     console.error("Could not load organisation invite list:", error?.message || error);
-    picker.innerHTML = '<p class="block-subtitle">Could not load your friends. Refresh and try again.</p>';
+    if (state.organisationPickerView === "friends") picker.innerHTML = '<p class="block-subtitle">Could not load your friends. Refresh and try again.</p>';
+  }
+}
+
+async function loadOrganisationPeople() {
+  const picker = document.getElementById("organisationFriendPicker");
+  if (!picker || state.organisationPickerView !== "find") return;
+  const client = window.civicSupabase;
+  if (!client) { picker.innerHTML = '<p class="block-subtitle">Civic OS connection is unavailable.</p>'; return; }
+  picker.innerHTML = '<p class="block-subtitle">Searching Civic OS citizens…</p>';
+  state.organisationPeopleLoading = true;
+  try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) throw new Error("Sign in to find people.");
+    const query = String(document.getElementById("organisationPeopleSearchInput")?.value || "").trim().slice(0, 80);
+    const { data, error } = await client.rpc("civic_search_members", { p_search: query, p_limit: 50 });
+    if (error) throw error;
+    if (state.organisationPickerView !== "find") return;
+    state.organisationPeople = Array.isArray(data) ? data.filter(person => String(person.display_name || "").trim()) : [];
+    if (!state.organisationPeople.length) {
+      picker.innerHTML = '<div class="community-empty glass"><strong>No matching citizens found</strong><p>Try another name. Email addresses and private account details are not shown.</p></div>';
+      return;
+    }
+    picker.innerHTML = state.organisationPeople.map((person, i) => {
+      const name = String(person.display_name || "Civic OS citizen");
+      let action = "";
+      let detail = "Civic OS citizen";
+      if (person.relationship_status === "friends") { action = '<span class="friend-state">Already friends</span>'; detail = "Ready to invite from My friends"; }
+      else if (person.relationship_status === "request_sent") { action = '<span class="friend-state"><i data-lucide="clock"></i> Request sent</span>'; detail = "Waiting for their response"; }
+      else if (person.relationship_status === "request_received") { action = `<button type="button" class="btn btn-primary btn-sm" data-friend-action="accept" data-request-id="${escapeHtml(person.request_id || "")}" data-user-id="${escapeHtml(person.user_id || "")}"><i data-lucide="user-check"></i> Accept request</button>`; detail = "They sent you a friend request"; }
+      else { action = `<button type="button" class="btn btn-ghost btn-sm" data-friend-action="send" data-user-id="${escapeHtml(person.user_id || "")}"><i data-lucide="user-plus"></i> Add friend</button>`; }
+      return `<article class="person-card glass"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(name)}</span><div class="person-body"><span class="person-name">${escapeHtml(name)}</span><span class="person-role">${escapeHtml(detail)}</span></div><div class="person-actions">${action}</div></article>`;
+    }).join("");
+    refreshIcons();
+  } catch (error) {
+    console.error("Could not search organisation invitees:", error?.message || error);
+    if (state.organisationPickerView === "find") picker.innerHTML = '<p class="block-subtitle">People could not be loaded. Refresh or try again.</p>';
+  } finally {
+    state.organisationPeopleLoading = false;
   }
 }
 
@@ -6628,8 +6692,15 @@ function bindEvents() {
       const createOrganisationButton = event.target.closest("#createOrganisationBtn");
       if (createOrganisationButton) { showScreen("createOrganisationScreen"); return; }
 
+      const orgPickerTab = event.target.closest("[data-org-picker-view]");
+      if (orgPickerTab) { setOrganisationPickerView(orgPickerTab.dataset.orgPickerView); return; }
+
       const refreshFriendsButton = event.target.closest("#refreshOrganisationFriends");
-      if (refreshFriendsButton) { loadOrganisationFriendPicker(); return; }
+      if (refreshFriendsButton) {
+        if (state.organisationPickerView === "find") loadOrganisationPeople();
+        else loadOrganisationFriendPicker();
+        return;
+      }
 
       const issueBtn =
         event.target.closest(
@@ -7622,6 +7693,14 @@ function bindEvents() {
       state.communitySearchQuery = String(document.getElementById("communitySearchInput")?.value || "").trim();
       state.communityDirectoryLoaded = false;
       loadCommunityDirectory(true);
+    });
+  }
+
+  const organisationPeopleSearchForm = document.getElementById("organisationPeopleSearchForm");
+  if (organisationPeopleSearchForm) {
+    organisationPeopleSearchForm.addEventListener("submit", event => {
+      event.preventDefault();
+      loadOrganisationPeople();
     });
   }
 
