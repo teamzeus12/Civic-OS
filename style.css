@@ -7365,3 +7365,28 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
   height: 100dvh !important;
   box-sizing: border-box !important;
 }
+
+
+/* Report location picker: typed search plus an exact, draggable map pin. */
+.report-location-picker { display: grid; gap: 10px; margin-top: 14px; min-width: 0; }
+.report-location-help { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.report-location-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.report-location-actions .chip-btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; }
+.report-location-picker-status { margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.report-location-picker-status[data-kind="success"] { border-color: rgba(16, 145, 103, .3); color: #087354; background: #f0fbf6; }
+.report-location-picker-status[data-kind="error"] { border-color: rgba(184, 50, 67, .28); color: #a52a3a; background: #fff6f6; }
+.report-location-map { height: 280px; min-height: 240px; width: 100%; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #e9f0ed; z-index: 0; }
+.report-location-map .leaflet-control-attribution { font-size: 9px; }
+.report-location-attribution { margin: -4px 0 0; color: var(--subtle); font-size: 10px; line-height: 1.5; }
+.report-location-results { display: grid; gap: 6px; max-height: 240px; overflow: auto; }
+.report-location-result { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-width: 0; padding: 11px 12px; text-align: left; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--text); cursor: pointer; }
+.report-location-result:hover, .report-location-result:focus-visible { border-color: var(--accent); outline: none; }
+.report-location-result-icon { flex: 0 0 auto; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--accent-soft); color: var(--accent); font-size: 19px; }
+.report-location-result span:last-child { min-width: 0; display: grid; gap: 4px; }
+.report-location-result strong { font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.report-location-result small { color: var(--muted); font-size: 10px; line-height: 1.4; }
+.report-location-searching { margin: 0; padding: 12px; color: var(--muted); font-size: 12px; line-height: 1.5; border-radius: 10px; background: var(--surface); }
+@media (max-width: 640px) {
+  .report-location-map { height: 250px; min-height: 230px; }
+  .report-location-actions .chip-btn { flex: 1 1 145px; justify-content: center; }
+}
