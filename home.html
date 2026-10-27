@@ -278,7 +278,7 @@
           data-nav
           data-goto="communityScreen"
         >
-          Community
+          Notices
         </button>
 
         <button
@@ -1192,23 +1192,20 @@
       <div class="container">
         <header class="screen-head">
           <p class="kicker">Connect</p>
-          <h2 id="communityTitle" class="screen-title">Civic community</h2>
+          <h2 id="communityTitle" class="screen-title">Government notices &amp; announcements</h2>
           <p class="screen-sub">
-            Meet people using Civic OS, discover community organisations,
-            and take part in civic work as it becomes available.
+            Official public notices, service updates, advisories and announcements issued by authorized government departments.
+            Always check the issuing authority and any attached official document.
           </p>
         </header>
-
-        <section class="block community-block" aria-label="Community directory location">
-          <div class="community-empty glass">
-            <span class="community-empty-icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
-            <strong>Find your community through Civic Actions</strong>
-            <p>Open Civic Actions to browse recently active people or explore organisations. These are separate tabs, so each view has its own results.</p>
-            <button type="button" class="btn btn-primary" data-goto="actionsScreen">
-              <i data-lucide="arrow-right"></i>
-              Open Civic Actions
-            </button>
+        <section class="block official-notices-page" aria-label="Official government notices">
+          <div class="official-notice-tools glass">
+            <label for="officialNoticeSearch">Search notices<input id="officialNoticeSearch" type="search" placeholder="Search title, department, reference or area…"></label>
+            <label for="officialNoticeType">Notice type<select id="officialNoticeType"><option value="all">All notice types</option><option>Public Notice</option><option>Public Advisory</option><option>Service Update</option><option>Emergency Information</option><option>Event / Programme</option><option>Recruitment / Tender</option><option>Traffic / Transport</option><option>Public Health</option><option>Education Notice</option><option>Other</option></select></label>
           </div>
+          <p id="officialNoticeStatus" class="official-notice-status" role="status" aria-live="polite">Loading official notices…</p>
+          <div id="officialNoticeList" class="official-notice-list"></div>
+          <p class="official-notice-footnote">Civic OS displays notices published through the authorized Government Portal. For legal or time-sensitive decisions, follow the signed order or source linked in the notice.</p>
         </section>
       </div>
     </section>
