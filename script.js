@@ -2352,56 +2352,27 @@ function renderAnalysis() {
     ? '<p class="ai-note">You marked this as a different incident. Check the details carefully before submitting.</p>'
     : '<button type="button" class="link-btn" data-action="confirm-distinct-issue">This is a different issue — continue</button>';
 
-  const duplicate =
-    a.duplicate
-      ? `
-        <div class="ai-warning">
-
-          <i data-lucide="copy-check"></i>
-
-          <div class="ai-warning-body">
-
-            <span>
-              <strong>
-                Possible duplicate:
-              </strong>
-
-              ${escapeHtml(
-                a.duplicate.id
-              )}
-
-              ·
-
-              ${escapeHtml(
-                a.duplicate.title
-              )}
-
-              ${escapeHtml(a.duplicate.status || "Reported")} ·
-              ${Number.isFinite(Number(a.duplicate.distanceMeters)) ? escapeHtml(String(a.duplicate.distanceMeters) + " m away") : "nearby"} ·
-              ${escapeHtml(Number(a.duplicate.confidence) > 0 ? String(a.duplicate.confidence) + "% match" : "keyword similarity")}.
-              <br>${escapeHtml(a.duplicate.reason || "The report appears similar based on location and details.")}
-            </span>
-
-            <span>
-
-              <button
-                type="button"
-                class="link-btn"
-                data-action="view-duplicate"
-                data-id="${escapeHtml(
-                  a.duplicate.id
-                )}"
-              >
-                View existing report
-                <i data-lucide="arrow-right"></i>
-              </button>
-              ${duplicateOverrideNote}
-            </span>
-
-          </div>
+  const duplicate = a.duplicate
+    ? `
+      <div class="ai-warning">
+        <i data-lucide="copy-check"></i>
+        <div class="ai-warning-body">
+          <strong>Possible duplicate report</strong>
+          <span>
+            ${escapeHtml(a.duplicate.id)} · ${escapeHtml(a.duplicate.title || "Existing civic report")}
+            — status: ${escapeHtml(a.duplicate.status || "Reported")}.
+            ${Number.isFinite(Number(a.duplicate.distanceMeters)) ? `About ${Math.max(0, Math.round(Number(a.duplicate.distanceMeters)))} m away.` : ""}
+            ${Number.isFinite(Number(a.duplicate.confidence)) ? `AI match confidence: ${Math.round(Number(a.duplicate.confidence))}%.` : ""}
+            ${escapeHtml(a.duplicate.reason || "Compare the details before deciding whether this is the same incident.")}
+          </span>
+          <button type="button" class="link-btn" data-action="view-duplicate" data-id="${escapeHtml(a.duplicate.id)}">
+            View existing report <i data-lucide="arrow-right"></i>
+          </button>
+          <span>You can still submit this report if it describes a different issue. Civic AI does not merge or delete reports.</span>
         </div>
-      `
-      : "";
+      </div>
+    `
+    : "";
 
   const signals =
     a.signals.length
@@ -6681,39 +6652,14 @@ function bindEvents() {
         return;
       }
 
-      if (
-        action ===
-        "support-duplicate"
-      ) {
-        const issue =
-          getIssue(id);
-
+      if (action === "view-duplicate" || action === "support-duplicate") {
+        // Open the existing report without simulating an unpersisted support vote
+        // or discarding the citizen's current draft.
+        const issue = getIssue(id);
         if (!issue) {
+          toast("The matching report is not loaded yet. Open the Issues page and try again.", "triangle-alert");
           return;
         }
-
-        if (
-          !state.supported.has(
-            id
-          )
-        ) {
-          state.supported.add(
-            id
-          );
-
-          issue.supporters++;
-        }
-
-        resetReportForm();
-
-        invalidateAnalysis();
-
-        updateStepper();
-
-        toast(
-          `Added your support to ${id}`
-        );
-
         openIssue(id);
       }
 
