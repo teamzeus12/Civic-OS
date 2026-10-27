@@ -176,3 +176,20 @@ h1,h2,h3,p{margin-top:0}
 .gov-map-fallback p{margin:0;line-height:1.6}
 @media(max-width:1000px){.gov-map-layout{grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr)}.gov-dashboard-map{height:400px}}
 @media(max-width:760px){.gov-map-layout{grid-template-columns:minmax(0,1fr)}.gov-dashboard-map{height:340px;min-height:300px}.gov-map-side{display:grid;grid-template-columns:minmax(0,1fr)}.gov-map-unpinned{max-height:180px}.map-live-tag{font-size:8px;padding:6px 7px}.gov-map-legend{gap:9px}}
+
+
+/* Civic issue summary shared with the People's Portal dashboard. */
+.gov-ai-summary-panel { border-color:#d8e9df; background:linear-gradient(135deg,#f6fbf7 0%,#ffffff 72%); }
+.gov-ai-summary-head { display:flex; align-items:flex-start; gap:12px; margin-bottom:14px; }
+.gov-ai-summary-icon { display:grid; place-items:center; flex:0 0 38px; width:38px; height:38px; border:1px solid #d6eade; border-radius:12px; background:#eaf7ef; color:#176b4b; font-size:23px; }
+.gov-ai-summary-head h2 { margin:1px 0 4px; font-size:15px; letter-spacing:-.25px; }
+.gov-ai-summary-head p { margin:0; color:var(--muted); font-size:11px; line-height:1.6; }
+.gov-ai-summary-copy p { margin:0; color:var(--ink); font-size:13px; line-height:1.8; }
+.gov-ai-summary-copy strong { color:#176b4b; font-weight:750; }
+.gov-ai-summary-copy .gov-ai-summary-note { margin-top:10px; color:var(--muted); font-size:11px; line-height:1.6; }
+.gov-ai-summary-empty { padding:13px 14px; border:1px dashed var(--line); border-radius:12px; color:var(--muted); font-size:12px; line-height:1.6; background:#fff; }
+@media(max-width:600px) {
+  .gov-ai-summary-head { gap:10px; }
+  .gov-ai-summary-icon { flex-basis:34px; width:34px; height:34px; }
+  .gov-ai-summary-copy p { font-size:12px; line-height:1.75; }
+}
