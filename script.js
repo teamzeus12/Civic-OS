@@ -2829,32 +2829,59 @@ async function loadPersistentCivicReports() {
       if (row.public_id) rowsById.set(row.public_id, { ...(rowsById.get(row.public_id) || {}), ...row });
     }
 
-    const existing = new Set(issues.map((issue) => issue.id));
+    const existing = new Map(issues.map((issue) => [issue.id, issue]));
     for (const row of [...rowsById.values()].reverse()) {
-      if (!row.public_id || existing.has(row.public_id)) continue;
+      if (!row.public_id) continue;
       const place = typeof row.location === "string"
         ? row.location
         : row.location?.address || row.location?.label || row.location?.name || "Location not specified";
+      const latitude = typeof row.location === "object" ? row.location.latitude : null;
+      const longitude = typeof row.location === "object" ? row.location.longitude : null;
+      const locationPrecision = typeof row.location === "object" ? row.location.precision : null;
+      const reportedAt = row.reported_at ? new Date(row.reported_at).getTime() : Date.now();
+      const statusHistory = Array.isArray(row.status_history) ? row.status_history : [];
+      const current = existing.get(row.public_id);
+
+      // Refresh already-loaded reports as well as adding new ones. Otherwise a
+      // status change recorded by Government Portal could remain stale in this
+      // citizen's open session until the page is reloaded.
+      if (current) {
+        current.title = row.title || current.title;
+        current.category = row.category || current.category;
+        current.description = row.description || row.public_impact || row.title || current.description;
+        current.location = place;
+        current.latitude = latitude;
+        current.longitude = longitude;
+        current.locationPrecision = locationPrecision;
+        current.status = row.status || current.status || "Reported";
+        current.reportedAt = reportedAt;
+        current.databaseId = row.id;
+        current.statusHistory = statusHistory;
+        current.persisted = true;
+        current.resolvedAt = row.resolved_at ? new Date(row.resolved_at).getTime() : null;
+        continue;
+      }
+
       const issue = createIssue({
         id: row.public_id,
         title: row.title,
         category: row.category,
         description: row.description || row.public_impact || row.title,
         location: place,
-        latitude: typeof row.location === "object" ? row.location.latitude : null,
-        longitude: typeof row.location === "object" ? row.location.longitude : null,
-        locationPrecision: typeof row.location === "object" ? row.location.precision : null,
+        latitude,
+        longitude,
+        locationPrecision,
         area: "Saved citizen report",
         status: row.status || "Reported",
         supporters: 1,
-        reportedAt: row.reported_at ? new Date(row.reported_at).getTime() : Date.now()
+        reportedAt
       });
       issue.databaseId = row.id;
-      issue.statusHistory = Array.isArray(row.status_history) ? row.status_history : [];
+      issue.statusHistory = statusHistory;
       issue.persisted = true;
       if (row.resolved_at) issue.resolvedAt = new Date(row.resolved_at).getTime();
       issues.unshift(issue);
-      existing.add(row.public_id);
+      existing.set(row.public_id, issue);
     }
     await attachReportEvidence(client, [...rowsById.values()]);
     renderHome();
