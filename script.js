@@ -525,6 +525,10 @@ const state = {
   },
   mySkills: new Set(),
   joinedMissions: new Set(),
+  communityMembers: [],
+  communityDirectoryLoading: false,
+  communityDirectoryLoaded: false,
+  communityDirectoryError: false,
   supported: new Set(),
   openIssueId: null,
   civicAiOpen: false,
@@ -5006,340 +5010,149 @@ function topContributors(
 }
 
 function renderMissions() {
-  const list =
-    $("#missionList");
-
+  const list = $("#missionList");
   if (!list) return;
 
-  const missions =
-    [...MISSIONS].sort(
-      (a, b) =>
-        (myMatch(b) ?? 0) -
-        (myMatch(a) ?? 0)
-    );
+  if (!MISSIONS.length) {
+    list.innerHTML = `
+      <div class="community-empty glass">
+        <span class="community-empty-icon" aria-hidden="true"><i data-lucide="calendar-clock"></i></span>
+        <strong>No ongoing civic actions yet</strong>
+        <p>When community actions are introduced, active and upcoming activities will be listed here.</p>
+      </div>
+    `;
+    refreshIcons();
+    return;
+  }
 
-  list.innerHTML =
-    missions
-      .map(
-        (m, index) => {
-          const match =
-            myMatch(m);
+  const missions = [...MISSIONS].sort((a, b) => (myMatch(b) ?? 0) - (myMatch(a) ?? 0));
+  list.innerHTML = missions.map((m, index) => {
+    const match = myMatch(m);
+    const joined = state.joinedMissions.has(m.id);
+    const contributors = topContributors(m);
+    const badgeClass = match === null ? "" : match >= 67 ? "is-strong" : match > 0 ? "is-partial" : "";
 
-          const joined =
-            state.joinedMissions.has(
-              m.id
-            );
-
-          const contributors =
-            topContributors(
-              m
-            );
-
-          const badgeClass =
-            match === null
-              ? ""
-              : match >= 67
-                ? "is-strong"
-                : match > 0
-                  ? "is-partial"
-                  : "";
-
-          return `
-            <article
-              class="mission-card glass ${
-                match &&
-                index === 0
-                  ? "is-top"
-                  : ""
-              }"
-            >
-
-              <div class="mission-head">
-
-                <div>
-
-                  <p class="mission-linked">
-
-                    <i data-lucide="flag"></i>
-
-                    Linked issue
-
-                    <button
-                      type="button"
-                      class="link-btn"
-                      data-issue="${escapeHtml(
-                        m.issueId
-                      )}"
-                    >
-                      ${escapeHtml(
-                        m.issueId
-                      )}
-                    </button>
-
-                  </p>
-
-                  <h4 class="mission-title">
-                    ${escapeHtml(
-                      m.title
-                    )}
-                  </h4>
-
-                </div>
-
-                ${
-                  match !== null
-                    ? `
-                      <span
-                        class="match-badge ${badgeClass}"
-                      >
-                        ${match}% match
-                      </span>
-                    `
-                    : ""
-                }
-
-              </div>
-
-              <p class="mission-desc">
-                ${escapeHtml(
-                  m.description
-                )}
-              </p>
-
-              <div
-                class="skill-list"
-                aria-label="Skills needed"
-              >
-
-                ${m.skills
-                  .map(
-                    (s) => `
-                      <span
-                        class="skill-chip ${
-                          state.mySkills.has(
-                            s
-                          )
-                            ? "have"
-                            : ""
-                        }"
-                      >
-                        ${
-                          state.mySkills.has(
-                            s
-                          )
-                            ? '<i data-lucide="check"></i>'
-                            : ""
-                        }
-
-                        ${escapeHtml(s)}
-
-                      </span>
-                    `
-                  )
-                  .join("")}
-
-              </div>
-
-              <div class="mission-progress">
-
-                <span
-                  class="progress"
-                  role="progressbar"
-                  aria-valuemin="0"
-                  aria-valuemax="${m.needed}"
-                  aria-valuenow="${m.joined}"
-                  aria-label="Volunteers joined"
-                >
-                  <span
-                    style="width:${Math.min(
-                      100,
-                      (m.joined /
-                        m.needed) *
-                        100
-                    )}%"
-                  ></span>
-                </span>
-
-                <span>
-                  ${m.joined}/${m.needed}
-                  volunteers
-                </span>
-
-              </div>
-
-              <div class="mission-foot">
-
-                <div class="mission-matches">
-
-                  <span
-                    class="avatar-stack"
-                    aria-hidden="true"
-                  >
-
-                    ${contributors
-                      .map(
-                        (c, i) => `
-                          <span
-                            class="avatar tone-${i % 4} ${
-                              c.person.org
-                                ? "is-org"
-                                : ""
-                            }"
-                          >
-                            ${initials(
-                              c.person.name
-                            )}
-                          </span>
-                        `
-                      )
-                      .join("")}
-
-                  </span>
-
-                  <span>
-                    Matched:
-                    ${contributors
-                      .map(
-                        (c) =>
-                          `${escapeHtml(
-                            c.person.name.split(
-                              " "
-                            )[0]
-                          )} ${c.score}%`
-                      )
-                      .join(", ")}
-                  </span>
-
-                </div>
-
-                <button
-                  type="button"
-                  class="btn btn-sm ${
-                    joined
-                      ? "btn-ghost"
-                      : "btn-primary"
-                  }"
-                  data-action="join"
-                  data-id="${escapeHtml(
-                    m.id
-                  )}"
-                  aria-pressed="${joined}"
-                >
-
-                  <i
-                    data-lucide="${
-                      joined
-                        ? "check"
-                        : "user-plus"
-                    }"
-                  ></i>
-
-                  ${
-                    joined
-                      ? "Joined"
-                      : "Join mission"
-                  }
-
-                </button>
-
-              </div>
-
-            </article>
-          `;
-        }
-      )
-      .join("");
-
+    return `
+      <article class="mission-card glass ${match && index === 0 ? "is-top" : ""}">
+        <div class="mission-head">
+          <div>
+            <p class="mission-linked"><i data-lucide="flag"></i> Linked issue
+              <button type="button" class="link-btn" data-issue="${escapeHtml(m.issueId)}">${escapeHtml(m.issueId)}</button>
+            </p>
+            <h4 class="mission-title">${escapeHtml(m.title)}</h4>
+          </div>
+          ${match !== null ? `<span class="match-badge ${badgeClass}">${match}% match</span>` : ""}
+        </div>
+        <p class="mission-desc">${escapeHtml(m.description)}</p>
+        <div class="skill-list" aria-label="Skills needed">
+          ${m.skills.map(s => `<span class="skill-chip ${state.mySkills.has(s) ? "have" : ""}">${state.mySkills.has(s) ? '<i data-lucide="check"></i>' : ""}${escapeHtml(s)}</span>`).join("")}
+        </div>
+        <div class="mission-progress">
+          <span class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${m.needed}" aria-valuenow="${m.joined}" aria-label="Volunteers joined">
+            <span style="width:${Math.min(100, (m.joined / m.needed) * 100)}%"></span>
+          </span>
+          <span>${m.joined}/${m.needed} volunteers</span>
+        </div>
+        <div class="mission-foot">
+          <div class="mission-matches">
+            <span class="avatar-stack" aria-hidden="true">
+              ${contributors.map((c, i) => `<span class="avatar tone-${i % 4} ${c.person.org ? "is-org" : ""}">${initials(c.person.name)}</span>`).join("")}
+            </span>
+            <span>Matched: ${contributors.map(c => `${escapeHtml(c.person.name.split(" ")[0])} ${c.score}%`).join(", ")}</span>
+          </div>
+          <button type="button" class="btn btn-sm ${joined ? "btn-ghost" : "btn-primary"}" data-action="join" data-id="${escapeHtml(m.id)}" aria-pressed="${joined}">
+            <i data-lucide="${joined ? "check" : "user-plus"}"></i>${joined ? "Joined" : "Join action"}
+          </button>
+        </div>
+      </article>
+    `;
+  }).join("");
   refreshIcons();
 }
 
 function renderPeople() {
-  const grid =
-    $("#peopleGrid");
-
+  const grid = $("#peopleGrid");
   if (!grid) return;
 
-  grid.innerHTML =
-    PEOPLE.map(
-      (p, i) => `
-        <article class="person-card glass">
+  if (state.communityDirectoryLoading && !state.communityDirectoryLoaded) {
+    grid.innerHTML = `<div class="community-empty glass"><span class="community-empty-icon"><i data-lucide="loader-circle"></i></span><strong>Loading people</strong><p>Checking recently active citizen accounts…</p></div>`;
+    refreshIcons();
+    return;
+  }
 
-          <span
-            class="avatar tone-${i % 4} ${
-              p.org
-                ? "is-org"
-                : ""
-            }"
-            aria-hidden="true"
-          >
-            ${initials(p.name)}
-          </span>
+  if (state.communityDirectoryError) {
+    grid.innerHTML = `<div class="community-empty glass"><strong>People directory unavailable</strong><p>We couldn't load the directory. Try refreshing in a moment.</p></div>`;
+    refreshIcons();
+    return;
+  }
 
-          <div class="person-body">
+  const members = state.communityMembers || [];
+  if (!members.length) {
+    grid.innerHTML = `<div class="community-empty glass"><span class="community-empty-icon"><i data-lucide="users"></i></span><strong>No recently active members to show yet</strong><p>As citizens sign in and have a display name on their profile, they will appear here. Email addresses and account details are never shown.</p></div>`;
+    refreshIcons();
+    return;
+  }
 
-            <span class="person-name">
+  grid.innerHTML = members.map((person, i) => {
+    const name = String(person.display_name || "").trim();
+    if (!name) return "";
+    return `
+      <article class="person-card glass">
+        <span class="avatar tone-${i % 4}" aria-hidden="true">${initials(name)}</span>
+        <div class="person-body">
+          <span class="person-name">${escapeHtml(name)}</span>
+          <span class="person-role">${escapeHtml(person.activity_label || "Recently active on Civic OS")}</span>
+        </div>
+      </article>
+    `;
+  }).join("");
+  refreshIcons();
+}
 
-              ${escapeHtml(
-                p.name
-              )}
+async function loadCommunityDirectory(force = false) {
+  if (state.communityDirectoryLoading) return;
+  if (state.communityDirectoryLoaded && !force) return;
 
-              ${
-                p.org
-                  ? '<span class="org-badge">Org</span>'
-                  : ""
-              }
+  const client = window.civicSupabase;
+  if (!client) {
+    state.communityDirectoryError = true;
+    state.communityDirectoryLoaded = true;
+    renderPeople();
+    return;
+  }
 
-            </span>
+  state.communityDirectoryLoading = true;
+  state.communityDirectoryError = false;
+  renderPeople();
 
-            <span class="person-role">
+  try {
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (!sessionData.session?.user) {
+      state.communityMembers = [];
+      state.communityDirectoryLoaded = true;
+      return;
+    }
 
-              ${escapeHtml(
-                p.role
-              )}
-
-              ·
-
-              ${escapeHtml(
-                p.area
-              )}
-
-            </span>
-
-            <div class="skill-list">
-
-              ${p.skills
-                .map(
-                  (s) => `
-                    <span
-                      class="skill-chip ${
-                        state.mySkills.has(
-                          s
-                        )
-                          ? "have"
-                          : ""
-                      }"
-                    >
-                      ${escapeHtml(s)}
-                    </span>
-                  `
-                )
-                .join("")}
-
-            </div>
-
-          </div>
-
-        </article>
-      `
-    ).join("");
+    const { data, error } = await client.rpc("civic_get_recent_members", { p_limit: 12 });
+    if (error) throw error;
+    state.communityMembers = Array.isArray(data) ? data.filter(person => String(person.display_name || "").trim()) : [];
+    state.communityDirectoryLoaded = true;
+  } catch (error) {
+    console.error("Could not load Civic OS people directory:", error?.message || "unknown error");
+    state.communityDirectoryError = true;
+    state.communityDirectoryLoaded = true;
+    state.communityMembers = [];
+  } finally {
+    state.communityDirectoryLoading = false;
+    renderPeople();
+  }
 }
 
 function renderCommunity() {
-  syncSkillPicker();
-
   renderMissions();
-
   renderPeople();
+  loadCommunityDirectory();
 }
 
 function toggleSkill(skill) {
@@ -8187,6 +8000,20 @@ function bootCivicOS() {
   // The normal event delegation is already active after successful init.
   // Add direct navigation listeners only as a recovery path if init throws.
   if (initialized) return;
+
+  const refreshCommunityPeopleButton = document.getElementById("refreshCommunityPeople");
+  if (refreshCommunityPeopleButton && refreshCommunityPeopleButton.dataset.civicBound !== "true") {
+    refreshCommunityPeopleButton.dataset.civicBound = "true";
+    refreshCommunityPeopleButton.addEventListener("click", () => loadCommunityDirectory(true));
+  }
+
+  const createOrganisationButton = document.getElementById("createOrganisationBtn");
+  if (createOrganisationButton && createOrganisationButton.dataset.civicBound !== "true") {
+    createOrganisationButton.dataset.civicBound = "true";
+    createOrganisationButton.addEventListener("click", () => {
+      toast("Organisation creation will be enabled in the next community phase. No organisation has been created.", "users-round");
+    });
+  }
 
   document.querySelectorAll("[data-goto]").forEach((element) => {
     if (element.dataset.civicBound === "true") return;
