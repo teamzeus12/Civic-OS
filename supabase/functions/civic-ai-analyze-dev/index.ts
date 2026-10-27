@@ -260,6 +260,6 @@ Deno.serve(async (req: Request) => {
     ),
     duplicate: bestDuplicate,
     duplicateMatches,
-    duplicateCheckAvailable
+    duplicateCheckAvailable: duplicateCheckAvailable && Array.isArray(parsed.duplicateMatches)
   });
 });
