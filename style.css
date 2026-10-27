@@ -7591,3 +7591,44 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
 @media (max-width: 480px) {
   .community-tab { padding: 11px 8px; font-size: 12px; }
 }
+
+
+/* Civic Actions: friend requests and organisation formation */
+.community-people-tools { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:16px 0 10px; }
+.community-search-form { display:flex; gap:8px; flex:1 1 260px; min-width:0; }
+.community-search-form input { flex:1; min-width:0; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background:var(--surface, #fff); color:inherit; font:inherit; }
+.community-people-tabs { display:flex; flex-wrap:wrap; gap:6px; }
+.community-people-tab { border:1px solid var(--border); border-radius:999px; padding:8px 12px; background:transparent; color:var(--muted); font:inherit; font-size:12px; cursor:pointer; }
+.community-people-tab.is-active { background:var(--surface, #fff); color:var(--text, var(--ink, #17241e)); border-color:var(--accent, #3ee08f); font-weight:650; }
+.person-card { display:flex; align-items:center; gap:12px; min-width:0; }
+.person-body { flex:1; min-width:0; }
+.person-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+.friend-state { display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:12px; white-space:nowrap; }
+.friend-request-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.organisation-list { display:grid; gap:12px; margin:14px 0 22px; }
+.organisation-card { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:18px; border:1px solid var(--border); border-radius:16px; }
+.organisation-card > div { min-width:0; }
+.organisation-card strong { display:block; margin:5px 0; }
+.organisation-card p { margin:6px 0; color:var(--muted); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+.organisation-card small, .organisation-card-meta { display:block; color:var(--muted); font-size:11px; line-height:1.5; }
+.organisation-status { border-radius:999px; border:1px solid var(--border); padding:6px 9px; font-size:11px; white-space:nowrap; }
+.organisation-invite-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.organisation-friend-picker { display:grid; gap:8px; margin-top:10px; }
+.organisation-friend-option { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:12px; cursor:pointer; }
+.organisation-friend-option input { width:18px; height:18px; flex:0 0 auto; accent-color:var(--accent, #3ee08f); }
+.organisation-friend-option > span:last-child { min-width:0; display:grid; gap:3px; }
+.organisation-friend-option strong { font-size:13px; }
+.organisation-friend-option small { color:var(--muted); font-size:11px; }
+.organisation-directory, .organisation-invitations { margin-top:22px; }
+.form-help { color:var(--muted); font-size:12px; margin-top:8px; }
+@media (max-width:600px) {
+  .community-people-tools { align-items:stretch; }
+  .community-search-form { flex-basis:100%; }
+  .community-people-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; }
+  .community-people-tab { padding:9px 5px; }
+  .person-card { flex-wrap:wrap; }
+  .person-actions { width:100%; justify-content:flex-start; padding-left:52px; }
+  .organisation-card { flex-direction:column; }
+  .organisation-status { align-self:flex-start; }
+  .organisation-invite-heading { flex-direction:column; }
+}
