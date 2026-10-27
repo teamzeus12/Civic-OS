@@ -2250,6 +2250,15 @@
     </div>
 
 
+    <section class="civic-ai-image-generator" id="civicAiImageGenerator" hidden aria-label="Image generation">
+      <div class="civic-ai-image-generator-head"><div><strong>Generate an improvement concept</strong><p>Upload a reference photo and describe the concept. The result is an AI-generated illustration, not a verified prediction.</p></div><button type="button" class="icon-btn" id="civicAiImageGenClose" aria-label="Close image generator"><i data-lucide="x"></i></button></div>
+      <label class="civic-ai-image-upload" for="civicAiImageGenFile"><i data-lucide="image-plus"></i><span id="civicAiImageGenFileLabel">Choose a reference photo</span></label>
+      <input id="civicAiImageGenFile" type="file" accept="image/*" hidden />
+      <label class="sr-only" for="civicAiImageGenPrompt">Describe the image concept</label><textarea id="civicAiImageGenPrompt" maxlength="1000" rows="2" placeholder="Describe the improvement concept…"></textarea>
+      <button type="button" class="civic-ai-generate-button" id="civicAiGenerateImage"><i data-lucide="sparkles"></i><span>Generate concept</span></button>
+      <div class="civic-ai-generated-preview" id="civicAiGeneratedPreview" hidden></div>
+    </section>
+
     <form
       class="civic-ai-input"
       id="civicAiForm"
