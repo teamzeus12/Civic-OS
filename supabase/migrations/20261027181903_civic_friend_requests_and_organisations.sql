@@ -60,11 +60,6 @@ drop policy if exists civic_organisation_members_related_read on public.civic_or
 create policy civic_organisation_members_related_read on public.civic_organisation_members
   for select to authenticated using (
     user_id = (select auth.uid()) or invited_by = (select auth.uid())
-    or exists (
-      select 1 from public.civic_organisation_members mine
-      where mine.organisation_id = civic_organisation_members.organisation_id
-        and mine.user_id = (select auth.uid()) and mine.status = 'active'
-    )
   );
 revoke all on public.civic_organisation_members from anon, authenticated;
 grant select on public.civic_organisation_members to authenticated;
