@@ -7695,3 +7695,41 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
  .organisation-form-actions .btn { width:100%; justify-content:center; }
 }
 @media (prefers-reduced-motion:reduce) { .organisation-friend-option { transition:none; } }
+
+
+/* Keep organisation invitee names inside their cards on narrow screens. */
+.organisation-friend-option {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.organisation-friend-option > .avatar {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+}
+.organisation-friend-option > span:last-child {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.organisation-friend-option strong,
+.organisation-friend-option small {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .organisation-friend-option {
+    gap: 9px;
+    padding: 12px;
+  }
+  .organisation-friend-option > span:last-child {
+    flex: 1 1 0;
+  }
+}
