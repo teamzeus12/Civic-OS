@@ -5300,7 +5300,7 @@ async function loadOrganisations() {
     invites.innerHTML = state.organisationInvites.length ? state.organisationInvites.map(invite => `
       <article class="organisation-card glass"><div><strong>${escapeHtml(invite.organisation_name)}</strong><p>${escapeHtml(invite.organisation_description)}</p><small>Invitation received</small></div><div class="friend-request-actions"><button type="button" class="btn btn-primary btn-sm" data-org-invite-action="accept" data-membership-id="${escapeHtml(invite.membership_id)}"><i data-lucide="check"></i> Accept</button><button type="button" class="btn btn-ghost btn-sm" data-org-invite-action="decline" data-membership-id="${escapeHtml(invite.membership_id)}">Decline</button></div></article>`).join("") : '<p class="block-subtitle">No pending organisation invitations.</p>';
     list.innerHTML = state.organisations.length ? state.organisations.map(org => {
-      const status = org.my_status === "active" ? "Member" : org.my_status === "invited" ? "Invitation pending" : "Open organisation";
+      const status = org.my_status === "active" ? "Member" : org.my_status === "invited" ? "Invitation pending" : org.my_status === "declined" ? "Invitation declined" : "Open organisation";
       return `<article class="organisation-card glass"><div><span class="organisation-card-meta">${escapeHtml(org.organisation_type)} · ${escapeHtml(org.focus_area)}</span><strong>${escapeHtml(org.name)}</strong><p>${escapeHtml(org.description)}</p><small><i data-lucide="map-pin"></i> ${escapeHtml(org.location)} · ${Number(org.member_count) || 0} member(s)</small></div><span class="organisation-status">${escapeHtml(status)}</span></article>`;
     }).join("") : '<div class="community-empty glass"><strong>No organisations have been formed yet</strong><p>Start one around a shared civic goal and invite your friends.</p></div>';
     refreshIcons();
@@ -6620,7 +6620,7 @@ function bindEvents() {
       if (peopleViewButton) { setPeopleView(peopleViewButton.dataset.peopleView); return; }
 
       const createOrganisationButton = event.target.closest("#createOrganisationBtn");
-      if (createOrganisationButton) { showScreen("createOrganisationScreen"); loadOrganisationFriendPicker(); return; }
+      if (createOrganisationButton) { showScreen("createOrganisationScreen"); return; }
 
       const refreshFriendsButton = event.target.closest("#refreshOrganisationFriends");
       if (refreshFriendsButton) { loadOrganisationFriendPicker(); return; }
