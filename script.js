@@ -8407,3 +8407,25 @@ function bootCivicOS() {
 }
 
 bootCivicOS();
+
+// Refresh shared report data when a citizen returns to the tab.
+// The cooldown and in-flight guard avoid duplicate focus/visibility requests.
+let civicReportRefreshLastAt = Date.now();
+let civicReportRefreshInFlight = false;
+async function refreshCivicReportsOnReturn() {
+  if (
+    document.visibilityState !== "visible" ||
+    !window.civicSupabase ||
+    civicReportRefreshInFlight ||
+    Date.now() - civicReportRefreshLastAt < 30000
+  ) return;
+  civicReportRefreshInFlight = true;
+  civicReportRefreshLastAt = Date.now();
+  try {
+    await loadPersistentCivicReports();
+  } finally {
+    civicReportRefreshInFlight = false;
+  }
+}
+document.addEventListener("visibilitychange", refreshCivicReportsOnReturn);
+window.addEventListener("focus", refreshCivicReportsOnReturn);
