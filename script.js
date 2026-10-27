@@ -515,6 +515,7 @@ const state = {
   pendingEvidenceReport: null,
   draft: null,
   analysis: null,
+  duplicateOverride: false,
   analyzing: false,
   filters: {
     status: "All",
@@ -1720,6 +1721,7 @@ function invalidateAnalysis() {
   }
 
   state.analysis = null;
+  state.duplicateOverride = false;
 
   const panel =
     $("#aiPanel");
@@ -1995,6 +1997,7 @@ async function handleAnalyze(event) {
 
   showFormError(null);
 
+  state.duplicateOverride = false;
   state.analyzing = true;
   const analyzeBtn = $("#analyzeBtn");
   if (analyzeBtn) analyzeBtn.disabled = true;
@@ -2380,15 +2383,15 @@ function renderAnalysis() {
               <button
                 type="button"
                 class="link-btn"
-                data-action="support-duplicate"
+                data-action="view-duplicate"
                 data-id="${escapeHtml(
                   a.duplicate.id
                 )}"
               >
-                Support existing report instead
+                View existing report
                 <i data-lucide="arrow-right"></i>
               </button>
-
+              ${dupActions}
             </span>
 
           </div>
@@ -2570,9 +2573,10 @@ function renderAnalysis() {
           type="button"
           class="btn btn-primary btn-lg"
           data-action="submit-report"
+          ${a.duplicate && !state.duplicateOverride ? "disabled aria-disabled=\"true\"" : ""}
         >
           <i data-lucide="send"></i>
-          Submit report
+          ${a.duplicate && !state.duplicateOverride ? "Review possible duplicate first" : "Submit report"}
         </button>
 
         <button
@@ -6653,6 +6657,24 @@ function bindEvents() {
         }
       }
 
+
+      if (action === "view-duplicate") {
+        const openCandidate = () => {
+          const issue = getIssue(id);
+          if (issue) openIssue(id);
+          else toast("The existing report is not loaded yet. Open the public Issues list and search for " + id + ".", "info");
+        };
+        if (getIssue(id)) openIssue(id);
+        else loadPersistentCivicReports().then(openCandidate);
+        return;
+      }
+
+      if (action === "confirm-distinct-issue") {
+        state.duplicateOverride = true;
+        renderAnalysis();
+        toast("You confirmed this describes a different issue. Review the details before submitting.");
+        return;
+      }
 
       if (
         action ===
