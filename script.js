@@ -1255,6 +1255,8 @@ function renderHome() {
         a.reportedAt
     )[0];
 
+  renderOfficialNoticeTeaser();
+
   if (!latest) return;
 
   const cat =
@@ -1423,26 +1425,6 @@ function renderHome() {
         .slice(0, 3)
         .map(issueCard)
         .join("");
-  }
-
-  const teaser =
-    $("#communityTeaser");
-
-  if (teaser) {
-    teaser.innerHTML = `
-      <div>
-        <p class="kicker">Connect</p>
-        <h2 id="teaserTitle" class="teaser-title">Official notices for your community.</h2>
-        <p class="teaser-sub">Public announcements, service updates, advisories and important information published by authorized government departments.</p>
-      </div>
-      <div class="teaser-meta">
-        <span class="muted-text">Government notices · Public information</span>
-        <button type="button" class="btn btn-ghost" data-goto="communityScreen">
-          View official notices
-          <i data-lucide="arrow-right"></i>
-        </button>
-      </div>
-    `;
   }
 
   refreshIcons();
@@ -2694,6 +2676,7 @@ function setupCivicBackend() {
   } else {
     console.warn("Civic OS Supabase config or client is missing.");
   }
+  loadOfficialPublicNotices();
   document.addEventListener("submit", async (event) => {
     const form = event.target.closest("[data-report-comment-form]");
     if (!form) return;
@@ -5368,6 +5351,33 @@ function officialNoticeDate(value) {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 }
 
+function renderOfficialNoticeTeaser() {
+  const teaser = $("#communityTeaser");
+  if (!teaser) return;
+  const latest = officialPublicNotices.slice(0, 2);
+  teaser.innerHTML = `
+    <div class="official-notice-teaser-heading">
+      <p class="kicker">Connect</p>
+      <h2 id="teaserTitle" class="teaser-title">Official notices for your community.</h2>
+      <p class="teaser-sub">Public announcements, service updates, advisories and important information published by authorized government departments.</p>
+    </div>
+    <div class="official-notice-teaser-content">
+      ${latest.length ? `<div class="official-notice-teaser-list">${latest.map((notice) => `
+        <button type="button" class="official-notice-teaser-item" data-goto="communityScreen">
+          <span class="official-notice-teaser-meta">${escapeHtml(notice.notice_type || "Public Notice")} · ${escapeHtml(String(notice.issuing_department || "Government department").replace(/_/g, " ").toUpperCase())}</span>
+          <strong>${escapeHtml(notice.title)}</strong>
+          ${notice.summary ? `<span>${escapeHtml(notice.summary)}</span>` : ""}
+        </button>
+      `).join("")}</div>` : '<div class="official-notice-teaser-empty">No official notices have been published yet.</div>'}
+      <div class="teaser-meta">
+        <span class="muted-text">${officialPublicNotices.length} published ${officialPublicNotices.length === 1 ? "notice" : "notices"}</span>
+        <button type="button" class="btn btn-ghost" data-goto="communityScreen">View official notices <i data-lucide="arrow-right"></i></button>
+      </div>
+    </div>
+  `;
+  refreshIcons();
+}
+
 function renderOfficialPublicNotices() {
   const listTarget = $("#officialNoticeList");
   const statusTarget = $("#officialNoticeStatus");
@@ -5459,6 +5469,7 @@ async function loadOfficialPublicNotices(force = false) {
     officialPublicNoticeLoading = false;
   }
   renderOfficialPublicNotices();
+  renderOfficialNoticeTeaser();
 }
 
 function bindOfficialNoticeEvents() {
