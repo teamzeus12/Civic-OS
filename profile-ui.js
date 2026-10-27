@@ -7,10 +7,32 @@
   function readPrefs() {
     try { return JSON.parse(localStorage.getItem(prefsKey) || "{}"); } catch { return {}; }
   }
+  function applyUiPreferences(prefs = readPrefs()) {
+    const theme = ["system","dark","light"].includes(prefs.theme) ? prefs.theme : "system";
+    const textSize = ["standard","large","larger"].includes(prefs.textSize) ? prefs.textSize : "standard";
+    const prefersLight = Boolean(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
+    document.body.dataset.civicTheme = theme === "system" ? (prefersLight ? "light" : "dark") : theme;
+    document.body.dataset.civicTextSize = textSize;
+    document.body.dataset.civicReduceMotion = prefs.reduceMotion ? "true" : "false";
+    if ($("profileThemePreference")) $("profileThemePreference").value = theme;
+    if ($("profileTextSize")) $("profileTextSize").value = textSize;
+    if ($("profileReduceMotion")) $("profileReduceMotion").checked = Boolean(prefs.reduceMotion);
+  }
   function savePrefs() {
-    const prefs = {};
+    const prefs = readPrefs();
     document.querySelectorAll("[data-profile-pref]").forEach((el) => prefs[el.dataset.profilePref] = el.checked);
+    document.querySelectorAll("[data-ui-pref]").forEach((el) => prefs[el.dataset.uiPref] = el.type === "checkbox" ? el.checked : el.value);
     try { localStorage.setItem(prefsKey, JSON.stringify(prefs)); } catch {}
+    applyUiPreferences(prefs);
+  }
+  function activateSettingsTab(name) {
+    document.querySelectorAll("[data-settings-tab]").forEach((tab) => {
+      const active = tab.dataset.settingsTab === name;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+    });
+    document.querySelectorAll("[data-settings-panel]").forEach((panel) => { panel.hidden = panel.dataset.settingsPanel !== name; });
   }
   function setAvatar(initials, signedUrl) {
     const avatar = $("citizenAvatar");
@@ -68,6 +90,7 @@
     if (error) { $("citizenEmail").textContent = "Unable to check your account session."; return; }
     const user = data.session?.user;
     const prefs = readPrefs();
+    applyUiPreferences(prefs);
     document.querySelectorAll("[data-profile-pref]").forEach((el) => {
       if (Object.prototype.hasOwnProperty.call(prefs, el.dataset.profilePref)) el.checked = Boolean(prefs[el.dataset.profilePref]);
     });
@@ -113,7 +136,18 @@
     if (window.lucide?.createIcons) window.lucide.createIcons();
   };
   document.addEventListener("DOMContentLoaded", () => {
+    applyUiPreferences();
+    if (window.matchMedia) {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: light)");
+      const refreshSystemTheme = () => { if (readPrefs().theme === "system") applyUiPreferences(); };
+      if (systemTheme.addEventListener) systemTheme.addEventListener("change", refreshSystemTheme);
+      else if (systemTheme.addListener) systemTheme.addListener(refreshSystemTheme);
+    }
     activateTab("overview");
+    activateSettingsTab("appearance");
+    document.querySelectorAll("[data-settings-tab]").forEach((tab) => tab.addEventListener("click", () => activateSettingsTab(tab.dataset.settingsTab)));
+    document.querySelectorAll("[data-ui-pref]").forEach((el) => el.addEventListener("change", savePrefs));
+    document.querySelectorAll("[data-open-profile-overview]").forEach((button) => button.addEventListener("click", () => activateTab("overview")));
     document.querySelectorAll("[data-profile-tab]").forEach((tab) => tab.addEventListener("click", () => activateTab(tab.dataset.profileTab)));
     $("profileEditButton")?.addEventListener("click", () => {
       activateTab("overview");
