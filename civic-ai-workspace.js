@@ -55,7 +55,7 @@
       const chats = data || [], query = ($("civicAiSearch")?.value || "").trim().toLocaleLowerCase();
       const visible = chats.filter(chat => String(chat.title || "New chat").toLocaleLowerCase().includes(query));
       const pinnedChats = visible.filter(chat => chat.is_pinned), recentChats = visible.filter(chat => !chat.is_pinned);
-      const currentId = window.state?.civicAiConversationId || null;
+      const currentId = (typeof state !== "undefined" ? state.civicAiConversationId : null) || null;
       pinned.replaceChildren(); recent.replaceChildren();
       if (!pinnedChats.length) setEmpty(pinned,query ? "No matching pinned chats." : "Pinned chats appear here.");
       else pinnedChats.forEach(chat => pinned.appendChild(makeHistoryItem(chat,currentId)));
@@ -84,7 +84,7 @@
       const client = window.civicSupabase, user = await currentOwner();
       const { error: messagesError } = await client.from("civic_ai_messages").delete().eq("conversation_id",conversationId).eq("owner_id",user.id); if (messagesError) throw messagesError;
       const { error: conversationError } = await client.from("civic_ai_conversations").delete().eq("id",conversationId).eq("owner_id",user.id); if (conversationError) throw conversationError;
-      if (window.state?.civicAiConversationId === conversationId && typeof window.startNewCivicAiChat === "function") window.startNewCivicAiChat();
+      if ((typeof state !== "undefined" && state.civicAiConversationId === conversationId) && typeof window.startNewCivicAiChat === "function") window.startNewCivicAiChat();
       if (typeof window.toast === "function") window.toast("Conversation deleted.","trash-2"); await refreshChatHistory();
     } catch (error) { console.error("Civic AI delete failed:",error); if (typeof window.toast === "function") window.toast(error.message || "Could not delete this conversation.","triangle-alert"); }
   }
@@ -134,7 +134,7 @@
     else { panel.classList.remove("is-expanded","civic-ai-show-sidebar"); }
   }
   async function regenerateLastReply() {
-    const stateRef = window.state; if (!stateRef || !Array.isArray(stateRef.civicAiMessages)) return;
+    const stateRef = typeof state !== "undefined" ? state : null; if (!stateRef || !Array.isArray(stateRef.civicAiMessages)) return;
     let userIndex = -1;
     for (let i = stateRef.civicAiMessages.length - 1; i >= 0; i--) if (stateRef.civicAiMessages[i].role === "user") { userIndex = i; break; }
     if (userIndex < 0) { if (typeof window.toast === "function") window.toast("There is no user message to regenerate.","info"); return; }
@@ -160,17 +160,18 @@
   }
   function enhanceResponseActions() {
     const container = $("civicAiMessages"); if (!container) return;
+    let changed = false;
     container.querySelectorAll(".civic-ai-message.ai .civic-ai-response-actions").forEach(actions => {
       if (!actions.querySelector("[data-civic-ai-regenerate]")) {
         const button = document.createElement("button"); button.type = "button"; button.className = "civic-ai-copy-response"; button.dataset.civicAiRegenerate = "true";
-        button.innerHTML = '<i data-lucide="refresh-cw"></i><span>Regenerate</span>'; actions.appendChild(button);
+        button.innerHTML = '<i data-lucide="refresh-cw"></i><span>Regenerate</span>'; actions.appendChild(button); changed = true;
       }
       if (!actions.querySelector("[data-civic-ai-pin-current]")) {
         const button = document.createElement("button"); button.type = "button"; button.className = "civic-ai-copy-response"; button.dataset.civicAiPinCurrent = "true";
-        button.innerHTML = '<i data-lucide="pin"></i><span>Pin chat</span>'; actions.appendChild(button);
+        button.innerHTML = '<i data-lucide="pin"></i><span>Pin chat</span>'; actions.appendChild(button); changed = true;
       }
     });
-    if (typeof window.refreshIcons === "function") window.refreshIcons();
+    if (changed && typeof window.refreshIcons === "function") window.refreshIcons();
   }
   function setupResponseObserver() {
     const messages = $("civicAiMessages"); if (!messages) return;
@@ -181,7 +182,7 @@
       if (regenerate) { regenerate.disabled = true; await regenerateLastReply(); regenerate.disabled = false; return; }
       const pin = event.target.closest("[data-civic-ai-pin-current]");
       if (pin) {
-        const id = window.state?.civicAiConversationId;
+        const id = typeof state !== "undefined" ? state.civicAiConversationId : null;
         if (!id) { if (typeof window.toast === "function") window.toast("Send a message first to create a saved chat.","info"); return; }
         await togglePin(id); pin.innerHTML = '<i data-lucide="pin-check"></i><span>Pinned chat</span>';
         if (typeof window.refreshIcons === "function") window.refreshIcons();
@@ -231,6 +232,7 @@
       const pin = event.target.closest("[data-chat-pin]"); if (pin) { event.stopPropagation(); await togglePin(pin.dataset.chatPin); return; }
       const remove = event.target.closest("[data-chat-delete]"); if (remove) { event.stopPropagation(); await deleteChat(remove.dataset.chatDelete); }
     });
+    $("civicAiImageGenOpen")?.addEventListener("click",() => { $("civicAiImageGenerator").hidden = false; if (!panel.classList.contains("is-expanded") && !panel.classList.contains("is-maximized")) openWorkspace(); $("civicAiImageGenPrompt")?.focus(); });
     $("civicAiImageGenClose")?.addEventListener("click",() => { $("civicAiImageGenerator").hidden = true; });
     $("civicAiImageGenFile")?.addEventListener("change",event => { const file = event.target.files?.[0]; $("civicAiImageGenFileLabel").textContent = file ? file.name : "Choose a reference photo"; });
     $("civicAiGenerateImage")?.addEventListener("click",generateImageConcept);
