@@ -3856,7 +3856,7 @@ function renderIssueSheet(issue) {
             ${issue.supporters}
           </div>
 
-          <div class="support-label">
+          <div class="support-label" data-support-label>
             ${
               issue.supporters === 1
                 ? "citizen is"
@@ -4016,6 +4016,8 @@ async function loadReportCommunityActivity(issue) {
   if (state.openIssueId === issue.id) {
     const count = document.querySelector("[data-support-count]");
     if (count) count.textContent = String(issue.supporters);
+    const supportLabel = document.querySelector("[data-support-label]");
+    if (supportLabel) supportLabel.textContent = (issue.supporters === 1 ? "citizen is" : "citizens are") + " affected by this";
     const supportButton = document.querySelector('[data-action="support"][data-id="' + CSS.escape(issue.id) + '"]');
     if (supportButton) {
       supportButton.disabled = false;
