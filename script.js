@@ -535,7 +535,7 @@ const state = {
   civicAiMessages: [],
   civicAiGeneration: 0,
   civicAiConversationId: null,
-  civicAiPersistenceWarningShown: false
+  civicAiPersistenceWarningShown: false,
   civicActionId: null
 };
 
