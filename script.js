@@ -2762,9 +2762,18 @@ async function attachReportEvidence(client, reportRows) {
     for (const evidence of evidenceRows || []) {
       if (!evidence.storage_path) continue;
       const report = reportsById.get(evidence.report_id);
-      // Only fetch evidence belonging to the signed-in owner or a publicly
-      // approved report. Government access continues to follow storage RLS.
-      const isOwner = Boolean(currentUserId && report?.reported_by === currentUserId);
+      // Public feed rows intentionally omit reporter identity. Use the private
+      // storage path's owner folder as a fallback for the signed-in owner;
+      // Storage RLS still authorizes the actual signed-URL request.
+      const pathOwnerId = evidence.storage_path.split("/")[0];
+      const isOwner = Boolean(
+        currentUserId &&
+        (
+          report?.reported_by === currentUserId ||
+          pathOwnerId === currentUserId
+        )
+      );
+      // Never expose unapproved evidence to other citizens. Storage stays private.
       const isPublic = report?.verification_required === false;
       if (!isOwner && !isPublic) continue;
 
