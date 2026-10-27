@@ -5302,7 +5302,7 @@ async function loadOrganisationFriendPicker() {
       picker.innerHTML = '<div class="community-empty glass"><strong>You have no accepted friends yet</strong><p>Use Find people to discover citizens and send friend requests. Once they accept, you can invite them here. You can also create the organisation without invitations.</p></div>';
       return;
     }
-    picker.innerHTML = friends.map((friend, i) => `<label class="organisation-friend-option"><input type="checkbox" name="organisationInvitees" value="${escapeHtml(friend.friend_id)}"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(friend.display_name || "Citizen")}</span><span><strong>${escapeHtml(friend.display_name || "Civic OS citizen")}</strong><small>Invite to this organisation</small></span></label>`).join("");
+    picker.innerHTML = friends.map((friend, i) => `<label class="person-card glass organisation-friend-option"><input type="checkbox" name="organisationInvitees" value="${escapeHtml(friend.friend_id)}"><span class="avatar tone-${i % 4}" aria-hidden="true">${initials(friend.display_name || "Citizen")}</span><span class="person-body"><span class="person-name">${escapeHtml(friend.display_name || "Civic OS citizen")}</span><span class="person-role">Invite to this organisation</span></span></label>`).join("");
   } catch (error) {
     console.error("Could not load organisation invite list:", error?.message || error);
     if (state.organisationPickerView === "friends") picker.innerHTML = '<p class="block-subtitle">Could not load your friends. Refresh and try again.</p>';
