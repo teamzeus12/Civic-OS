@@ -1466,38 +1466,39 @@
           </div>
 
           <section id="communityPeoplePanel" class="community-tab-panel" role="tabpanel" aria-labelledby="communityPeopleTab">
-            <div class="block-head community-directory-head">
-              <div>
-                <h4 class="block-title">Recently active people</h4>
-                <p class="block-subtitle">Citizens who have signed in to Civic OS recently.</p>
+            <div class="community-people-tools">
+              <form id="communitySearchForm" class="community-search-form">
+                <label class="sr-only" for="communitySearchInput">Search citizens</label>
+                <input type="search" id="communitySearchInput" name="search" maxlength="80" placeholder="Find people by name…" autocomplete="off">
+                <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="search"></i> Search</button>
+              </form>
+              <div class="community-people-tabs" role="group" aria-label="People views">
+                <button type="button" class="community-people-tab is-active" data-people-view="find">Find people</button>
+                <button type="button" class="community-people-tab" data-people-view="friends">My friends</button>
+                <button type="button" class="community-people-tab" data-people-view="requests">Requests</button>
               </div>
-              <button type="button" class="btn btn-ghost btn-sm" id="refreshCommunityPeople" aria-label="Refresh people directory">
-                <i data-lucide="refresh-cw"></i>
-                Refresh
-              </button>
+              <button type="button" class="btn btn-ghost btn-sm" id="refreshCommunityPeople" aria-label="Refresh people directory"><i data-lucide="refresh-cw"></i> Refresh</button>
             </div>
+            <p id="communityPeopleHint" class="block-subtitle">Search citizen accounts by display name. Email addresses and private account details are never shown.</p>
             <div class="people-grid" id="peopleGrid" aria-live="polite"></div>
           </section>
 
           <section id="communityOrganisationsPanel" class="community-tab-panel" role="tabpanel" aria-labelledby="communityOrganisationsTab" hidden>
-            <div class="block-head">
+            <div class="block-head organisation-list-head">
               <div>
                 <h4 class="block-title">Build something together</h4>
-                <p class="block-subtitle">Discover or form a group around a shared local goal.</p>
+                <p class="block-subtitle">Create a group around a shared civic goal and invite friends to join.</p>
               </div>
+              <button type="button" class="btn btn-primary" id="createOrganisationBtn"><i data-lucide="plus"></i> Form an organisation</button>
             </div>
-            <div class="organisation-cta glass">
-              <span class="organisation-icon" aria-hidden="true"><i data-lucide="users-round"></i></span>
-              <div class="organisation-copy">
-                <strong>Form your organisation</strong>
-                <p>Create a group for neighbours, volunteers, students, or people working on the same civic issue.</p>
-              </div>
-              <button type="button" class="btn btn-primary" id="createOrganisationBtn">
-                <i data-lucide="plus"></i>
-                Create organisation
-              </button>
-            </div>
-            <p class="organisation-phase-note">Organisation creation is not active yet; this section is ready for that phase.</p>
+            <section class="organisation-invitations" aria-labelledby="organisationInvitesTitle">
+              <h4 id="organisationInvitesTitle" class="block-title">Invitations for you</h4>
+              <div id="organisationInvitations" class="organisation-list" aria-live="polite"></div>
+            </section>
+            <section class="organisation-directory" aria-labelledby="organisationDirectoryTitle">
+              <h4 id="organisationDirectoryTitle" class="block-title">Organisations on Civic OS</h4>
+              <div id="organisationsList" class="organisation-list" aria-live="polite"></div>
+            </section>
           </section>
         </section>
 
@@ -1746,6 +1747,76 @@
 
       </div>
 
+    </section>
+
+    <!-- ================= FORM AN ORGANISATION ================= -->
+    <section id="createOrganisationScreen" class="screen" aria-labelledby="createOrganisationTitle">
+      <div class="container narrow">
+        <header class="screen-head">
+          <p class="kicker">Civic Actions · Connect</p>
+          <h2 id="createOrganisationTitle" class="screen-title">Form an organisation</h2>
+          <p class="screen-sub">Describe the group’s purpose, then invite friends who want to work on the same goal. Invitations must be accepted before anyone becomes a member.</p>
+        </header>
+        <form id="createOrganisationForm" class="glass project-form">
+          <div class="form-field">
+            <label for="organisationName">Organisation name</label>
+            <input id="organisationName" name="name" type="text" maxlength="80" minlength="3" placeholder="e.g. Imphal Green Neighbourhoods" required>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="organisationType">Organisation type</label>
+              <select id="organisationType" name="type" required>
+                <option value="">Select type</option>
+                <option>Community group</option>
+                <option>Student organisation</option>
+                <option>Volunteer group</option>
+                <option>Environmental group</option>
+                <option>Civic advocacy</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="organisationFocus">Main focus</label>
+              <select id="organisationFocus" name="focus" required>
+                <option value="">Select focus</option>
+                <option>General civic action</option>
+                <option>Environment</option>
+                <option>Waste &amp; sanitation</option>
+                <option>Roads &amp; infrastructure</option>
+                <option>Education</option>
+                <option>Public health</option>
+                <option>Disaster preparedness</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="organisationLocation">Main location</label>
+            <input id="organisationLocation" name="location" type="text" maxlength="120" placeholder="e.g. Khurai, Imphal, Manipur" required>
+          </div>
+          <div class="form-field">
+            <label for="organisationDescription">Mission and what the group plans to do</label>
+            <textarea id="organisationDescription" name="description" rows="5" minlength="20" maxlength="1000" placeholder="Explain the purpose, who the group hopes to help, and the activities it may organise…" required></textarea>
+          </div>
+          <div class="form-field">
+            <div class="organisation-invite-heading">
+              <div>
+                <label>Invite friends (optional)</label>
+                <p class="block-subtitle">Only accepted friends appear here. Selected people receive invitations; they are not added automatically.</p>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" id="refreshOrganisationFriends"><i data-lucide="refresh-cw"></i> Refresh</button>
+            </div>
+            <div id="organisationFriendPicker" class="organisation-friend-picker" aria-live="polite">
+              <p class="block-subtitle">Loading your friends…</p>
+            </div>
+            <p class="form-help">You can invite up to 30 friends when forming an organisation.</p>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="cancelCreateOrganisation">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i data-lucide="users-round"></i> Create organisation</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <!-- ================= CIVIC ACTION DETAILS ================= -->
