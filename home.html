@@ -1820,11 +1820,11 @@
               <button type="button" class="organisation-picker-tab is-active" data-org-picker-view="friends" aria-pressed="true">My friends</button>
               <button type="button" class="organisation-picker-tab" data-org-picker-view="find" aria-pressed="false">Find people</button>
             </div>
-            <form id="organisationPeopleSearchForm" class="community-search-form organisation-people-search" hidden>
+            <div id="organisationPeopleSearchForm" class="community-search-form organisation-people-search" role="search" hidden>
               <label class="sr-only" for="organisationPeopleSearchInput">Search Civic OS members by name</label>
               <input type="search" id="organisationPeopleSearchInput" maxlength="80" placeholder="Search by display name…" autocomplete="off">
-              <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="search"></i> Search</button>
-            </form>
+              <button type="button" id="organisationPeopleSearchSubmit" class="btn btn-primary btn-sm"><i data-lucide="search"></i> Search</button>
+            </div>
             <p id="organisationPeopleHint" class="block-subtitle">Select friends you would like to invite. Invitations are sent only after you create the organisation.</p>
             <div id="organisationFriendPicker" class="organisation-friend-picker" aria-live="polite"><p class="block-subtitle">Loading your friends…</p></div>
             <div class="organisation-invite-note"><i data-lucide="shield-check"></i><p><strong>Everyone chooses for themselves.</strong> Invited people must accept before they become organisation members.</p></div>
