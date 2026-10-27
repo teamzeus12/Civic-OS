@@ -965,6 +965,22 @@
               </span>
             </button>
 
+            <div class="report-location-picker">
+              <p class="report-location-help">Submitting from home? Search for the place where the issue happened, then confirm the exact point on the map. You can also tap the map directly.</p>
+              <div class="report-location-actions">
+                <button type="button" class="chip-btn" id="searchLocationBtn">
+                  <i data-lucide="search"></i><span>Find typed place</span>
+                </button>
+                <button type="button" class="chip-btn" id="clearLocationPinBtn">
+                  <i data-lucide="x-circle"></i><span>Clear pin</span>
+                </button>
+              </div>
+              <p id="reportLocationPickerStatus" class="report-location-picker-status" role="status" aria-live="polite">No map pin selected yet. Search for a place or tap the map to pin the issue.</p>
+              <div id="reportLocationResults" class="report-location-results" hidden aria-label="Location search results"></div>
+              <div id="reportLocationMap" class="report-location-map" role="application" aria-label="Choose the exact civic issue location by moving the map and tapping a point"></div>
+              <p class="report-location-attribution">Map data © OpenStreetMap contributors. Search results are suggestions—please confirm the exact spot.</p>
+            </div>
+
           </div>
 
 
