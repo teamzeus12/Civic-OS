@@ -74,7 +74,7 @@
     const target = $("profileReportHistory");
     if (!target) return;
     if (!rows.length) { target.innerHTML = '<p class="profile-empty">No saved reports found for this account yet.</p>'; renderActivity(rows); return; }
-    target.innerHTML = rows.slice(0,5).map((row) => {
+    target.innerHTML = rows.slice(0,50).map((row) => {
       const status = String(row.status || "Reported");
       const statusClass = status.toLowerCase().replace(/[^a-z]+/g,"-");
       const location = typeof row.location === "string" ? row.location : row.location?.address || row.location?.label || row.location?.name || "Location not supplied";
