@@ -507,9 +507,6 @@ const WEEKLY_BASELINE = {
   resolved: [0, 0, 0, 0, 0, 0, 0]
 };
 
-// Fictional sample reports are intentionally disabled.
-const EXAMPLES = [];
-
 // Core application state required by navigation and event handlers.
 const state = {
   screen: "homeScreen",
@@ -519,7 +516,6 @@ const state = {
   draft: null,
   analysis: null,
   analyzing: false,
-  exampleIndex: 0,
   filters: {
     status: "All",
     category: "all",
@@ -1851,9 +1847,6 @@ async function handleAnalyze(event) {
           Civic AI is analyzing…
         </span>
 
-        <span class="demo-badge">
-          Demo AI
-        </span>
       </div>
 
       <ol class="ai-steps">
@@ -3019,32 +3012,6 @@ function clearPhoto({ revoke } = {}) {
   renderPhotoPreviews();
 }
 
-function fillExample() {
-  // Sample issue autofill is disabled because fictional reports were removed.
-  if (!EXAMPLES.length) {
-    toast("Sample reports are disabled. Enter details for a real civic issue.", "info");
-    return;
-  }
-
-  const example = EXAMPLES[state.exampleIndex % EXAMPLES.length];
-  state.exampleIndex++;
-
-  const radio = document.getElementById(`cat-${example.category}`);
-  if (radio) radio.checked = true;
-
-  const description = $("#description");
-  const location = $("#location");
-  const count = $("#descCount");
-
-  if (description) description.value = example.description;
-  if (location) location.value = example.location;
-  if (count) count.textContent = `${example.description.length} / 500`;
-
-  invalidateAnalysis();
-  showFormError(null);
-  updateStepper();
-}
-
 function useCurrentLocation() {
   const btn =
     $("#locateBtn");
@@ -3545,9 +3512,6 @@ function renderIssueSheet(issue) {
           Civic AI analysis
         </span>
 
-        <span class="demo-badge">
-          Demo AI
-        </span>
 
       </div>
 
@@ -4125,10 +4089,7 @@ function renderDashboard() {
       <div>
 
         <p class="insight-title">
-          Civic AI governance summary
-          <span class="demo-badge">
-            Demo AI
-          </span>
+          Civic issue summary
         </p>
 
         <p class="insight-text">
@@ -6683,19 +6644,6 @@ function bindEvents() {
   }
 
 
-  /* ---------- Example report ---------- */
-
-  const exampleBtn =
-    $("#exampleBtn");
-
-  if (exampleBtn) {
-    exampleBtn.addEventListener(
-      "click",
-      fillExample
-    );
-  }
-
-
   /* ---------- Location ---------- */
 
   const locateBtn =
@@ -7134,7 +7082,7 @@ function bindEvents() {
                   attachmentNotice = `
                     <p class="civic-ai-attachment-note">
                       The text file <strong>${safeFileName}</strong> was attached and its first
-                      ${truncated ? "5,000 characters were" : "contents were"} included for this demo response.
+                      ${truncated ? "5,000 characters were" : "contents were"} included in this analysis request.
                     </p>
                   `;
                 }
@@ -7142,7 +7090,7 @@ function bindEvents() {
                 attachmentNotice = `
                   <p class="civic-ai-attachment-note">
                     File received: <strong>${safeFileName}</strong>.
-                    PDF text extraction is not connected in this demo; paste relevant text
+                    PDF text extraction is not available here; paste relevant text
                     into your message if you need it reviewed.
                   </p>
                 `;
