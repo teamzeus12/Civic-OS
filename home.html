@@ -1757,71 +1757,80 @@
           <h2 id="createOrganisationTitle" class="screen-title">Form an organisation</h2>
           <p class="screen-sub">Describe the group’s purpose, then invite friends who want to work on the same goal. Invitations must be accepted before anyone becomes a member.</p>
         </header>
-        <form id="createOrganisationForm" class="glass project-form">
-          <div class="form-field">
-            <label for="organisationName">Organisation name</label>
-            <input id="organisationName" name="name" type="text" maxlength="80" minlength="3" placeholder="e.g. Imphal Green Neighbourhoods" required>
+        <form id="createOrganisationForm" class="glass project-form organisation-form" aria-describedby="organisationFormIntro">
+          <div class="organisation-form-intro">
+            <span class="organisation-form-step"><i data-lucide="users-round"></i> Build your community</span>
+            <p id="organisationFormIntro">Start with the basics, explain what brings your group together, then invite friends who may want to take part.</p>
           </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="organisationType">Organisation type</label>
-              <select id="organisationType" name="type" required>
-                <option value="">Select type</option>
-                <option>Community group</option>
-                <option>Student organisation</option>
-                <option>Volunteer group</option>
-                <option>Environmental group</option>
-                <option>Civic advocacy</option>
-                <option>Other</option>
-              </select>
+          <section class="organisation-form-section" aria-labelledby="organisationDetailsHeading">
+            <div class="organisation-section-heading">
+              <span class="organisation-section-number">01</span>
+              <div><h3 id="organisationDetailsHeading">Organisation details</h3><p>Give your group a clear identity.</p></div>
             </div>
             <div class="form-field">
-              <label for="organisationFocus">Main focus</label>
-              <select id="organisationFocus" name="focus" required>
-                <option value="">Select focus</option>
-                <option>General civic action</option>
-                <option>Environment</option>
-                <option>Waste &amp; sanitation</option>
-                <option>Roads &amp; infrastructure</option>
-                <option>Education</option>
-                <option>Public health</option>
-                <option>Disaster preparedness</option>
-                <option>Other</option>
-              </select>
+              <label for="organisationName">Organisation name <span class="organisation-required">Required</span></label>
+              <input id="organisationName" name="name" type="text" maxlength="80" minlength="3" placeholder="e.g. Imphal Green Neighbourhoods" autocomplete="organization" required>
+              <p class="organisation-field-hint">Choose a name people can recognise and remember.</p>
             </div>
-          </div>
-          <div class="form-field">
-            <label for="organisationLocation">Main location</label>
-            <input id="organisationLocation" name="location" type="text" maxlength="120" placeholder="e.g. Khurai, Imphal, Manipur" required>
-          </div>
-          <div class="form-field">
-            <label for="organisationDescription">Mission and what the group plans to do</label>
-            <textarea id="organisationDescription" name="description" rows="5" minlength="20" maxlength="1000" placeholder="Explain the purpose, who the group hopes to help, and the activities it may organise…" required></textarea>
-          </div>
-          <div class="form-field">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="organisationType">Type of organisation <span class="organisation-required">Required</span></label>
+                <select id="organisationType" name="type" required>
+                  <option value="">Choose a type</option><option>Community group</option><option>Student organisation</option><option>Volunteer group</option><option>Environmental group</option><option>Civic advocacy</option><option>Other</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="organisationFocus">Main area of work <span class="organisation-required">Required</span></label>
+                <select id="organisationFocus" name="focus" required>
+                  <option value="">Choose a focus area</option><option>General civic action</option><option>Environment</option><option>Waste &amp; sanitation</option><option>Roads &amp; infrastructure</option><option>Education</option><option>Public health</option><option>Disaster preparedness</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+          </section>
+          <section class="organisation-form-section" aria-labelledby="organisationPurposeHeading">
+            <div class="organisation-section-heading">
+              <span class="organisation-section-number">02</span>
+              <div><h3 id="organisationPurposeHeading">Purpose and location</h3><p>Help people understand what you want to achieve.</p></div>
+            </div>
+            <div class="form-field">
+              <label for="organisationLocation">Where will your group be active? <span class="organisation-required">Required</span></label>
+              <input id="organisationLocation" name="location" type="text" maxlength="120" placeholder="e.g. Khurai, Imphal, Manipur" autocomplete="address-level2" required>
+              <p class="organisation-field-hint">Enter a neighbourhood, town, district, or wider area.</p>
+            </div>
+            <div class="form-field">
+              <label for="organisationDescription">Mission and planned activities <span class="organisation-required">Required</span></label>
+              <textarea id="organisationDescription" name="description" rows="5" minlength="20" maxlength="1000" placeholder="What issue will your group work on? Who do you hope to help, and what activities might you organise?" required></textarea>
+              <p class="organisation-field-hint">Write at least 20 characters. A clear description helps potential members understand the group.</p>
+            </div>
+          </section>
+          <section class="organisation-form-section organisation-invite-section" aria-labelledby="organisationInviteHeading">
+            <div class="organisation-section-heading">
+              <span class="organisation-section-number">03</span>
+              <div><h3 id="organisationInviteHeading">Invite people</h3><p>Build your first team from your Civic OS connections.</p></div>
+              <span class="organisation-optional-badge">Optional</span>
+            </div>
             <div class="organisation-invite-heading">
               <div>
-                <label>Invite friends (optional)</label>
-                <p class="block-subtitle">Only accepted friends appear here. Selected people receive invitations; they are not added automatically.</p>
+                <label>Choose people to invite</label>
+                <p class="block-subtitle">Only accepted friends can be invited from your friends list. You can also find people on Civic OS and send a friend request first.</p>
               </div>
-              <button type="button" class="btn btn-ghost btn-sm" id="refreshOrganisationFriends"><i data-lucide="refresh-cw"></i> Refresh</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="refreshOrganisationFriends"><i data-lucide="refresh-cw"></i> Refresh list</button>
             </div>
-            <div class="organisation-picker-tabs" role="group" aria-label="Choose organisation invitees">
+            <div class="organisation-picker-tabs" role="group" aria-label="Choose people to invite">
               <button type="button" class="organisation-picker-tab is-active" data-org-picker-view="friends" aria-pressed="true">My friends</button>
               <button type="button" class="organisation-picker-tab" data-org-picker-view="find" aria-pressed="false">Find people</button>
             </div>
             <form id="organisationPeopleSearchForm" class="community-search-form organisation-people-search" hidden>
-              <label class="sr-only" for="organisationPeopleSearchInput">Search Civic OS citizens</label>
-              <input type="search" id="organisationPeopleSearchInput" maxlength="80" placeholder="Find people by name…" autocomplete="off">
+              <label class="sr-only" for="organisationPeopleSearchInput">Search Civic OS members by name</label>
+              <input type="search" id="organisationPeopleSearchInput" maxlength="80" placeholder="Search by display name…" autocomplete="off">
               <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="search"></i> Search</button>
             </form>
-            <p id="organisationPeopleHint" class="block-subtitle">Select accepted friends to invite. You can invite up to 30 friends.</p>
-            <div id="organisationFriendPicker" class="organisation-friend-picker" aria-live="polite">
-              <p class="block-subtitle">Loading your friends…</p>
-            </div>
-            <p class="form-help">You can invite up to 30 friends when forming an organisation.</p>
-          </div>
-          <div class="form-actions">
+            <p id="organisationPeopleHint" class="block-subtitle">Select friends you would like to invite. Invitations are sent only after you create the organisation.</p>
+            <div id="organisationFriendPicker" class="organisation-friend-picker" aria-live="polite"><p class="block-subtitle">Loading your friends…</p></div>
+            <div class="organisation-invite-note"><i data-lucide="shield-check"></i><p><strong>Everyone chooses for themselves.</strong> Invited people must accept before they become organisation members.</p></div>
+            <p class="form-help">You can invite up to 30 accepted friends. You can also create the organisation now and invite people later.</p>
+          </section>
+          <div class="form-actions organisation-form-actions">
             <button type="button" class="btn btn-ghost" id="cancelCreateOrganisation">Cancel</button>
             <button type="submit" class="btn btn-primary"><i data-lucide="users-round"></i> Create organisation</button>
           </div>
