@@ -298,7 +298,7 @@
   }
 
   function noticeStatusBadge(status) {
-    const label = status === "published" ? "PUBLISHED" : status === "archived" ? "ARCHIVED" : "DRAFT";
+    const label = status === "published" ? "PUBLISHED" : status === "withdrawn" ? "WITHDRAWN" : status === "archived" ? "ARCHIVED" : "DRAFT";
     return `<span class="notice-status-badge" data-status="${escapeHtml(status)}">${label}</span>`;
   }
 
@@ -332,10 +332,10 @@
       ].filter(Boolean);
       const actions = [
         `<button type="button" class="btn" data-notice-edit="${escapeHtml(notice.id)}">Edit</button>`,
-        notice.status === "draft" || notice.status === "archived"
-          ? `<button type="button" class="btn btn-primary" data-notice-status="${escapeHtml(notice.id)}" data-next-status="published">${notice.status === "archived" ? "Republish" : "Publish"}</button>`
-          : `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="archived">Archive</button>`,
-        notice.status === "draft" ? `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="archived">Discard / archive</button>` : ""
+        notice.status === "draft" || notice.status === "archived" || notice.status === "withdrawn"
+          ? `<button type="button" class="btn btn-primary" data-notice-status="${escapeHtml(notice.id)}" data-next-status="published">${notice.status === "archived" ? "Republish" : notice.status === "withdrawn" ? "Republish withdrawn notice" : "Publish"}</button>`
+          : `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="withdrawn">Withdraw</button>`,
+        notice.status === "draft" ? `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="archived">Discard / archive</button>` : notice.status === "withdrawn" ? `<button type="button" class="btn" data-notice-status="${escapeHtml(notice.id)}" data-next-status="archived">Archive</button>` : ""
       ].join("");
       return `<article class="government-notice-card ${notice.is_pinned ? "is-pinned" : ""}">
         <div class="government-notice-card-head"><div class="government-notice-card-copy">
@@ -469,7 +469,7 @@
     if (!liveMode || !supabaseClient || !officialProfile) return;
     const notice = officialNotices.find((item) => item.id === noticeId);
     if (!notice) return;
-    const actionLabel = nextStatus === "published" ? "publish" : "archive";
+    const actionLabel = nextStatus === "published" ? "publish" : nextStatus === "withdrawn" ? "withdraw" : "archive";
     if (!window.confirm(`Are you sure you want to ${actionLabel} “${notice.title}”?`)) return;
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !userData?.user) {
@@ -590,6 +590,26 @@
       resetNoticeForm();
       if (toggle) toggle.textContent = "＋ Create notice";
     });
+    const previewButton = $("#previewNoticeButton");
+    if (previewButton && previewButton.dataset.bound !== "true") {
+      previewButton.dataset.bound = "true";
+      previewButton.addEventListener("click", () => {
+        const title = $("#noticeTitle").value.trim();
+        const body = $("#noticeBody").value.trim();
+        if (title.length < 5 || body.length < 20) {
+          setNoticeFormMessage("Enter a title and full notice text before previewing.", "error");
+          return;
+        }
+        $("#noticePreviewTitle").textContent = title;
+        $("#noticePreviewMeta").textContent = [$("#noticeType").value, $("#noticeDepartment").selectedOptions[0]?.textContent || $("#noticeDepartment").value, $("#noticeReference").value.trim() ? "Ref: " + $("#noticeReference").value.trim() : ""].filter(Boolean).join(" · ");
+        $("#noticePreviewSummary").textContent = $("#noticeSummary").value.trim();
+        $("#noticePreviewBody").textContent = body;
+        $("#noticePreviewDates").textContent = [$("#noticeIssuedAt").value ? "Issued " + $("#noticeIssuedAt").value : "", $("#noticeEffectiveAt").value ? "Effective " + $("#noticeEffectiveAt").value : "", $("#noticeExpiresAt").value ? "Valid until " + $("#noticeExpiresAt").value : ""].filter(Boolean).join(" · ");
+        $("#noticePreviewPanel").hidden = false;
+        setNoticeFormMessage("Preview only — this notice has not been published.");
+        $("#noticePreviewPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
     const form = $("#governmentNoticeForm");
     if (form && form.dataset.bound !== "true") {
       form.dataset.bound = "true";
