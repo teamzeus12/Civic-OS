@@ -134,7 +134,7 @@ const CATEGORIES = {
       "accident", "fire", "traffic light", "junction", "crossing"
     ],
     action:
-      "Alert public safety officers to secure the area and coordinate an urgent response.",
+      "Refer the report to public safety officers for assessment and appropriate action.",
     skills: ["Community Outreach", "Mapping"],
   },
 
@@ -359,7 +359,7 @@ function analyzeReport({
   const reviewSignals = matchTerms(text, SAFETY_REVIEW_SIGNALS);
   const impactHits = matchTerms(text, IMPACT_SIGNALS);
 
-  // Civic AI describes the report; authorised officials decide urgency and response order.
+  // Civic AI describes the report; authorised officials decide the response.
   // Do not increase confidence merely because a photo was attached.
   // There is no visual model connected in this prototype.
   const hasCategoryEvidence =
@@ -4584,8 +4584,8 @@ function renderDashboard() {
 
       </section>
 
-      <section class="panel glass" aria-labelledby="urgentPanelTitle">
-        <div class="panel-head"><div><h3 id="urgentPanelTitle" class="panel-title">Latest open reports</h3><p class="panel-sub">Reports awaiting further action or resolution.</p></div></div>
+      <section class="panel glass" aria-labelledby="latestOpenReportsTitle">
+        <div class="panel-head"><div><h3 id="latestOpenReportsTitle" class="panel-title">Latest open reports</h3><p class="panel-sub">Reports awaiting further action or resolution.</p></div></div>
         <div class="latest-report-list">
           ${open.length ? open.slice().sort((a, b) => b.reportedAt - a.reportedAt).slice(0, 4).map(issueCard).join("") : '<div class="empty-state"><i data-lucide="shield-check"></i><span>No open reports at the moment.</span></div>'}
         </div>
