@@ -1425,67 +1425,20 @@ function renderHome() {
         .join("");
   }
 
-  const openMissions =
-    MISSIONS.filter(
-      (m) =>
-        m.joined < m.needed
-    ).length;
-
   const teaser =
     $("#communityTeaser");
 
   if (teaser) {
     teaser.innerHTML = `
       <div>
-        <p class="kicker">
-          Connect
-        </p>
-
-        <h2
-          id="teaserTitle"
-          class="teaser-title"
-        >
-          Your skills can fix your city.
-        </h2>
-
-        <p class="teaser-sub">
-          Students, designers, technicians
-          and volunteers matched to real
-          civic problems.
-        </p>
+        <p class="kicker">Connect</p>
+        <h2 id="teaserTitle" class="teaser-title">Official notices for your community.</h2>
+        <p class="teaser-sub">Public announcements, service updates, advisories and important information published by authorized government departments.</p>
       </div>
-
       <div class="teaser-meta">
-        <div
-          class="avatar-stack"
-          aria-hidden="true"
-        >
-          ${PEOPLE.slice(0, 5)
-            .map(
-              (p, i) => `
-                <span
-                  class="avatar tone-${i % 4}"
-                >
-                  ${initials(p.name)}
-                </span>
-              `
-            )
-            .join("")}
-        </div>
-
-        <span class="muted-text">
-          ${PEOPLE.length}
-          contributors ·
-          ${openMissions}
-          open missions
-        </span>
-
-        <button
-          type="button"
-          class="btn btn-ghost"
-          data-goto="communityScreen"
-        >
-          Find a mission
+        <span class="muted-text">Government notices · Public information</span>
+        <button type="button" class="btn btn-ghost" data-goto="communityScreen">
+          View official notices
           <i data-lucide="arrow-right"></i>
         </button>
       </div>
@@ -5403,9 +5356,133 @@ async function handleOrganisationInvite(button) {
   }
 }
 
+let officialPublicNotices = [];
+let officialPublicNoticeLoading = false;
+let officialPublicNoticeLastLoadedAt = 0;
+let officialPublicNoticeSearch = "";
+let officialPublicNoticeType = "all";
+
+function officialNoticeDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
+function renderOfficialPublicNotices() {
+  const listTarget = $("#officialNoticeList");
+  const statusTarget = $("#officialNoticeStatus");
+  if (!listTarget) return;
+  const query = officialPublicNoticeSearch.trim().toLowerCase();
+  const list = officialPublicNotices.filter((notice) => {
+    const typeMatch = officialPublicNoticeType === "all" || notice.notice_type === officialPublicNoticeType;
+    const searchable = [notice.title, notice.reference_number, notice.notice_type, notice.issuing_department, notice.issuing_officer, notice.summary, notice.body, notice.district, notice.locality, notice.audience_details].join(" ").toLowerCase();
+    return typeMatch && (!query || searchable.includes(query));
+  });
+  if (statusTarget) {
+    statusTarget.textContent = officialPublicNoticeLoading
+      ? "Loading published notices…"
+      : list.length
+        ? `${list.length} published ${list.length === 1 ? "notice" : "notices"}${list.length !== officialPublicNotices.length ? " match your filters" : ""}.`
+        : officialPublicNotices.length
+          ? "No notices match these filters."
+          : "No official notices have been published yet.";
+  }
+  if (!list.length) {
+    listTarget.innerHTML = `<div class="official-notice-empty glass"><span aria-hidden="true">▤</span><strong>${officialPublicNotices.length ? "No matching notices" : "No official notices published yet"}</strong><p>${officialPublicNotices.length ? "Try another search term or notice type." : "Official announcements will appear here after an authorized government department publishes them."}</p></div>`;
+    return;
+  }
+  listTarget.innerHTML = list.map((notice) => {
+    const area = [notice.district, notice.locality].filter(Boolean).join(" · ");
+    const publishedDate = officialNoticeDate(notice.published_at || notice.issued_at);
+    const expired = notice.expires_at && new Date(notice.expires_at).getTime() < Date.now();
+    const dateDetails = [
+      notice.effective_at ? `Effective from ${officialNoticeDate(notice.effective_at)}` : "",
+      notice.expires_at ? `Valid until ${officialNoticeDate(notice.expires_at)}` : ""
+    ].filter(Boolean);
+    const contact = [
+      notice.contact_office ? `<span><strong>Contact office</strong> ${escapeHtml(notice.contact_office)}</span>` : "",
+      notice.contact_phone ? `<span><strong>Phone</strong> <a href="tel:${escapeHtml(notice.contact_phone)}">${escapeHtml(notice.contact_phone)}</a></span>` : "",
+      notice.contact_email ? `<span><strong>Email</strong> <a href="mailto:${escapeHtml(notice.contact_email)}">${escapeHtml(notice.contact_email)}</a></span>` : ""
+    ].filter(Boolean).join("");
+    const attachment = notice.attachment_url
+      ? `<a class="official-notice-attachment" href="${escapeHtml(notice.attachment_url)}" target="_blank" rel="noopener noreferrer"><i data-lucide="file-text"></i>${escapeHtml(notice.attachment_label || "Open official attachment")}<i data-lucide="arrow-up-right"></i></a>`
+      : "";
+    return `<article class="official-notice-card ${notice.is_pinned ? "is-pinned" : ""}">
+      <div class="official-notice-card-top"><div class="official-notice-badges"><span class="official-notice-type">${escapeHtml(notice.notice_type || "Public Notice")}</span>${notice.is_pinned ? '<span class="official-notice-pinned">PINNED</span>' : ""}${expired ? '<span class="official-notice-expired">EXPIRED</span>' : ""}</div><time>${escapeHtml(publishedDate)}</time></div>
+      <p class="official-notice-department">${escapeHtml(String(notice.issuing_department || "Government department").replace(/_/g, " ").toUpperCase())}${notice.issuing_officer ? ` · ${escapeHtml(notice.issuing_officer)}` : ""}</p>
+      <h3>${escapeHtml(notice.title)}</h3>
+      ${notice.reference_number ? `<p class="official-notice-reference">Reference: ${escapeHtml(notice.reference_number)}</p>` : ""}
+      ${notice.summary ? `<p class="official-notice-summary">${escapeHtml(notice.summary)}</p>` : ""}
+      <details class="official-notice-details"><summary>Read full notice</summary><div class="official-notice-body">${escapeHtml(notice.body).replace(/\n/g, "<br>")}</div>
+        ${notice.audience_type || notice.audience_details || area ? `<div class="official-notice-detail-grid">${notice.audience_type ? `<span><strong>Audience</strong>${escapeHtml(notice.audience_type)}</span>` : ""}${notice.audience_details ? `<span><strong>Details</strong>${escapeHtml(notice.audience_details)}</span>` : ""}${area ? `<span><strong>Affected area</strong>${escapeHtml(area)}</span>` : ""}</div>` : ""}
+        ${dateDetails.length ? `<div class="official-notice-dates">${dateDetails.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>` : ""}
+        ${contact ? `<div class="official-notice-contact">${contact}</div>` : ""}
+        ${attachment}
+      </details>
+    </article>`;
+  }).join("");
+  refreshIcons();
+}
+
+async function loadOfficialPublicNotices(force = false) {
+  if (officialPublicNoticeLoading) return;
+  if (!force && officialPublicNoticeLastLoadedAt && Date.now() - officialPublicNoticeLastLoadedAt < 30000) {
+    renderOfficialPublicNotices();
+    return;
+  }
+  const client = window.civicSupabase;
+  const statusTarget = $("#officialNoticeStatus");
+  const listTarget = $("#officialNoticeList");
+  if (!client) {
+    if (statusTarget) statusTarget.textContent = "Official notices could not connect to the database. Please refresh and try again.";
+    if (listTarget) listTarget.innerHTML = '<div class="official-notice-empty glass"><strong>Notices unavailable</strong><p>The secure Civic OS database connection is not ready.</p></div>';
+    return;
+  }
+  officialPublicNoticeLoading = true;
+  if (statusTarget) statusTarget.textContent = "Loading published notices…";
+  try {
+    const { data, error } = await client
+      .from("civic_notices")
+      .select("id,title,reference_number,notice_type,issuing_department,issuing_officer,summary,body,audience_type,audience_details,district,locality,issued_at,effective_at,expires_at,contact_office,contact_phone,contact_email,attachment_label,attachment_url,is_pinned,published_at,status")
+      .eq("status", "published")
+      .order("is_pinned", { ascending: false })
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    officialPublicNotices = data || [];
+    officialPublicNoticeLastLoadedAt = Date.now();
+  } catch (error) {
+    console.error("Official public notices could not be loaded:", error);
+    if (statusTarget) statusTarget.textContent = "Official notices could not be loaded. Please refresh and try again.";
+    if (listTarget) listTarget.innerHTML = '<div class="official-notice-empty glass"><strong>Notices temporarily unavailable</strong><p>The notice feed could not be loaded from the secure database.</p></div>';
+    return;
+  } finally {
+    officialPublicNoticeLoading = false;
+  }
+  renderOfficialPublicNotices();
+}
+
+function bindOfficialNoticeEvents() {
+  const search = $("#officialNoticeSearch");
+  if (search && search.dataset.bound !== "true") {
+    search.dataset.bound = "true";
+    search.addEventListener("input", (event) => {
+      officialPublicNoticeSearch = event.target.value || "";
+      renderOfficialPublicNotices();
+    });
+  }
+  const type = $("#officialNoticeType");
+  if (type && type.dataset.bound !== "true") {
+    type.dataset.bound = "true";
+    type.addEventListener("change", (event) => {
+      officialPublicNoticeType = event.target.value || "all";
+      renderOfficialPublicNotices();
+    });
+  }
+}
+
 function renderCommunity() {
-  renderPeople();
-  loadCommunityDirectory();
+  bindOfficialNoticeEvents();
+  loadOfficialPublicNotices();
 }
 
 function setCommunityDirectoryTab(tab) {
