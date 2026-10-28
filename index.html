@@ -1,4 +1,127 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#e8e8e6"><title>Civic OS — Report. Connect. Resolve.</title><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px;background:#e7e7e5;color:#111;font-family:Geist,system-ui,sans-serif}a{text-decoration:none;color:inherit}.frame{width:min(1160px,100%);min-height:calc(100vh - 48px);margin:auto;border-radius:27px;background:white;padding:27px 34px 24px;display:flex;flex-direction:column}.nav{width:min(620px,100%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #e5e5e5;border-radius:16px;padding:8px 10px 8px 17px;box-shadow:0 3px 12px #00000008}.brand{font-size:16px;font-weight:800;white-space:nowrap}.links{display:flex;gap:20px;font-size:11px}.actions{display:flex;gap:7px;align-items:center;white-space:nowrap}.signin{font-size:11px;padding:11px 14px;border:1px solid #e5e5e5;border-radius:10px}.launch{display:inline-flex;gap:10px;align-items:center;background:#111;color:white;border-radius:10px;padding:12px 15px;font-size:11px;font-weight:600}.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 34px}.graphic{height:205px;width:min(700px,100%);position:relative;display:grid;place-items:center;margin-bottom:12px}.line{position:absolute;left:7%;right:7%;height:1px;background:#ddd}.core{z-index:2;width:112px;height:112px;border-radius:28px;display:grid;place-items:center;background:linear-gradient(145deg,#a17afa,#6638d5);box-shadow:0 14px 26px #7548c733;color:white;font-size:54px}.node{position:absolute;z-index:2;width:64px;height:64px;border-radius:17px;display:grid;place-items:center;font-size:26px;box-shadow:0 9px 17px #00000012}.a{left:8%;top:13%;background:#ffeb70}.b{left:12%;bottom:4%;background:#69d7e8}.c{right:13%;top:16%;background:#ef6b60;color:white}.d{right:3%;bottom:23%;background:#fafafa}.e{left:0;top:43%;width:77px;height:77px;background:#d9ece7}.f{right:25%;bottom:0;width:47px;height:47px;background:#f6e3d8}.hero h1{font-size:clamp(42px,6vw,68px);line-height:1.02;letter-spacing:-3.7px;font-weight:600;margin:8px 0 15px}.hero p{max-width:390px;color:#858585;font-size:13px;line-height:1.7;margin:0 auto 26px}.hero .launch{background:#f06458;padding:14px 24px;font-size:12px;box-shadow:0 8px 18px #ef66552c}.foot{display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid #f0f0f0;color:#a0a0a0;font-size:10px}@media(max-width:680px){body{padding:10px}.frame{min-height:calc(100vh - 20px);padding:15px 16px 20px;border-radius:20px}.nav{padding:9px 10px}.links,.signin{display:none}.hero{padding:35px 0 25px}.graphic{height:170px}.core{width:88px;height:88px;font-size:43px}.node{width:49px;height:49px;font-size:20px}.e{width:57px;height:57px}.f{width:38px;height:38px}.hero h1{font-size:clamp(40px,11vw,58px);letter-spacing:-2.7px}.hero p{font-size:12px}.foot{font-size:9px}}
-</style></head><body><main class="frame"><header class="nav"><a class="brand" href="./index.html">◉ Civic OS</a><nav class="links"><a href="#how">How it works</a><a href="#about">About</a></nav><div class="actions"><a class="signin" href="./portals.html">Sign in</a><a class="launch" href="./portals.html">Launch Civic OS ↗</a></div></header><section class="hero" id="about"><div class="graphic" aria-hidden="true"><div class="line"></div><div class="node a">♧</div><div class="node b">♧</div><div class="node c">ϟ</div><div class="node d">◎</div><div class="node e">⌂</div><div class="node f">✓</div><div class="core">✓</div></div><h1>Civic action,<br>all in one place.</h1><p>Civic OS helps people report local issues, follow progress, and connect with their community.</p><a class="launch" href="./portals.html">Launch Civic OS →</a></section><footer class="foot" id="how"><span>© Civic OS</span><span>Report. Connect. Resolve.</span></footer></main></body></html>
+
+/* Premium refinement — preserve the existing landing-page structure */
+:root {
+  color-scheme: light;
+  --civic-ink: #14231b;
+  --civic-muted: #65736b;
+  --civic-green: #147a50;
+  --civic-green-dark: #0c5136;
+  --civic-line: #e4ebe6;
+}
+body {
+  padding: clamp(12px, 2.6vw, 30px);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(36, 139, 91, .09), transparent 44%),
+    #f1f4f1;
+  color: var(--civic-ink);
+}
+.frame {
+  width: min(1200px, 100%);
+  min-height: calc(100svh - clamp(24px, 5.2vw, 60px));
+  border: 1px solid rgba(24, 59, 39, .07);
+  border-radius: 30px;
+  padding: clamp(18px, 3vw, 34px) clamp(18px, 4vw, 46px) 25px;
+  box-shadow: 0 24px 80px rgba(21, 50, 33, .075), 0 2px 8px rgba(21, 50, 33, .025);
+}
+.nav {
+  width: min(100%, 920px);
+  min-height: 60px;
+  gap: 20px;
+  padding: 8px 9px 8px 18px;
+  border-color: var(--civic-line);
+  border-radius: 17px;
+  box-shadow: 0 4px 18px rgba(18, 48, 31, .045);
+}
+.brand { color: var(--civic-ink); font-size: 15px; letter-spacing: -.35px; }
+.links { gap: clamp(14px, 2.3vw, 28px); color: #53645a; font-size: 12px; }
+.links a { transition: color .18s ease; }
+.links a:hover { color: var(--civic-green); }
+.signin, .launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 650;
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.signin { border-color: #dce6df; color: #26392e; padding: 0 16px; }
+.signin:hover { background: #f5faf6; border-color: #b9d2c2; }
+.launch { background: var(--civic-green-dark); color: #fff; padding: 0 18px; box-shadow: 0 5px 14px rgba(12, 81, 54, .14); }
+.launch:hover { background: var(--civic-green); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(12, 81, 54, .18); }
+a:focus-visible { outline: 3px solid #6dbd91; outline-offset: 4px; }
+.hero { padding: clamp(32px, 5vw, 58px) 0 42px; }
+.graphic { width: min(700px, 100%); height: clamp(170px, 24vw, 220px); margin-bottom: 18px; }
+.line { background: linear-gradient(90deg, transparent, #dce7df 14%, #dce7df 86%, transparent); }
+.core {
+  background: linear-gradient(145deg, #21885c, #0d583a);
+  box-shadow: 0 16px 34px rgba(16, 111, 69, .22), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.node { border: 1px solid rgba(255,255,255,.75); box-shadow: 0 9px 24px rgba(20, 48, 32, .10); }
+.a { background: #e8f3c7; }
+.b { background: #d8f0ee; }
+.c { background: #f8d9d2; color: #8b382d; }
+.d { background: #f4f6f3; color: #286448; }
+.e { background: #dcefe2; color: #216342; }
+.f { background: #f8ead6; color: #775222; }
+.hero h1 {
+  max-width: 850px;
+  color: #14231b;
+  font-size: clamp(44px, 6.4vw, 76px);
+  line-height: 1.04;
+  letter-spacing: -.065em;
+  font-weight: 650;
+  margin: 5px 0 19px;
+}
+.hero p {
+  max-width: 470px;
+  color: var(--civic-muted);
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.75;
+  margin: 0 auto 28px;
+}
+.hero .launch {
+  min-height: 49px;
+  padding: 0 24px;
+  background: var(--civic-green-dark);
+  font-size: 13px;
+  box-shadow: 0 9px 22px rgba(12, 81, 54, .16);
+}
+.foot {
+  padding-top: 19px;
+  border-color: #e9eee9;
+  color: #78867d;
+  font-size: 11px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+@media (max-width: 680px) {
+  body { padding: 9px; }
+  .frame {
+    min-height: calc(100svh - 18px);
+    padding: 13px 15px 18px;
+    border-radius: 22px;
+  }
+  .nav { min-height: 54px; padding: 7px 8px 7px 12px; gap: 8px; border-radius: 14px; }
+  .brand { font-size: 14px; }
+  .actions { gap: 0; }
+  .actions > .launch { min-height: 39px; padding: 0 12px; font-size: 11px; }
+  .hero { padding: 26px 0 28px; }
+  .graphic { height: 158px; margin-bottom: 12px; }
+  .hero h1 { font-size: clamp(40px, 10.7vw, 56px); letter-spacing: -.06em; line-height: 1.06; margin-bottom: 15px; }
+  .hero p { max-width: 330px; font-size: 15px; line-height: 1.65; margin-bottom: 23px; }
+  .hero .launch { min-height: 47px; }
+  .foot { gap: 12px; font-size: 10px; }
+}
+@media (max-width: 360px) {
+  .actions > .launch { padding: 0 9px; font-size: 10px; }
+  .hero h1 { font-size: 38px; }
+  .foot { font-size: 9px; }
+}
+
+</style></head><body><main class="frame"><header class="nav"><a class="brand" href="./index.html">◉ Civic OS</a><nav class="links"><a href="#how">How it works</a><a href="#about">About</a></nav><div class="actions"><a class="signin" href="./portals.html">Sign in</a><a class="launch" href="./portals.html">Launch Civic OS ↗</a></div></header><section class="hero" id="about"><div class="graphic" aria-hidden="true"><div class="line"></div><div class="node a">♧</div><div class="node b">♧</div><div class="node c">ϟ</div><div class="node d">◎</div><div class="node e">⌂</div><div class="node f">✓</div><div class="core">✓</div></div><h1>Civic action,<br>all in one place.</h1><p>Report local issues, track progress, and see your community move forward.</p><a class="launch" href="./portals.html">Launch Civic OS →</a></section><footer class="foot" id="how"><span>© Civic OS</span><span>Report. Connect. Resolve.</span></footer></main></body></html>
