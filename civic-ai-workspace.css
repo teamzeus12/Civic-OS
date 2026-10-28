@@ -327,3 +327,100 @@
 .civic-ai-sidebar-back svg { width:15px; height:15px; flex:0 0 auto; color:#3ee08f; }
 .civic-ai-panel.is-light .civic-ai-sidebar-back { color:#173523; border-color:#cad8ce; background:#fff; }
 .civic-ai-panel.is-light .civic-ai-sidebar-back:hover { background:#e8f2eb; }
+
+/* Civic AI visual refinement: clearer hierarchy, calmer controls, accessible focus. */
+.civic-ai-panel {
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .34), 0 0 0 1px rgba(255,255,255,.06);
+}
+.civic-ai-header {
+  gap: 12px;
+  padding-left: 16px;
+  padding-right: 14px;
+}
+.civic-ai-heading strong {
+  letter-spacing: -.02em;
+}
+.civic-ai-sidebar-action,
+.civic-ai-history-tool,
+.civic-ai-settings-back,
+.civic-ai-danger-action,
+.civic-ai-secondary-action,
+.civic-ai-new-chat,
+.civic-ai-generate-button,
+.civic-ai-image-gen-open {
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.civic-ai-sidebar-action,
+.civic-ai-settings-back {
+  min-height: 40px;
+}
+.civic-ai-setting-group {
+  padding-top: 21px;
+  padding-bottom: 21px;
+}
+.civic-ai-setting-row {
+  min-height: 42px;
+}
+.civic-ai-setting-row small,
+.civic-ai-setting-note {
+  display: block;
+  max-width: 52ch;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.civic-ai-setting-group h4 {
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.civic-ai-panel button:focus-visible,
+.civic-ai-panel input:focus-visible,
+.civic-ai-panel select:focus-visible,
+.civic-ai-panel textarea:focus-visible,
+.civic-ai-panel a:focus-visible {
+  outline: 2px solid #72e6a5;
+  outline-offset: 3px;
+}
+.civic-ai-panel.is-light button:focus-visible,
+.civic-ai-panel.is-light input:focus-visible,
+.civic-ai-panel.is-light select:focus-visible,
+.civic-ai-panel.is-light textarea:focus-visible,
+.civic-ai-panel.is-light a:focus-visible {
+  outline-color: #16784a;
+}
+.civic-ai-panel.is-light .civic-ai-setting-row small,
+.civic-ai-panel.is-light .civic-ai-setting-note {
+  color: #52665a;
+}
+.civic-ai-panel.is-light .civic-ai-settings-header h3 {
+  color: #173624;
+}
+.civic-ai-panel.is-light .civic-ai-sidebar-action:hover,
+.civic-ai-panel.is-light .civic-ai-history-tool:hover {
+  background: #e3efe7;
+}
+@media (max-width: 520px) {
+  .civic-ai-panel.is-expanded .civic-ai-header,
+  .civic-ai-panel.is-maximized .civic-ai-header {
+    padding-left: 12px;
+    padding-right: 10px;
+  }
+  .civic-ai-setting-row {
+    align-items: flex-start;
+  }
+  .civic-ai-setting-row select {
+    flex: 0 0 auto;
+    max-width: 125px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .civic-ai-panel *,
+  .civic-ai-panel *::before,
+  .civic-ai-panel *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
