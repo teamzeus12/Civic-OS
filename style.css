@@ -7820,3 +7820,92 @@ body.civic-ai-maximized .civic-ai-panel.is-maximized {
 .official-notice-teaser-content .teaser-meta{justify-content:space-between;gap:10px}
 .official-notice-teaser-content .muted-text{font-size:11px}
 @media(max-width:560px){.official-notice-teaser-content .teaser-meta{align-items:stretch;flex-direction:column}.official-notice-teaser-content .teaser-meta .btn{width:100%}}
+
+/* =========================================================
+   Civic OS design refinement — shared interaction layer
+   Keep existing page structure, IDs and application behavior.
+   ========================================================= */
+:root {
+  --civic-space-1: 4px;
+  --civic-space-2: 8px;
+  --civic-space-3: 12px;
+  --civic-space-4: 16px;
+  --civic-space-5: 20px;
+  --civic-space-6: 24px;
+  --civic-space-7: 32px;
+  --civic-motion-fast: 140ms;
+  --civic-motion-standard: 200ms;
+  --civic-focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent, #3ee08f) 26%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn,
+  .icon-btn,
+  .nav-item,
+  .profile-tab,
+  .official-notice-teaser-item,
+  .official-notice-card {
+    transition-duration: var(--civic-motion-standard);
+    transition-timing-function: cubic-bezier(.2, .7, .2, 1);
+  }
+
+  .btn:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  .btn:not(:disabled):active {
+    transform: translateY(0) scale(.985);
+  }
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.nav-item:focus-visible,
+.profile-tab:focus-visible,
+.official-notice-teaser-item:focus-visible,
+.official-notice-details > summary:focus-visible {
+  outline: 2px solid var(--accent, #3ee08f);
+  outline-offset: 3px;
+  box-shadow: var(--civic-focus-ring);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent, #3ee08f);
+  outline-offset: 1px;
+  border-color: var(--accent, #3ee08f);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .btn {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+  }
+}
+
