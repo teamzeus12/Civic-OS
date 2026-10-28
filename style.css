@@ -8805,3 +8805,238 @@ textarea {
     transition: none !important;
   }
 }
+
+
+/* =========================================================
+   LANDING PAGE — PREMIUM FIRST-IMPRESSION REFINEMENT
+   Visual-only overrides; keep existing layout structure and interactions.
+   ========================================================= */
+#homeScreen > .container {
+  position: relative;
+}
+#homeScreen .hero {
+  position: relative;
+  gap: clamp(28px, 5vw, 64px);
+  padding: clamp(34px, 6vw, 76px) 0 clamp(28px, 4vw, 48px);
+  align-items: center;
+}
+#homeScreen .hero-copy {
+  min-width: 0;
+  max-width: 650px;
+}
+#homeScreen .eyebrow {
+  padding: 7px 12px;
+  gap: 8px;
+  border-radius: 999px;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .075em;
+  color: #aaf4cc;
+  background: rgba(62, 224, 143, .085);
+  border-color: rgba(93, 225, 155, .22);
+}
+#homeScreen .eyebrow svg {
+  width: 14px;
+  height: 14px;
+}
+#homeScreen .hero-title {
+  max-width: 11ch;
+  margin: 22px 0 18px;
+  font-size: clamp(2.7rem, 7.2vw, 5.15rem);
+  line-height: .99;
+  letter-spacing: -.065em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+#homeScreen .hero-title .text-accent {
+  display: inline;
+  background: linear-gradient(115deg, #b4f8d3 0%, #61e9a0 58%, #39c982 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+#homeScreen .hero-sub {
+  max-width: 42ch;
+  margin: 0 0 22px;
+  color: #b0beb5;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.8;
+  letter-spacing: -.01em;
+}
+#homeScreen .motto {
+  gap: 8px;
+  margin-bottom: 26px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+}
+#homeScreen .motto span {
+  padding: 7px 11px;
+  border-radius: 9px;
+  border-color: rgba(180, 205, 190, .14);
+  background: rgba(255, 255, 255, .025);
+  color: #c1cec6;
+}
+#homeScreen .motto span:last-child {
+  color: #aaf4cc;
+  border-color: rgba(62, 224, 143, .24);
+  background: rgba(62, 224, 143, .08);
+}
+#homeScreen .hero-actions {
+  gap: 11px;
+}
+#homeScreen .hero-actions .btn {
+  min-height: 49px;
+  height: auto;
+  padding: 0 19px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 650;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+#homeScreen .hero-actions .btn-primary {
+  box-shadow: 0 8px 25px rgba(44, 196, 119, .2);
+}
+#homeScreen .hero-actions .btn-ghost {
+  border: 1px solid rgba(177, 203, 187, .2);
+  background: rgba(255, 255, 255, .025);
+  color: #e2ece5;
+}
+#homeScreen .hero-actions .btn-ghost:hover {
+  border-color: rgba(98, 234, 166, .42);
+  background: rgba(62, 224, 143, .07);
+}
+#homeScreen .hero-actions .btn svg {
+  width: 17px;
+  height: 17px;
+}
+#homeScreen .hero-visual {
+  min-width: 0;
+  width: 100%;
+}
+#homeScreen .signal-card {
+  min-width: 0;
+  padding: clamp(17px, 2.3vw, 24px);
+  border-radius: 24px;
+  border-color: rgba(174, 210, 187, .17);
+  background:
+    radial-gradient(100% 90% at 100% 0%, rgba(62, 224, 143, .085), transparent 70%),
+    linear-gradient(150deg, rgba(24, 38, 30, .92), rgba(9, 16, 12, .97));
+  box-shadow: 0 24px 65px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255,255,255,.035);
+}
+#homeScreen .signal-head {
+  color: #a8b8ad;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .09em;
+}
+#homeScreen .signal-title {
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.35;
+  letter-spacing: -.035em;
+}
+#homeScreen .signal-loc {
+  color: #aab9af;
+  line-height: 1.6;
+}
+#homeScreen .signal-ai {
+  border-color: rgba(92, 220, 151, .2);
+  border-radius: 13px;
+  background: rgba(3, 10, 6, .34);
+}
+#homeScreen .signal-ai p {
+  color: #d5e2d9;
+  line-height: 1.7;
+}
+#homeScreen .stats-strip {
+  gap: 12px;
+  margin-top: 4px;
+}
+#homeScreen .stats-strip .stat {
+  min-width: 0;
+  padding: 19px 20px;
+  border: 1px solid rgba(174, 210, 187, .13);
+  border-radius: 17px;
+  background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
+  box-shadow: 0 8px 24px rgba(0,0,0,.09);
+}
+#homeScreen .stat-value {
+  font-size: clamp(25px, 3vw, 32px);
+  letter-spacing: -.045em;
+}
+#homeScreen .stat-label {
+  margin-top: 7px;
+  color: #a4b2a9;
+  font-size: 12px;
+  line-height: 1.55;
+}
+@media (min-width: 900px) {
+  #homeScreen .hero {
+    grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+  }
+  #homeScreen .hero-actions .btn {
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 899px) {
+  #homeScreen .hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #homeScreen .hero-copy {
+    max-width: 700px;
+  }
+  #homeScreen .hero-title {
+    max-width: 12ch;
+  }
+  #homeScreen .hero-visual {
+    max-width: 620px;
+  }
+}
+@media (max-width: 640px) {
+  #homeScreen .hero {
+    gap: 24px;
+    padding: 30px 0 26px;
+  }
+  #homeScreen .hero-title {
+    margin: 18px 0 15px;
+    font-size: clamp(2.55rem, 12.2vw, 3.65rem);
+    line-height: 1.01;
+  }
+  #homeScreen .hero-sub {
+    font-size: 15px;
+    line-height: 1.75;
+  }
+  #homeScreen .motto {
+    margin-bottom: 22px;
+  }
+  #homeScreen .hero-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  #homeScreen .hero-actions .btn {
+    width: 100%;
+    min-height: 49px;
+  }
+  #homeScreen .signal-card {
+    padding: 17px;
+    border-radius: 19px;
+  }
+  #homeScreen .stats-strip {
+    gap: 9px;
+  }
+  #homeScreen .stats-strip .stat {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  #homeScreen .stat-label {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #homeScreen .hero-actions .btn {
+    transition: none !important;
+  }
+}
