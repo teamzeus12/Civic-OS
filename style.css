@@ -8509,3 +8509,299 @@ textarea {
     transition: none;
   }
 }
+
+
+/* =====================================================
+   CIVIC ACTIONS — REFINED COMMUNITY EXPERIENCE
+   Visual-only layer: preserve existing activity data and handlers.
+   ===================================================== */
+#actionsScreen .screen-head,
+#createActivityScreen .screen-head {
+  max-width: 760px;
+  margin-bottom: clamp(24px, 4vw, 36px);
+}
+#actionsScreen .screen-sub,
+#createActivityScreen .screen-sub {
+  max-width: 62ch;
+  color: var(--muted, #a8b5ae);
+  font-size: clamp(14px, 1.5vw, 16px);
+  line-height: 1.75;
+}
+#actionsScreen .hero-actions {
+  margin: 0 0 clamp(26px, 4vw, 38px);
+}
+#actionsScreen #createActionBtn {
+  min-height: 48px;
+  padding: 13px 19px;
+  gap: 9px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 650;
+  box-shadow: 0 8px 22px rgba(24, 184, 112, .14);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+#actionsScreen #createActionBtn:focus-visible,
+#actionsScreen .civic-action-card:focus-visible,
+#actionDetailScreen .action-detail-back:focus-visible,
+#actionDetailScreen .action-detail-brand:focus-visible {
+  outline: 3px solid rgba(91, 224, 157, .72);
+  outline-offset: 3px;
+}
+#actionsScreen .block-head {
+  margin-bottom: 15px;
+}
+#actionsScreen #activeActionsTitle {
+  letter-spacing: -.025em;
+}
+#actionsScreen #civicActionsList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+#actionsScreen .civic-action-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  min-height: 126px;
+  padding: 17px;
+  border: 1px solid rgba(165, 195, 178, .15);
+  border-radius: 19px;
+  background: linear-gradient(145deg, rgba(24, 42, 34, .94), rgba(12, 25, 20, .98));
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .13);
+  text-align: left;
+  overflow: hidden;
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+#actionsScreen .civic-action-card::after {
+  content: none;
+}
+#actionsScreen .civic-action-card .action-card-image {
+  position: relative;
+  display: block;
+  width: 76px;
+  height: 84px;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  border-radius: 13px;
+  background-color: rgba(109, 154, 127, .14);
+  background-position: center;
+  background-size: cover;
+  border: 1px solid rgba(255, 255, 255, .08);
+  overflow: hidden;
+}
+#actionsScreen .civic-action-card .action-icon {
+  display: none;
+}
+#actionsScreen .civic-action-card .action-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  grid-column: 2;
+  grid-row: 1;
+}
+#actionsScreen .civic-action-card .action-title {
+  color: var(--text, #edf5ef);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.42;
+  letter-spacing: -.018em;
+  overflow-wrap: anywhere;
+}
+#actionsScreen .civic-action-card .action-desc {
+  color: var(--muted, #a8b5ae);
+  font-size: 12px;
+  line-height: 1.65;
+}
+#actionsScreen .civic-action-card .action-meta {
+  display: flex;
+  gap: 7px 12px;
+  margin-top: 3px;
+  color: #a9bdb0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+#actionsScreen .civic-action-card .action-meta span {
+  gap: 5px;
+}
+#actionsScreen .civic-action-card .action-meta svg {
+  color: #77d9a2;
+}
+#actionsScreen .civic-action-card .action-arrow {
+  width: 17px;
+  height: 17px;
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+  margin-top: 3px;
+  color: #9eb5a7;
+  opacity: .85;
+  transition: transform .18s ease, color .18s ease;
+}
+#actionsScreen .civic-action-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(94, 213, 147, .42);
+  box-shadow: 0 15px 32px rgba(0, 0, 0, .2);
+  background: linear-gradient(145deg, rgba(28, 51, 40, .98), rgba(13, 28, 21, .99));
+}
+#actionsScreen .civic-action-card:hover .action-arrow {
+  transform: translate(2px, -2px);
+  color: #76e3a5;
+}
+#actionsScreen .civic-action-card:active {
+  transform: translateY(-1px);
+}
+#actionDetailScreen .action-detail-page {
+  padding-top: 8px;
+}
+#actionDetailScreen .action-detail-topbar {
+  min-height: 54px;
+  margin-bottom: 16px;
+}
+#actionDetailScreen .action-detail-back,
+#actionDetailScreen .action-detail-brand {
+  border: 1px solid rgba(165, 195, 178, .16);
+  border-radius: 12px;
+  background: rgba(18, 34, 27, .72);
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+#actionDetailScreen .action-detail-back:hover,
+#actionDetailScreen .action-detail-brand:hover {
+  border-color: rgba(94, 213, 147, .4);
+  background: rgba(29, 51, 39, .88);
+}
+#actionDetailScreen #actionDetailContent {
+  border: 1px solid rgba(165, 195, 178, .15);
+  border-radius: 22px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+}
+#createActivityScreen .project-form {
+  gap: 22px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(165, 195, 178, .17);
+  border-radius: 22px;
+  background: linear-gradient(150deg, rgba(20, 37, 29, .9), rgba(12, 24, 19, .96));
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .15);
+}
+#createActivityScreen .form-field {
+  gap: 8px;
+}
+#createActivityScreen .form-field label {
+  color: #dce9e0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+#createActivityScreen .form-field input,
+#createActivityScreen .form-field select,
+#createActivityScreen .form-field textarea {
+  min-height: 46px;
+  padding: 12px 13px;
+  border: 1px solid rgba(165, 195, 178, .2);
+  border-radius: 12px;
+  background: rgba(7, 17, 12, .58);
+  color: var(--text, #edf5ef);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+#createActivityScreen .form-field input::placeholder,
+#createActivityScreen .form-field textarea::placeholder {
+  color: #83968a;
+}
+#createActivityScreen .form-field input:focus,
+#createActivityScreen .form-field select:focus,
+#createActivityScreen .form-field textarea:focus {
+  border-color: rgba(91, 224, 157, .72);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(44, 181, 107, .13);
+  background: rgba(7, 17, 12, .8);
+}
+@media (hover: hover) {
+  #actionsScreen #createActionBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(24, 184, 112, .2);
+  }
+}
+@media (max-width: 850px) {
+  #actionsScreen #civicActionsList {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  #actionsScreen .civic-action-card {
+    min-height: 112px;
+  }
+}
+@media (max-width: 520px) {
+  #actionsScreen .civic-action-card {
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    gap: 12px;
+    min-height: 108px;
+    padding: 13px;
+    border-radius: 16px;
+  }
+  #actionsScreen .civic-action-card .action-card-image {
+    width: 64px;
+    height: 72px;
+    border-radius: 11px;
+  }
+  #actionsScreen .civic-action-card .action-title {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  #actionsScreen .civic-action-card .action-desc {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+  #actionsScreen .civic-action-card .action-meta {
+    gap: 6px 10px;
+    font-size: 10px;
+  }
+  #actionsScreen .civic-action-card .action-arrow {
+    width: 15px;
+    height: 15px;
+  }
+  #createActivityScreen .project-form {
+    gap: 18px;
+    padding: 16px;
+    border-radius: 17px;
+  }
+  #createActivityScreen .form-field input,
+  #createActivityScreen .form-field select,
+  #createActivityScreen .form-field textarea {
+    min-height: 45px;
+    font-size: 16px;
+  }
+}
+@media (max-width: 360px) {
+  #actionsScreen .civic-action-card {
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 11px;
+  }
+  #actionsScreen .civic-action-card .action-card-image {
+    width: 54px;
+    height: 62px;
+  }
+  #actionsScreen .civic-action-card .action-title {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #actionsScreen .civic-action-card,
+  #actionsScreen .civic-action-card .action-arrow,
+  #actionsScreen #createActionBtn,
+  #actionDetailScreen .action-detail-back,
+  #actionDetailScreen .action-detail-brand,
+  #createActivityScreen .form-field input,
+  #createActivityScreen .form-field select,
+  #createActivityScreen .form-field textarea {
+    transition: none !important;
+  }
+}
