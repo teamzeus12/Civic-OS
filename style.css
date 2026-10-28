@@ -9320,3 +9320,78 @@ textarea {
     transition: none !important;
   }
 }
+
+
+/* =========================================================
+   Shared design polish — consistent controls and readable forms
+   CSS-only: preserves existing portal layouts and interactions.
+   ========================================================= */
+:root {
+  --control-radius: 12px;
+  --control-border: rgba(180, 202, 189, .20);
+  --control-focus: rgba(62, 224, 143, .18);
+}
+
+.btn {
+  min-height: 42px;
+  border-radius: var(--control-radius);
+  font-weight: 650;
+  letter-spacing: -.01em;
+  transition: background-color .18s ease, border-color .18s ease,
+    box-shadow .18s ease, transform .18s ease, color .18s ease;
+}
+
+.btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.btn:disabled,
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: .62;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea {
+  border-radius: var(--control-radius);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 3px var(--control-focus);
+}
+
+input::placeholder,
+textarea::placeholder {
+  opacity: .78;
+}
+
+.field-label,
+.field-card .field-label,
+.form-field > label {
+  line-height: 1.45;
+}
+
+.field-hint,
+.form-help,
+.field-foot,
+.form-field small {
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    transition: none !important;
+  }
+}
