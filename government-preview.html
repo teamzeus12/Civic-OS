@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="government-preview.css?v=20261028-official-notices4">
+<link rel="stylesheet" href="government-preview.css?v=20261028-official-notices5">
 </head>
 <body>
 <div class="app-shell">
@@ -103,9 +103,9 @@
                 <label class="notice-field" for="noticeDistrict">District <small>Optional</small><input id="noticeDistrict" name="district" maxlength="120" placeholder="e.g. Imphal West"></label>
                 <label class="notice-field" for="noticeLocality">Locality / affected area <small>Optional</small><input id="noticeLocality" name="locality" maxlength="180" placeholder="Ward, village, road or locality"></label>
                 <label class="notice-field" for="noticeAudienceDetails">Audience details / eligibility <small>Optional</small><input id="noticeAudienceDetails" name="audienceDetails" maxlength="500" placeholder="e.g. residents of the listed wards"></label>
-                <label class="notice-field" for="noticeIssuedAt">Issue date <span>Required</span><input id="noticeIssuedAt" name="issuedAt" type="date" required></label>
-                <label class="notice-field" for="noticeEffectiveAt">Effective from <small>Optional</small><input id="noticeEffectiveAt" name="effectiveAt" type="date"></label>
-                <label class="notice-field" for="noticeExpiresAt">Expiry / valid until <small>Optional</small><input id="noticeExpiresAt" name="expiresAt" type="date"></label>
+                <label class="notice-field" for="noticeIssuedAt">Publication / issue date &amp; time <span>Required</span><input id="noticeIssuedAt" name="issuedAt" type="datetime-local" required></label>
+                <label class="notice-field" for="noticeEffectiveAt">Effective from <small>Optional</small><input id="noticeEffectiveAt" name="effectiveAt" type="datetime-local"></label>
+                <label class="notice-field" for="noticeExpiresAt">Expiry / valid until <small>Optional</small><input id="noticeExpiresAt" name="expiresAt" type="datetime-local"></label>
                 <label class="notice-check-field" for="noticePinned"><input id="noticePinned" name="isPinned" type="checkbox"><span><strong>Pin this notice</strong><small>Place it near the top of the citizen notice feed.</small></span></label>
               </div>
             </div>
@@ -151,6 +151,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="government-preview.js?v=20261028-official-notices4" defer></script>
+<script src="government-preview.js?v=20261028-official-notices5" defer></script>
 </body>
 </html>
