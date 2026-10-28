@@ -8036,3 +8036,98 @@ textarea {
   }
 }
 
+/* Report detail and tracking polish — visual-only overrides. */
+.report-status-section {
+  padding: clamp(16px, 3vw, 22px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface, rgba(255,255,255,.03));
+}
+.report-status-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2, rgba(255,255,255,.04));
+}
+.report-status-step {
+  gap: 12px;
+  padding-bottom: 22px;
+}
+.report-status-step:not(:last-child)::after {
+  top: 28px;
+  bottom: 0;
+}
+.report-status-marker {
+  width: 28px;
+  height: 28px;
+  box-shadow: 0 0 0 3px var(--surface, #fff);
+}
+.report-status-step.is-current .report-status-marker {
+  box-shadow: 0 0 0 4px rgba(34,197,94,.15), 0 0 0 7px var(--surface, #fff);
+}
+.report-status-heading {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.report-status-detail {
+  margin-top: 5px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.report-status-step.is-pending .report-status-detail {
+  color: #ef4444;
+}
+.report-status-time {
+  font-family: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.report-status-footnote {
+  margin-top: 18px;
+  padding: 12px 14px;
+  line-height: 1.7;
+}
+.report-status-history {
+  margin-top: 20px;
+  padding-top: 18px;
+}
+.report-status-history li {
+  gap: 12px;
+  padding: 12px 14px;
+  line-height: 1.55;
+}
+.report-status-history time {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.sheet-section-title {
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .report-status-section {
+    padding: 14px;
+    border-radius: 15px;
+  }
+  .report-status-step {
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+  .report-status-detail {
+    font-size: 12px;
+  }
+  .report-status-time {
+    padding-top: 2px;
+  }
+  .report-status-history li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .report-status-history time {
+    text-align: left;
+  }
+}
+
