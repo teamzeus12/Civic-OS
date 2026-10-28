@@ -241,3 +241,105 @@ h1,h2,h3,p{margin-top:0}
 
 /* Safe, readable in-form preview before an official notice is saved or published. */
 .notice-preview-panel[hidden]{display:none!important}.notice-preview-panel{margin:4px 0;padding:18px;border:1px solid #b8d8c6;border-radius:14px;background:#f5fbf7;overflow-wrap:anywhere}.notice-preview-panel h3{margin:8px 0;font-size:20px;line-height:1.35;color:var(--ink)}.notice-preview-meta{font-size:11px;color:var(--muted);line-height:1.6}.notice-preview-body{white-space:pre-wrap;line-height:1.75;font-size:13px;color:var(--ink)}.notice-status-badge[data-status="withdrawn"]{color:#9b2c2c;background:#fff1f1;border-color:#f0cccc}
+
+/* Government Portal visual refinement — consistent hierarchy and responsive controls. */
+:root {
+  --gov-space-1: 4px;
+  --gov-space-2: 8px;
+  --gov-space-3: 12px;
+  --gov-space-4: 16px;
+  --gov-space-5: 24px;
+  --gov-focus: 0 0 0 3px rgba(22,134,90,.16);
+}
+body {
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.app-shell {
+  padding: clamp(12px, 2.2vw, 24px);
+}
+.topbar,
+.sidebar,
+.panel,
+.metric-card,
+.issue-card,
+.notice-card {
+  box-shadow: 0 8px 26px rgba(23,62,45,.055);
+}
+.topbar {
+  gap: 16px;
+  border-radius: 18px;
+}
+.nav-btn {
+  min-height: 44px;
+  font-size: 13px;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+.nav-btn:focus-visible,
+.profile-mini:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #16865a;
+  outline-offset: 3px;
+  box-shadow: var(--gov-focus);
+}
+input,
+select,
+textarea {
+  min-height: 42px;
+  border-radius: 11px;
+}
+textarea {
+  line-height: 1.65;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 12px;
+  }
+  .topbar {
+    padding: 13px;
+    border-radius: 15px;
+  }
+}
+@media (max-width: 520px) {
+  .app-shell {
+    padding: 9px;
+  }
+  .brand {
+    font-size: 16px;
+  }
+  .brand-mark {
+    width: 37px;
+    height: 37px;
+    border-radius: 11px;
+  }
+  .topbar {
+    gap: 8px;
+  }
+  .demo-pill {
+    padding: 7px 8px;
+    font-size: 9px;
+  }
+}
+
