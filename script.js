@@ -5991,6 +5991,28 @@ function formatCivicAiReply(value) {
   return blocks.join("") + '<div class="civic-ai-response-actions"><button type="button" class="civic-ai-copy-response" data-civic-ai-copy><i data-lucide="copy"></i><span>Copy</span></button></div>';
 }
 
+function isCivicAiImageGenerationRequest(prompt) {
+  const text = String(prompt || '');
+  return /\b(generate|create|make|visuali[sz]e|show me|render)\b/i.test(text) &&
+    /\b(image|picture|visual|concept|after improvement|improved version|redesign)\b/i.test(text);
+}
+
+async function requestCivicAiImageConcept(imageDataUrl, prompt) {
+  const client = window.civicSupabase;
+  if (!client) throw new Error('Secure Civic OS connection is unavailable.');
+  const { data, error } = await client.functions.invoke('civic-generate-improvement', {
+    body: { imageDataUrl, categoryKey: detectCivicCategory(prompt) || 'other', description: String(prompt || '').slice(0, 900), location: 'Civic AI workspace' }
+  });
+  if (error) {
+    let message = data?.error || error.message || 'Image generation failed.';
+    if (error.context && typeof error.context.json === 'function') {
+      try { const payload = await error.context.clone().json(); message = payload?.error || payload?.message || message; } catch {}
+    }
+    throw new Error(message);
+  }
+  if (!data?.imageDataUrl) throw new Error(data?.error || 'The image service did not return a generated image.');
+  return data.imageDataUrl;
+}
 async function requestCivicAiReply(message, imageDataUrl, history) {
   const client = window.civicSupabase;
   if (!client) throw new Error("Secure Civic OS connection is unavailable. Refresh the page and sign in again.");
@@ -7696,19 +7718,32 @@ function bindEvents() {
 
           addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
           try {
-            const reply = await requestCivicAiReply(responsePrompt, imageDataUrlForModel, conversationHistory);
-            if (conversationGeneration !== state.civicAiGeneration) return;
-            await persistCivicAiMessage("assistant", reply, conversationGeneration, persistedContext);
-            const messages = document.getElementById("civicAiMessages");
-            const thinking = messages?.querySelector(".civic-ai-message.ai:last-child .civic-ai-thinking");
-            const formatted = `${attachmentNotice}${formatCivicAiReply(reply)}`;
-            if (thinking) {
-              const bubble = thinking.closest(".civic-ai-bubble");
-              if (bubble) bubble.innerHTML = formatted;
-            } else addCivicAiMessage("ai", formatted);
-            state.civicAiMessages[state.civicAiMessages.length - 1] = { role: "ai", text: formatted };
-            if (messages) messages.scrollTop = messages.scrollHeight;
-            refreshIcons();
+            const messages = document.getElementById('civicAiMessages');
+            const thinking = messages?.querySelector('.civic-ai-message.ai:last-child .civic-ai-thinking');
+            const wantsImage = Boolean(file && isCivicAiImageFile(file) && isCivicAiImageGenerationRequest(prompt));
+            if (wantsImage) {
+              const compactReference = await civicImageToDataUrl(file, 480);
+              const generatedImage = await requestCivicAiImageConcept(compactReference, prompt);
+              if (conversationGeneration !== state.civicAiGeneration) return;
+              const reply = 'Generated an AI improvement concept from your reference photo. This is a visualization only, not proof that work has been completed.';
+              await persistCivicAiMessage('assistant', reply, conversationGeneration, persistedContext);
+              const bubbleContent = attachmentNotice + '<div class="civic-ai-generated-concept"><img src="' + generatedImage + '" alt="AI-generated improvement concept based on the attached photo" style="display:block;max-width:100%;height:auto;border-radius:12px;margin:10px 0"><p>AI-generated concept only. It may change real-world details and is not proof of completed work.</p><a href="' + generatedImage + '" download="civic-ai-improvement-concept.png" class="civic-ai-copy-response">Save concept image</a></div>';
+              if (thinking) { const bubble = thinking.closest('.civic-ai-bubble'); if (bubble) bubble.innerHTML = bubbleContent; }
+              else addCivicAiMessage('ai', bubbleContent);
+              state.civicAiMessages[state.civicAiMessages.length - 1] = { role: 'ai', text: bubbleContent };
+              if (messages) messages.scrollTop = messages.scrollHeight;
+              refreshIcons();
+            } else {
+              const reply = await requestCivicAiReply(responsePrompt, imageDataUrlForModel, conversationHistory);
+              if (conversationGeneration !== state.civicAiGeneration) return;
+              await persistCivicAiMessage('assistant', reply, conversationGeneration, persistedContext);
+              const formatted = attachmentNotice + formatCivicAiReply(reply);
+              if (thinking) { const bubble = thinking.closest('.civic-ai-bubble'); if (bubble) bubble.innerHTML = formatted; }
+              else addCivicAiMessage('ai', formatted);
+              state.civicAiMessages[state.civicAiMessages.length - 1] = { role: 'ai', text: formatted };
+              if (messages) messages.scrollTop = messages.scrollHeight;
+              refreshIcons();
+            }
           } catch (error) {
             if (conversationGeneration !== state.civicAiGeneration) return;
             const safeMessage = civicAiText(error?.message || "Civic AI could not respond. Please try again.");
