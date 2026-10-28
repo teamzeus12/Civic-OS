@@ -8131,3 +8131,158 @@ textarea {
   }
 }
 
+
+/* Report submission experience polish — visual-only overrides. */
+.report-form {
+  gap: 15px;
+}
+.report-form .field-card {
+  padding: clamp(16px, 3vw, 24px);
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgba(0,0,0,.07);
+}
+.report-form .field-label {
+  align-items: flex-start;
+  gap: 11px;
+  line-height: 1.5;
+}
+.report-form .field-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  min-height: 27px;
+  margin-top: -2px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.report-form .field-hint {
+  margin-top: 2px;
+  margin-bottom: 15px;
+  line-height: 1.7;
+}
+.report-form .control {
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.report-form textarea.control {
+  min-height: 132px;
+}
+.report-form .field-foot {
+  margin-top: 8px;
+}
+.report-form .counter {
+  font-size: 12px;
+}
+.report-form .category-grid {
+  gap: 10px;
+}
+.report-form .cat-option label {
+  border-radius: 13px;
+  transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+}
+.report-form .cat-option label:hover {
+  transform: translateY(-1px);
+}
+.report-form .cat-option input:checked + .cat-card {
+  box-shadow: 0 0 0 2px var(--accent-line, rgba(62,224,143,.22));
+}
+.report-form .dropzone {
+  gap: 8px;
+  min-height: 170px;
+  justify-content: center;
+  padding: 26px 18px;
+  border-radius: 15px;
+}
+.report-form .dz-title {
+  max-width: 34ch;
+  line-height: 1.5;
+}
+.report-form .dz-hint {
+  max-width: 52ch;
+  line-height: 1.65;
+}
+.report-form .photo-preview {
+  gap: 12px;
+  margin-top: 14px;
+}
+.report-form .photo-thumb {
+  border-radius: 13px;
+}
+.report-location-picker {
+  gap: 12px;
+  margin-top: 16px;
+}
+.report-location-help {
+  line-height: 1.75;
+}
+.report-location-actions {
+  gap: 9px;
+}
+.report-location-actions .chip-btn {
+  min-height: 44px;
+  padding: 10px 13px;
+  border-radius: 11px;
+}
+.report-location-picker-status {
+  padding: 12px 14px;
+  border-radius: 12px;
+  line-height: 1.7;
+}
+.report-location-map {
+  height: 300px;
+  min-height: 250px;
+  border-radius: 15px;
+}
+.report-location-attribution {
+  line-height: 1.65;
+}
+.stepper {
+  gap: 9px;
+  margin-bottom: 20px;
+}
+.stepper li {
+  min-width: 0;
+}
+.stepper .step-label {
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .report-form {
+    gap: 11px;
+  }
+  .report-form .field-card {
+    padding: 15px;
+    border-radius: 15px;
+  }
+  .report-form .field-label {
+    font-size: 14px;
+  }
+  .report-form .control {
+    font-size: 16px;
+  }
+  .report-form textarea.control {
+    min-height: 120px;
+  }
+  .report-form .dropzone {
+    min-height: 155px;
+    padding: 22px 13px;
+  }
+  .report-location-map {
+    height: 260px;
+    min-height: 230px;
+  }
+  .report-location-actions .chip-btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .stepper {
+    gap: 5px;
+  }
+  .stepper .step-label {
+    font-size: 11px;
+  }
+}
+
