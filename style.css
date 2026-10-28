@@ -9395,3 +9395,167 @@ textarea::placeholder {
     transition: none !important;
   }
 }
+
+
+/* Report submission — clarity, grouping and evidence-upload affordance. */
+#reportScreen .report-form {
+  gap: 14px;
+}
+#reportScreen .report-form > .field-card,
+#reportScreen .report-form > fieldset.field-card {
+  position: relative;
+  min-width: 0;
+  padding: clamp(17px, 2.6vw, 23px);
+  border-radius: 17px;
+  border-color: rgba(174, 210, 187, .15);
+  background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.022));
+}
+#reportScreen .report-form .field-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 11px;
+  color: #e8f1eb;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+#reportScreen .report-form .field-num {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 29px;
+  width: 29px;
+  height: 29px;
+  border: 1px solid rgba(62,224,143,.22);
+  border-radius: 9px;
+  background: rgba(62,224,143,.09);
+  color: #8ce8b5;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+#reportScreen .report-form .field-hint,
+#reportScreen .report-form .report-location-help {
+  max-width: 65ch;
+  margin: 0 0 14px;
+  color: #a3b2a8;
+  font-size: 12px;
+  line-height: 1.75;
+}
+#reportScreen .report-form .control {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid rgba(180,202,189,.2);
+  border-radius: 12px;
+  background: rgba(3,10,6,.42);
+  color: #edf5ef;
+  line-height: 1.55;
+}
+#reportScreen .report-form textarea.control {
+  min-height: 132px;
+  resize: vertical;
+}
+#reportScreen .report-form .control::placeholder {
+  color: #829187;
+  opacity: 1;
+}
+#reportScreen .report-form .input-wrap {
+  margin-bottom: 11px;
+}
+#reportScreen .report-form .chip-btn {
+  min-height: 43px;
+  padding: 10px 13px;
+  border: 1px solid rgba(62,224,143,.19);
+  border-radius: 11px;
+  background: rgba(62,224,143,.055);
+  color: #c8f3d9;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+#reportScreen .report-form .chip-btn:hover:not(:disabled) {
+  border-color: rgba(62,224,143,.42);
+  background: rgba(62,224,143,.11);
+}
+#reportScreen .report-form .field-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  color: #9eafa4;
+}
+#reportScreen .report-form .counter {
+  font-variant-numeric: tabular-nums;
+}
+#reportScreen .report-form .dropzone {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 9px;
+  min-height: 174px;
+  padding: 25px 18px;
+  border: 1px dashed rgba(101,222,153,.34);
+  border-radius: 15px;
+  background: linear-gradient(145deg, rgba(62,224,143,.065), rgba(255,255,255,.018));
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+#reportScreen .report-form .dropzone:hover {
+  border-color: rgba(101,222,153,.62);
+  background: rgba(62,224,143,.09);
+}
+#reportScreen .report-form .dropzone:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+#reportScreen .report-form .dz-title {
+  max-width: 38ch;
+  color: #e2f0e7;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+#reportScreen .report-form .dz-hint {
+  max-width: 54ch;
+  color: #9eafa4;
+  font-size: 11px;
+  line-height: 1.7;
+}
+#reportScreen .report-form .photo-preview-note {
+  color: #b1c2b7;
+  font-size: 11px;
+  line-height: 1.65;
+}
+#reportScreen .report-form #analyzeBtn {
+  min-height: 51px;
+  border-radius: 13px;
+  font-size: 14px;
+  letter-spacing: -.01em;
+}
+#reportScreen .report-form .form-error {
+  padding: 13px 15px;
+  border: 1px solid rgba(242,107,107,.28);
+  border-radius: 12px;
+  background: rgba(242,107,107,.08);
+  color: #ffb8b8;
+  font-size: 12px;
+  line-height: 1.7;
+}
+@media (max-width: 600px) {
+  #reportScreen .report-form { gap: 11px; }
+  #reportScreen .report-form > .field-card,
+  #reportScreen .report-form > fieldset.field-card { padding: 16px; }
+  #reportScreen .report-form .report-location-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #reportScreen .report-form .report-location-actions .chip-btn { width: 100%; }
+  #reportScreen .report-form .dropzone { min-height: 158px; padding: 20px 13px; }
+  #reportScreen .report-form #analyzeBtn { min-height: 49px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #reportScreen .report-form .dropzone,
+  #reportScreen .report-form .chip-btn { transition: none !important; }
+  #reportScreen .report-form .dropzone:hover { transform: none; }
+}
