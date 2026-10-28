@@ -7788,7 +7788,9 @@ function bindEvents() {
       if (conversationGeneration !== state.civicAiGeneration) return;
       addCivicAiMessage("ai", '<p class="civic-ai-thinking"><i data-lucide="loader-circle"></i> Civic AI is thinking…</p>');
       try {
-        const reply = await requestCivicAiReply(prompt, "", history);
+        const reply = isCivicAiImageGenerationRequest(prompt)
+          ? "I can create an AI improvement concept from a reference photo. Attach a photo using the attachment button, then ask me to generate or visualise the improved version. The result will be labelled as an AI concept, not proof of completed work."
+          : await requestCivicAiReply(prompt, "", history);
         if (conversationGeneration !== state.civicAiGeneration) return;
         await persistCivicAiMessage("assistant", reply, conversationGeneration, persistedContext);
         const messages = document.getElementById("civicAiMessages");
