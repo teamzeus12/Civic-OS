@@ -380,11 +380,21 @@
   function dateInputValue(value) {
     if (!value) return "";
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+    if (Number.isNaN(date.getTime())) return "";
+    const pad = (part) => String(part).padStart(2, "0");
+    return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + "T" + pad(date.getHours()) + ":" + pad(date.getMinutes());
   }
 
   function dateInputToIso(value) {
-    return value ? new Date(value + "T12:00:00.000Z").toISOString() : null;
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  }
+
+  function formatNoticeDateTime(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
   }
 
   function resetNoticeForm() {
@@ -395,7 +405,7 @@
     $("#noticeId").value = "";
     $("#noticeFormHeading").textContent = "Create official notice";
     const issued = $("#noticeIssuedAt");
-    if (issued) issued.value = new Date().toISOString().slice(0, 10);
+    if (issued) issued.value = dateInputValue(new Date().toISOString());
     populateNoticeDepartmentOptions();
     setNoticeFormMessage("");
   }
@@ -604,7 +614,7 @@
         $("#noticePreviewMeta").textContent = [$("#noticeType").value, $("#noticeDepartment").selectedOptions[0]?.textContent || $("#noticeDepartment").value, $("#noticeReference").value.trim() ? "Ref: " + $("#noticeReference").value.trim() : ""].filter(Boolean).join(" · ");
         $("#noticePreviewSummary").textContent = $("#noticeSummary").value.trim();
         $("#noticePreviewBody").textContent = body;
-        $("#noticePreviewDates").textContent = [$("#noticeIssuedAt").value ? "Issued " + $("#noticeIssuedAt").value : "", $("#noticeEffectiveAt").value ? "Effective " + $("#noticeEffectiveAt").value : "", $("#noticeExpiresAt").value ? "Valid until " + $("#noticeExpiresAt").value : ""].filter(Boolean).join(" · ");
+        $("#noticePreviewDates").textContent = [$("#noticeIssuedAt").value ? "Issued " + formatNoticeDateTime(dateInputToIso($("#noticeIssuedAt").value)) : "", $("#noticeEffectiveAt").value ? "Effective " + formatNoticeDateTime(dateInputToIso($("#noticeEffectiveAt").value)) : "", $("#noticeExpiresAt").value ? "Valid until " + formatNoticeDateTime(dateInputToIso($("#noticeExpiresAt").value)) : ""].filter(Boolean).join(" · ");
         $("#noticePreviewPanel").hidden = false;
         setNoticeFormMessage("Preview only — this notice has not been published.");
         $("#noticePreviewPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
