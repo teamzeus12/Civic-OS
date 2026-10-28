@@ -199,7 +199,7 @@
     preview.hidden = false; preview.replaceChildren(); const loading = document.createElement("p"); loading.textContent = "Creating your concept. Keep this workspace open."; preview.appendChild(loading);
     try {
       const client = window.civicSupabase; if (!client) throw new Error("Secure Civic OS connection is unavailable.");
-      const imageDataUrl = await window.civicImageToDataUrl(file);
+      const imageDataUrl = await window.civicImageToDataUrl(file, 480);
       const {data,error} = await client.functions.invoke("civic-generate-improvement",{body:{imageDataUrl,categoryKey:"other",description:prompt.slice(0,1000),location:"Civic AI workspace"}});
       if (error) throw error; if (!data?.imageDataUrl) throw new Error(data?.error || "The image service did not return a preview.");
       preview.replaceChildren();
