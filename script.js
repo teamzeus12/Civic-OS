@@ -2086,7 +2086,7 @@ async function handleAnalyze(event) {
   tick();
 }
 
-async function civicImageToDataUrl(file) {
+async function civicImageToDataUrl(file, maxSideLimit = 1024) {
   if (file.size > 10 * 1024 * 1024) throw new Error("Image is too large for visual analysis. Please choose an image under 10 MB.");
   const sourceUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -2106,7 +2106,7 @@ async function civicImageToDataUrl(file) {
   const context = contextCanvas.getContext("2d");
   if (!context) throw new Error("Image processing is unavailable in this browser.");
 
-  for (const maxSide of [1024, 800, 640]) {
+  for (const maxSide of [...new Set([Math.min(1024, maxSideLimit), Math.min(800, maxSideLimit), Math.min(640, maxSideLimit)])]) {
     const scale = Math.min(1, maxSide / Math.max(originalWidth, originalHeight));
     contextCanvas.width = Math.max(1, Math.round(originalWidth * scale));
     contextCanvas.height = Math.max(1, Math.round(originalHeight * scale));
@@ -2155,7 +2155,7 @@ async function generateImprovementPreview() {
   try {
     const client = window.civicSupabase;
     if (!client) throw new Error("Secure Civic OS connection is unavailable.");
-    const imageDataUrl = await civicImageToDataUrl(imageFile);
+    const imageDataUrl = await civicImageToDataUrl(imageFile, 480);
     const draft = state.draft || {};
     const { data, error } = await client.functions.invoke("civic-generate-improvement", {
       body: {
