@@ -12,3 +12,22 @@
 .auth-layout.single-portal .form-panel{margin-top:0;box-shadow:0 18px 55px #203c2a12}
 .auth-layout.single-portal .back-link{display:inline-block;margin-top:18px}
 @media(max-width:700px){.auth-layout.single-portal{margin-top:22px}.auth-layout.single-portal .form-panel{padding:22px 18px}}
+
+/* Authentication polish — accessible form rhythm and clear action priority. */
+.auth-shell { padding-top: clamp(18px, 3vw, 30px); }
+.form-panel { border-radius: 24px; box-shadow: 0 18px 48px rgba(26,68,43,.075); }
+.form-heading h2 { line-height: 1.25; }
+.form-description,.form-footnote { line-height: 1.7; }
+.portal-tab { min-height: 72px; border-radius: 16px; }
+.portal-tab:focus-visible,.form-panel :where(button,input,a,[tabindex]):focus-visible,.auth-shell a:focus-visible {
+  outline: 2px solid #16865a;
+  outline-offset: 3px;
+}
+.form-panel input { min-height: 46px; border-radius: 11px; }
+.form-panel button[type="submit"],.form-panel .submit-button { min-height: 47px; border-radius: 12px; font-weight: 750; }
+.form-panel .form-error,.form-panel .form-message { line-height: 1.65; }
+@media (max-width: 700px) {
+  .auth-shell { padding: 17px 16px 18px; }
+  .auth-layout { gap: 24px; padding-top: 23px; }
+  .form-panel { padding: 20px 17px; border-radius: 19px; }
+}
