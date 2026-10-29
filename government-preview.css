@@ -394,3 +394,36 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .stat-card,.panel,.department-card,.report-card,.profile-card,.notification-card,.nav-btn,.government-notice-card { transition: none !important; }
 }
+
+
+/* Government Portal glass surfaces — subtle frost with strong text contrast. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .topbar,.sidebar,.stat-card,.panel,.department-card,.report-card,.notification-card,.profile-card,.government-notice-card,.gov-ai-summary-panel {
+    -webkit-backdrop-filter: blur(16px) saturate(125%);
+    backdrop-filter: blur(16px) saturate(125%);
+  }
+  .topbar {
+    background: rgba(255,255,255,.82);
+    border-color: rgba(255,255,255,.92);
+    box-shadow: 0 14px 36px rgba(23,62,45,.08), inset 0 1px 0 rgba(255,255,255,.95);
+  }
+  .sidebar {
+    background: rgba(250,253,251,.78);
+    border-color: rgba(255,255,255,.9);
+  }
+  .stat-card,.panel,.department-card,.report-card,.notification-card,.profile-card,.government-notice-card,.gov-ai-summary-panel {
+    background: linear-gradient(145deg,rgba(255,255,255,.9),rgba(246,251,248,.78));
+    border-color: rgba(215,232,221,.9);
+    box-shadow: 0 12px 30px rgba(23,62,45,.055), inset 0 1px 0 rgba(255,255,255,.96);
+  }
+  .stat-card:hover,.panel:hover,.department-card:hover,.report-card:hover,.notification-card:hover,.profile-card:hover,.government-notice-card:hover {
+    box-shadow: 0 16px 36px rgba(23,62,45,.09), inset 0 1px 0 rgba(255,255,255,.96);
+  }
+}
+@media (max-width: 640px) {
+  .topbar,.sidebar,.stat-card,.panel,.department-card,.report-card,.notification-card,.profile-card,.government-notice-card,.gov-ai-summary-panel {
+    -webkit-backdrop-filter: blur(10px) saturate(115%);
+    backdrop-filter: blur(10px) saturate(115%);
+  }
+}
+
