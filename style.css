@@ -9668,3 +9668,17 @@ body { font-family: var(--civic-font-body); }
 @media (prefers-reduced-motion: reduce) {
   .civic-button:hover:not(:disabled) { transform: none; }
 }
+
+/* Shared component bridge — align legacy People’s Portal surfaces with canonical tokens. */
+body {
+  font-family: var(--civic-font-body);
+}
+:where(.hero-title,.section-title,.profile-page-heading h1,.profile-panel h2,.profile-settings-panel h2) {
+  font-family: var(--civic-font-heading);
+}
+:where(.action-card,.vision-card,.field-card,.profile-hero-card,.profile-panel,.profile-settings-panel,.profile-extra-panel) {
+  border-radius: var(--civic-radius-card);
+}
+:where(.action-card,.vision-card,.field-card,.profile-panel,.profile-settings-panel,.profile-extra-panel) {
+  border-color: var(--civic-line);
+}
