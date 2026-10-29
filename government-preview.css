@@ -343,3 +343,54 @@ textarea {
   }
 }
 
+/* Government portal visual refinement — keep all existing workflows and actions. */
+:where(button,input,select,textarea,a,[tabindex]):focus-visible {
+  outline: 2px solid #16865a;
+  outline-offset: 3px;
+}
+.stat-card,.panel,.department-card,.report-card,.profile-card,.notification-card {
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(23,62,45,.055);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.stat-card { padding: 19px; }
+.stat-card strong { font-size: clamp(25px, 2.2vw, 32px); line-height: 1.15; }
+.panel { padding: clamp(17px, 2vw, 22px); }
+.panel-head { gap: 14px; }
+.panel-head h2,.panel-head h3 { line-height: 1.35; letter-spacing: -.02em; }
+.report-card,.department-card,.notification-card,.profile-card { min-width: 0; }
+.report-card:hover,.department-card:hover,.notification-card:hover {
+  border-color: #c5dfcf;
+  box-shadow: 0 13px 30px rgba(23,62,45,.09);
+}
+.nav-btn { min-height: 43px; border-radius: 12px; transition: background-color .18s ease, color .18s ease; }
+.btn { min-height: 42px; border-radius: 11px; font-weight: 700; line-height: 1.4; }
+.btn-primary { box-shadow: 0 4px 10px rgba(22,134,90,.13); }
+.notice-field input,.notice-field select,.notice-field textarea {
+  min-height: 44px;
+  border-radius: 11px;
+  line-height: 1.55;
+}
+.notice-field textarea { min-height: 112px; }
+.notice-form-section { border-radius: 15px; }
+.government-notice-card {
+  padding: clamp(15px, 2vw, 19px);
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(23,62,45,.04);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.government-notice-card:hover { border-color: #b9d9c5; box-shadow: 0 10px 24px rgba(23,62,45,.08); }
+.government-notice-card h3 { font-size: 15px; line-height: 1.5; }
+.government-notice-summary,.government-notice-meta { line-height: 1.7; }
+.gov-ai-summary-panel { border-radius: 18px; }
+@media (max-width: 620px) {
+  .panel { padding: 15px; border-radius: 15px; }
+  .stat-card { padding: 14px; }
+  .government-notice-card { padding: 14px; }
+  .government-notice-card-head { flex-wrap: wrap; }
+  .notice-form-actions { gap: 9px; }
+  .notice-form-actions .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,.panel,.department-card,.report-card,.profile-card,.notification-card,.nav-btn,.government-notice-card { transition: none !important; }
+}
