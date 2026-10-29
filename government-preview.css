@@ -427,3 +427,12 @@ textarea {
   }
 }
 
+
+
+/* Shared design-system typography and canonical report status colours. */
+:where(h1,h2,h3,h4,h5,h6) { font-family: var(--civic-font-heading); }
+body { font-family: var(--civic-font-body); }
+.status-reported { color: var(--civic-reported); background: var(--civic-reported-tint); border-color: transparent; }
+.status-verified { color: var(--civic-verified); background: var(--civic-verified-tint); border-color: transparent; }
+.status-progress { color: var(--civic-progress); background: var(--civic-progress-tint); border-color: transparent; }
+.status-resolved { color: var(--civic-resolved); background: var(--civic-resolved-tint); border-color: transparent; }
