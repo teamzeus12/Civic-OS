@@ -127,6 +127,13 @@
   .card { padding: 18px; border-radius: 16px; }
 }
 
+
+/* Frosted portal cards and navigation: decorative blur never replaces contrast. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .shell { background: rgba(255,255,255,.84); border: 1px solid rgba(255,255,255,.92); backdrop-filter: blur(20px) saturate(125%); -webkit-backdrop-filter: blur(20px) saturate(125%); box-shadow: 0 24px 70px rgba(24,68,42,.1), inset 0 1px 0 rgba(255,255,255,.95); }
+  .card { background: linear-gradient(145deg,rgba(255,255,255,.88),rgba(245,251,247,.72)); border-color: rgba(255,255,255,.95); box-shadow: 0 14px 36px rgba(25,65,42,.07), inset 0 1px 0 rgba(255,255,255,.96); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .card:hover { box-shadow: 0 20px 42px rgba(25,65,42,.11), inset 0 1px 0 rgba(255,255,255,.98); }
+}
 </style>
 </head>
 <body>
