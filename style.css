@@ -9656,3 +9656,15 @@ textarea::placeholder {
   }
 }
 
+
+
+/* Shared design-system typography and canonical report status colours. */
+:where(h1,h2,h3,h4,h5,h6) { font-family: var(--civic-font-heading); }
+body { font-family: var(--civic-font-body); }
+.pill.status-reported,.status-reported { color: var(--civic-reported); background: var(--civic-reported-tint); border-color: transparent; }
+.pill.status-verified,.status-verified { color: var(--civic-verified); background: var(--civic-verified-tint); border-color: transparent; }
+.pill.status-progress,.status-progress { color: var(--civic-progress); background: var(--civic-progress-tint); border-color: transparent; }
+.pill.status-resolved,.status-resolved { color: var(--civic-resolved); background: var(--civic-resolved-tint); border-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .civic-button:hover:not(:disabled) { transform: none; }
+}
