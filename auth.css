@@ -31,3 +31,23 @@
   .auth-layout { gap: 24px; padding-top: 23px; }
   .form-panel { padding: 20px 17px; border-radius: 19px; }
 }
+
+
+/* Frosted authentication panels with a solid contrast-safe fallback. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .form-panel,.feature-card,.civic-auth-card {
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    backdrop-filter: blur(20px) saturate(130%);
+  }
+  .form-panel {
+    background: linear-gradient(145deg,rgba(255,255,255,.88),rgba(247,251,248,.78));
+    border-color: rgba(255,255,255,.92);
+    box-shadow: 0 22px 60px rgba(26,68,43,.11), inset 0 1px 0 rgba(255,255,255,.96);
+  }
+  .feature-card {
+    background: linear-gradient(145deg,rgba(20,57,36,.84),rgba(9,34,21,.76));
+    border-color: rgba(255,255,255,.2);
+    box-shadow: 0 18px 45px rgba(8,31,18,.2), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+}
+
