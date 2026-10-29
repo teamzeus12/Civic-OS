@@ -424,3 +424,71 @@
   }
 }
 
+/* Civic AI workspace — premium clarity for chat, history, settings and image tools. */
+.civic-ai-panel {
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 22px;
+  box-shadow: 0 28px 90px rgba(0,0,0,.42), 0 0 0 1px rgba(62,224,143,.055);
+  overflow: hidden;
+}
+.civic-ai-header {
+  min-height: 66px;
+  border-bottom: 1px solid rgba(255,255,255,.09);
+  background: linear-gradient(110deg, rgba(20,43,30,.98), rgba(10,20,14,.98));
+}
+.civic-ai-heading strong { font-size: 14px; line-height: 1.35; }
+.civic-ai-context { line-height: 1.5; }
+.civic-ai-sidebar { padding: 15px 12px 11px; }
+.civic-ai-new-chat,.civic-ai-search,.civic-ai-history-item,.civic-ai-sidebar-action {
+  border-radius: 11px;
+}
+.civic-ai-new-chat { min-height: 44px; font-weight: 700; }
+.civic-ai-search { min-height: 41px; }
+.civic-ai-history-heading { font-size: 11px; letter-spacing: .045em; }
+.civic-ai-history-open { min-height: 36px; line-height: 1.45; }
+.civic-ai-history-tool { width: 31px; height: 31px; }
+.civic-ai-sidebar-action { min-height: 42px; line-height: 1.45; }
+.civic-ai-settings-view { background: linear-gradient(160deg, #0d1912, #09110c 72%); }
+.civic-ai-settings-header { padding-top: 22px; padding-bottom: 18px; }
+.civic-ai-settings-header h3 { line-height: 1.3; letter-spacing: -.02em; }
+.civic-ai-setting-group { border-bottom-color: rgba(255,255,255,.09); }
+.civic-ai-setting-row { gap: 16px; padding-top: 10px; padding-bottom: 10px; }
+.civic-ai-setting-row strong { line-height: 1.5; }
+.civic-ai-setting-row small,.civic-ai-setting-note { line-height: 1.7; }
+.civic-ai-setting-row select { min-height: 40px; border-radius: 10px; }
+.civic-ai-image-generator { border-radius: 15px; }
+.civic-ai-image-generator-head strong { line-height: 1.4; }
+.civic-ai-image-upload { min-height: 44px; border-radius: 11px; line-height: 1.5; }
+.civic-ai-image-generator textarea { min-height: 92px; border-radius: 11px; line-height: 1.65; }
+.civic-ai-generate-button,.civic-ai-image-gen-open,.civic-ai-danger-action,.civic-ai-secondary-action {
+  min-height: 42px;
+  border-radius: 11px;
+  font-weight: 700;
+}
+.civic-ai-panel button:focus-visible,.civic-ai-panel input:focus-visible,.civic-ai-panel select:focus-visible,.civic-ai-panel textarea:focus-visible,.civic-ai-panel a:focus-visible {
+  outline: 2px solid #72e6a5;
+  outline-offset: 3px;
+}
+.civic-ai-panel.is-light {
+  border-color: rgba(29,72,45,.16);
+  box-shadow: 0 26px 80px rgba(18,54,31,.22), 0 0 0 1px rgba(29,72,45,.04);
+}
+.civic-ai-panel.is-light .civic-ai-header {
+  background: linear-gradient(110deg, #f4fbf6, #fff);
+  border-bottom-color: rgba(29,72,45,.12);
+}
+.civic-ai-panel.is-light .civic-ai-settings-view {
+  background: linear-gradient(160deg, #fff, #f4faf6);
+}
+.civic-ai-panel.is-light .civic-ai-new-chat { color: #17472d; background: #eaf8ef; border-color: #bfe4cd; }
+.civic-ai-panel.is-light .civic-ai-search { border-color: #dce9e0; background: #fff; }
+@media (max-width: 520px) {
+  .civic-ai-panel { border-radius: 18px; }
+  .civic-ai-header { min-height: 60px; }
+  .civic-ai-settings-header { padding: 15px 13px; }
+  .civic-ai-setting-group { padding-top: 16px; padding-bottom: 16px; }
+  .civic-ai-setting-row { align-items: flex-start; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .civic-ai-panel *,.civic-ai-panel *::before,.civic-ai-panel *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
