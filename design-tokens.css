@@ -1,0 +1,178 @@
+/* Civic OS shared design tokens and reusable primitives.
+   Single source of truth for colour, type, spacing, status, motion and core controls. */
+:root {
+  color-scheme: light;
+  --civic-bg: #F6FAF8;
+  --civic-bg-elevated: #EEF5F1;
+  --civic-surface: #FFFFFF;
+  --civic-surface-2: #F8FBF9;
+  --civic-ink: #0B1F1A;
+  --civic-ink-2: #3F544D;
+  --civic-muted: #5B6F68;
+  --civic-line: #E3ECE8;
+  --civic-line-strong: #C8D9D1;
+  --civic-brand: #077A5C;
+  --civic-brand-2: #12B5A6;
+  --civic-sky: #38BDF8;
+  --civic-gradient: linear-gradient(135deg, #077A5C, #12B5A6 60%, #38BDF8);
+  --civic-reported: #B45309;
+  --civic-reported-tint: #FEF3C7;
+  --civic-verified: #1D4ED8;
+  --civic-verified-tint: #DBEAFE;
+  --civic-progress: #6D28D9;
+  --civic-progress-tint: #EDE9FE;
+  --civic-resolved: #047857;
+  --civic-resolved-tint: #D1FAE5;
+  --civic-danger: #B42318;
+  --civic-danger-tint: #FEE4E2;
+  --civic-success: #047857;
+  --civic-success-tint: #D1FAE5;
+  --civic-font-heading: "Plus Jakarta Sans", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --civic-font-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --civic-text-12: 12px;
+  --civic-text-14: 14px;
+  --civic-text-16: 16px;
+  --civic-text-18: 18px;
+  --civic-text-24: 24px;
+  --civic-text-32: 32px;
+  --civic-text-44: 44px;
+  --civic-text-64: 64px;
+  --civic-space-1: 4px;
+  --civic-space-2: 8px;
+  --civic-space-3: 12px;
+  --civic-space-4: 16px;
+  --civic-space-5: 24px;
+  --civic-space-6: 32px;
+  --civic-space-7: 48px;
+  --civic-space-8: 64px;
+  --civic-space-9: 96px;
+  --civic-radius-input: 12px;
+  --civic-radius-card: 20px;
+  --civic-radius-pill: 999px;
+  --civic-shadow-soft: 0 1px 2px rgba(11,31,26,.06), 0 8px 24px rgba(11,31,26,.08);
+  --civic-shadow-raised: 0 12px 32px rgba(11,31,26,.12);
+  --civic-motion-fast: 150ms ease-out;
+  --civic-motion: 200ms ease-out;
+  --civic-motion-slow: 250ms ease-out;
+  --civic-focus: 0 0 0 3px rgba(18,181,166,.28);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-civic-theme]) {
+    color-scheme: dark;
+    --civic-bg: #0B1512;
+    --civic-bg-elevated: #101C17;
+    --civic-surface: #121F1A;
+    --civic-surface-2: #172720;
+    --civic-ink: #F0F7F3;
+    --civic-ink-2: #D0DED6;
+    --civic-muted: #A8BBB1;
+    --civic-line: #2B4036;
+    --civic-line-strong: #405A4D;
+    --civic-brand: #42CDA4;
+    --civic-brand-2: #39D4C4;
+    --civic-reported: #FCD34D;
+    --civic-reported-tint: #422D0A;
+    --civic-verified: #93C5FD;
+    --civic-verified-tint: #172F52;
+    --civic-progress: #C4B5FD;
+    --civic-progress-tint: #33234F;
+    --civic-resolved: #6EE7B7;
+    --civic-resolved-tint: #123D30;
+    --civic-danger: #FDA29B;
+    --civic-danger-tint: #4A1F1C;
+    --civic-success: #6EE7B7;
+    --civic-success-tint: #123D30;
+    --civic-shadow-soft: 0 1px 2px rgba(0,0,0,.16), 0 8px 24px rgba(0,0,0,.18);
+    --civic-shadow-raised: 0 12px 32px rgba(0,0,0,.26);
+  }
+}
+body[data-civic-theme="light"] {
+  color-scheme: light;
+  --civic-bg: #F6FAF8;
+  --civic-bg-elevated: #EEF5F1;
+  --civic-surface: #FFFFFF;
+  --civic-surface-2: #F8FBF9;
+  --civic-ink: #0B1F1A;
+  --civic-ink-2: #3F544D;
+  --civic-muted: #5B6F68;
+  --civic-line: #E3ECE8;
+  --civic-line-strong: #C8D9D1;
+  --civic-brand: #077A5C;
+  --civic-brand-2: #12B5A6;
+  --civic-reported: #B45309;
+  --civic-reported-tint: #FEF3C7;
+  --civic-verified: #1D4ED8;
+  --civic-verified-tint: #DBEAFE;
+  --civic-progress: #6D28D9;
+  --civic-progress-tint: #EDE9FE;
+  --civic-resolved: #047857;
+  --civic-resolved-tint: #D1FAE5;
+}
+body[data-civic-theme="dark"] {
+  color-scheme: dark;
+  --civic-bg: #0B1512;
+  --civic-bg-elevated: #101C17;
+  --civic-surface: #121F1A;
+  --civic-surface-2: #172720;
+  --civic-ink: #F0F7F3;
+  --civic-ink-2: #D0DED6;
+  --civic-muted: #A8BBB1;
+  --civic-line: #2B4036;
+  --civic-line-strong: #405A4D;
+  --civic-brand: #42CDA4;
+  --civic-brand-2: #39D4C4;
+  --civic-reported: #FCD34D;
+  --civic-reported-tint: #422D0A;
+  --civic-verified: #93C5FD;
+  --civic-verified-tint: #172F52;
+  --civic-progress: #C4B5FD;
+  --civic-progress-tint: #33234F;
+  --civic-resolved: #6EE7B7;
+  --civic-resolved-tint: #123D30;
+}
+/* Shared component primitives. Existing app-specific selectors remain in place until each page is upgraded. */
+.civic-button {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--civic-space-2);
+  padding: var(--civic-space-3) var(--civic-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--civic-radius-pill);
+  font: 600 var(--civic-text-16)/1.2 var(--civic-font-body);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform var(--civic-motion-fast), box-shadow var(--civic-motion), background-color var(--civic-motion), border-color var(--civic-motion), color var(--civic-motion);
+}
+.civic-button--primary { color: #fff; background: var(--civic-gradient); box-shadow: var(--civic-shadow-soft); }
+.civic-button--secondary { color: var(--civic-ink); background: var(--civic-surface); border-color: var(--civic-line-strong); }
+.civic-button--ghost { color: var(--civic-ink-2); background: transparent; border-color: transparent; }
+.civic-button--danger { color: #fff; background: var(--civic-danger); }
+.civic-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--civic-shadow-raised); }
+.civic-button:active:not(:disabled) { transform: scale(.98); }
+.civic-button:focus-visible { outline: 3px solid var(--civic-brand-2); outline-offset: 3px; }
+.civic-button:disabled,.civic-button[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+.civic-button[aria-busy="true"] { color: transparent; position: relative; pointer-events: none; }
+.civic-button[aria-busy="true"]::after { content: ""; position: absolute; width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: civic-spin .7s linear infinite; }
+.civic-card { min-width: 0; border: 1px solid var(--civic-line); border-radius: var(--civic-radius-card); background: var(--civic-surface); box-shadow: var(--civic-shadow-soft); }
+.civic-field { display: grid; gap: var(--civic-space-2); color: var(--civic-ink-2); font: 500 var(--civic-text-14)/1.5 var(--civic-font-body); }
+.civic-field input,.civic-field select,.civic-field textarea { width: 100%; min-height: 48px; border: 1px solid var(--civic-line-strong); border-radius: var(--civic-radius-input); padding: var(--civic-space-3) var(--civic-space-4); color: var(--civic-ink); background: var(--civic-surface); font: 400 var(--civic-text-16)/1.5 var(--civic-font-body); }
+.civic-field :is(input,select,textarea):focus-visible { outline: 3px solid var(--civic-brand-2); outline-offset: 2px; }
+.civic-status-pill { display: inline-flex; align-items: center; gap: var(--civic-space-1); padding: var(--civic-space-1) var(--civic-space-3); border-radius: var(--civic-radius-pill); font: 650 var(--civic-text-14)/1.35 var(--civic-font-body); }
+.civic-status-pill--reported { color: var(--civic-reported); background: var(--civic-reported-tint); }
+.civic-status-pill--verified { color: var(--civic-verified); background: var(--civic-verified-tint); }
+.civic-status-pill--progress { color: var(--civic-progress); background: var(--civic-progress-tint); }
+.civic-status-pill--resolved { color: var(--civic-resolved); background: var(--civic-resolved-tint); }
+.civic-empty-state { display: grid; justify-items: center; gap: var(--civic-space-3); padding: var(--civic-space-7) var(--civic-space-5); text-align: center; color: var(--civic-muted); }
+.civic-empty-state h2,.civic-empty-state h3 { margin: 0; color: var(--civic-ink); font-family: var(--civic-font-heading); line-height: 1.2; }
+.civic-skeleton { position: relative; overflow: hidden; min-height: 12px; border-radius: var(--civic-radius-input); background: var(--civic-line); }
+.civic-skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent); animation: civic-shimmer 1.4s ease-in-out infinite; }
+@keyframes civic-spin { to { transform: rotate(360deg); } }
+@keyframes civic-shimmer { to { transform: translateX(100%); } }
+:where(a,button,input,select,textarea,[tabindex]):focus-visible { outline-color: var(--civic-brand-2); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
