@@ -166,6 +166,22 @@ body { font-family: var(--civic-font-body); color: var(--civic-ink); }
   .footer { border-color: var(--civic-line); }
 }
 
+
+    /* Phase 2: mobile readability and tap-target refinement. */
+    body { font-size: 16px; line-height: 1.5; }
+    .intro p { font-size: 15px; line-height: 1.75; }
+    .card p { font-size: 15px; line-height: 1.75; }
+    .card-foot { min-height: 48px; font-size: 14px; }
+    .notice { font-size: 12px; line-height: 1.7; }
+    .footer { font-size: 11px; }
+    .demo-link { min-height: 44px; }
+    @media (max-width: 380px) {
+      .shell { width: calc(100% - 24px); }
+      .intro h1 { letter-spacing: -1.5px; }
+      .card { padding: 19px; }
+      .card-foot { align-items: flex-start; }
+    }
+
 </style>
 </head>
 <body>
