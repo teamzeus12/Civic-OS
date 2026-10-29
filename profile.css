@@ -147,3 +147,42 @@ body[data-civic-theme="light"] .nav-item{color:#526258}
 @media(prefers-reduced-motion:reduce){
  .profile-page *, .profile-page *::before, .profile-page *::after{scroll-behavior:auto;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+/* Profile and settings refinement — clearer hierarchy, readable metadata, calmer surfaces. */
+.profile-hero-card {
+  border-radius: 24px;
+  padding: clamp(18px, 3vw, 27px);
+  box-shadow: 0 15px 38px rgba(17,66,43,.075);
+}
+.profile-hero-copy h2 { line-height: 1.25; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.profile-hero-copy>p { line-height: 1.7; }
+.profile-metric-grid { gap: 12px; }
+.profile-metric { border-radius: 15px; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.profile-metric:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(17,66,43,.07); }
+.profile-metric strong { line-height: 1.2; font-variant-numeric: tabular-nums; }
+.profile-content-grid { gap: 17px; }
+.profile-panel,.profile-settings-panel { border-radius: 19px; box-shadow: 0 9px 25px rgba(17,66,43,.045); }
+.profile-panel h2,.profile-settings-panel h2 { line-height: 1.35; letter-spacing: -.02em; }
+.profile-panel>p,.profile-settings-panel>p { line-height: 1.75; }
+.profile-tab { min-height: 44px; border-radius: 11px; }
+.profile-settings-link { min-height: 43px; border-radius: 11px; }
+.profile-form input,.profile-setting-control select { min-height: 44px; border-radius: 11px; }
+.profile-form button,.profile-hero-actions .btn { min-height: 43px; border-radius: 11px; font-weight: 700; }
+.profile-history-item { border-radius: 13px; }
+.profile-status-pill { line-height: 1.45; }
+.profile-note { line-height: 1.75; }
+.profile-page :where(button,input,select,textarea,a,[tabindex]):focus-visible {
+  outline: 2px solid #16834c;
+  outline-offset: 3px;
+}
+@media (max-width: 560px) {
+  .profile-hero-card { gap: 13px; padding: 17px; border-radius: 18px; }
+  .profile-avatar { width: 58px; height: 58px; border-radius: 17px; }
+  .profile-hero-copy h2 { font-size: 21px; }
+  .profile-panel { padding: 16px; }
+  .profile-metric { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile-metric { transition: none !important; }
+  .profile-metric:hover { transform: none; }
+}
