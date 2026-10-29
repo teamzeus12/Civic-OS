@@ -6,39 +6,32 @@
 
 /* ---------- 1. Design tokens ---------- */
 :root {
-  --bg: #060908;
-  --bg-2: #0c1210;
-  --surface: rgba(255, 255, 255, 0.035);
-  --surface-2: rgba(255, 255, 255, 0.065);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-
-  --text: #eef3ef;
-  --muted: #95a39c;
-  --subtle: #64726b;
-
-  --accent: #3ee08f;
-  --accent-hover: #62eaa6;
-  --accent-ink: #04140b;
-  --accent-soft: rgba(62, 224, 143, 0.12);
-  --accent-line: rgba(62, 224, 143, 0.3);
-
-  --amber: #f5b544;
-  --amber-soft: rgba(245, 181, 68, 0.12);
-  --red: #f26b6b;
-  --red-soft: rgba(242, 107, 107, 0.12);
-
-  --st-reported: #6f7f78;
-  --st-verified: #b7f3d3;
-  --st-progress: var(--amber);
-  --st-resolved: var(--accent);
-
-  --radius: 20px;
-  --radius-sm: 14px;
-
-  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
+  --bg: var(--civic-bg);
+  --bg-2: var(--civic-bg-elevated);
+  --surface: var(--civic-surface);
+  --surface-2: var(--civic-surface-2);
+  --border: var(--civic-line);
+  --border-strong: var(--civic-line-strong);
+  --text: var(--civic-ink);
+  --muted: var(--civic-muted);
+  --subtle: var(--civic-muted);
+  --accent: var(--civic-brand);
+  --accent-hover: var(--civic-brand-2);
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(7,122,92,.10);
+  --accent-line: rgba(7,122,92,.28);
+  --amber: var(--civic-reported);
+  --amber-soft: var(--civic-reported-tint);
+  --red: var(--civic-danger);
+  --red-soft: var(--civic-danger-tint);
+  --st-reported: var(--civic-reported);
+  --st-verified: var(--civic-verified);
+  --st-progress: var(--civic-progress);
+  --st-resolved: var(--civic-resolved);
+  --radius: var(--civic-radius-card);
+  --radius-sm: var(--civic-radius-input);
+  --font: var(--civic-font-body);
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --topbar-h: 60px;
   --nav-h: 76px;
   --safe-top: env(safe-area-inset-top, 0px);
