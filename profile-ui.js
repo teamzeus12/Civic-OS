@@ -61,13 +61,44 @@
     });
     document.querySelectorAll("[data-profile-section]").forEach((panel) => { panel.hidden = panel.dataset.profileSection !== name; });
   }
+
+  function getLocalSavedReportIds() {
+    try {
+      const ids = JSON.parse(localStorage.getItem("civic-os-saved-report-ids") || "[]");
+      return Array.isArray(ids) ? [...new Set(ids.map(String))] : [];
+    } catch { return []; }
+  }
+  async function renderSavedReports() {
+    const target = $("profileSavedReports");
+    if (!target) return;
+    const ids = getLocalSavedReportIds();
+    if (!ids.length) {
+      target.innerHTML = '<div class="profile-saved-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg><strong>No saved reports yet</strong><p>Open any civic report and choose Save report to keep it here on this device.</p></div>';
+      return;
+    }
+    let rows = ids.map((id) => window.civicGetIssue?.(id)).filter(Boolean);
+    if (rows.length < ids.length && typeof window.civicLoadReports === "function") {
+      try { await window.civicLoadReports(); } catch {}
+      rows = ids.map((id) => window.civicGetIssue?.(id)).filter(Boolean);
+    }
+    const known = new Set(rows.map((row) => String(row.id)));
+    const missing = ids.filter((id) => !known.has(id));
+    const reportCards = rows.map((row) => {
+      const status = String(row.status || "Reported");
+      const statusClass = status.toLowerCase().replace(/[^a-z]+/g, "-");
+      const location = typeof row.location === "string" ? row.location : "Location not supplied";
+      return '<article class="profile-history-item profile-saved-item"><span class="profile-history-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg></span><div class="profile-history-copy"><strong>' + escape(row.title || row.id || "Civic report") + '</strong><small>' + escape(location || "Location not supplied") + '</small><small>' + escape(row.department || "Department not available") + '</small></div><span class="profile-status-pill status-' + escape(statusClass) + '">' + escape(status) + '</span><div class="profile-saved-actions"><button type="button" class="btn btn-ghost btn-sm" data-open-saved-report="' + escape(row.id) + '">Open report</button><button type="button" class="btn btn-ghost btn-sm" data-unsave-report="' + escape(row.id) + '" aria-label="Remove saved report ' + escape(row.id) + '">Remove</button></div></article>';
+    }).join("");
+    const missingCards = missing.map((id) => '<article class="profile-history-item profile-saved-item"><span class="profile-history-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg></span><div class="profile-history-copy"><strong>Saved report ' + escape(id) + '</strong><small>This report is not loaded in the current feed.</small></div><button type="button" class="btn btn-ghost btn-sm" data-unsave-report="' + escape(id) + '">Remove</button></article>').join("");
+    target.innerHTML = reportCards + missingCards;
+  }
   function renderActivity(rows) {
     const target = $("profileActivityTimeline");
     if (!target) return;
     if (!rows.length) { target.innerHTML = '<p class="profile-empty">No civic activity is available for this account yet.</p>'; return; }
     target.innerHTML = rows.slice(0,8).map((row) => {
       const date = row.reported_at ? new Date(row.reported_at).toLocaleDateString() : "Date unavailable";
-      return '<article class="profile-history-item"><span class="profile-history-symbol">↗</span><div class="profile-history-copy"><strong>' + escape(row.title || row.public_id || "Civic report") + '</strong><small>' + escape(date) + ' · ' + escape(row.category || "Civic report") + '</small><small>Latest status: ' + escape(row.status || "Reported") + '</small></div></article>';
+      return '<article class="profile-history-item"><span class="profile-history-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></span><div class="profile-history-copy"><strong>' + escape(row.title || row.public_id || "Civic report") + '</strong><small>' + escape(date) + ' · ' + escape(row.category || "Civic report") + '</small><small>Latest status: ' + escape(row.status || "Reported") + '</small></div></article>';
     }).join("");
   }
   function renderHistory(rows) {
@@ -79,7 +110,7 @@
       const statusClass = status.toLowerCase().replace(/[^a-z]+/g,"-");
       const location = typeof row.location === "string" ? row.location : row.location?.address || row.location?.label || row.location?.name || "Location not supplied";
       const date = row.reported_at ? new Date(row.reported_at).toLocaleDateString() : "Date unavailable";
-      return '<article class="profile-history-item"><span class="profile-history-symbol">▤</span><div class="profile-history-copy"><strong>' + escape(row.title || row.public_id || "Civic report") + '</strong><small>' + escape(row.category || "General") + ' · ' + escape(location) + '</small><small>' + escape(date) + '</small></div><span class="profile-status-pill status-' + escape(statusClass) + '">' + escape(status) + '</span></article>';
+      return '<article class="profile-history-item"><span class="profile-history-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><div class="profile-history-copy"><strong>' + escape(row.title || row.public_id || "Civic report") + '</strong><small>' + escape(row.category || "General") + ' · ' + escape(location) + '</small><small>' + escape(date) + '</small></div><span class="profile-status-pill status-' + escape(statusClass) + '">' + escape(status) + '</span></article>';
     }).join("");
     renderActivity(rows);
   }
@@ -87,7 +118,7 @@
     const client = window.civicSupabase;
     if (!client) { $("citizenEmail").textContent = "Account service unavailable. Refresh and try again."; return; }
     const { data, error } = await client.auth.getSession();
-    if (error) { $("citizenEmail").textContent = "Unable to check your account session."; return; }
+    if (error) { $("citizenEmail").textContent = "Unable to check your account session."; const metrics = document.querySelector(".profile-metric-grid"); if (metrics) metrics.hidden = true; await renderSavedReports(); return; }
     const user = data.session?.user;
     const prefs = readPrefs();
     applyUiPreferences(prefs);
@@ -102,11 +133,13 @@
       $("citizenEmailBadge").textContent = "Sign-in required";
       $("citizenVerificationBadge").textContent = "Resident verification not completed";
       ["profileFullName","profilePhone","profileWard","profileMunicipality","profileDistrict"].forEach((id) => { if ($(id)) $(id).value = ""; });
-      $("profileReportCount").textContent = "0"; $("profileResolvedCount").textContent = "0";
+      const metrics = document.querySelector(".profile-metric-grid"); if (metrics) metrics.hidden = true;
       renderHistory([]);
+      await renderSavedReports();
       $("profileSignInButton").textContent = "Sign in";
       return;
     }
+    const metrics = document.querySelector(".profile-metric-grid"); if (metrics) metrics.hidden = false;
     const meta = user.user_metadata || {};
     let name = String(meta.full_name || "").trim();
     const profileResult = await client.from("profiles").select("full_name,avatar_path").eq("id",user.id).maybeSingle();
@@ -124,15 +157,18 @@
     $("profileSignInButton").textContent = "Account active";
     const reportsResult = await client.from("reports").select("id,public_id,title,category,status,location,reported_at").eq("reported_by",user.id).order("reported_at",{ascending:false}).limit(50);
     if (reportsResult.error) {
-      $("profileReportCount").textContent = "—"; $("profileResolvedCount").textContent = "—";
+      $("profileReportCount").textContent = "Unavailable"; $("profileResolvedCount").textContent = "Unavailable";
       $("profileSaveMessage").textContent = "Profile is available, but report history could not be loaded.";
       renderHistory([]);
+      const metrics = document.querySelector(".profile-metric-grid"); if (metrics) metrics.hidden = true;
     } else {
+      const metrics = document.querySelector(".profile-metric-grid"); if (metrics) metrics.hidden = false;
       const rows = reportsResult.data || [];
       $("profileReportCount").textContent = String(rows.length);
       $("profileResolvedCount").textContent = String(rows.filter((r) => String(r.status).toLowerCase() === "resolved").length);
       renderHistory(rows);
     }
+    await renderSavedReports();
     if (window.lucide?.createIcons) window.lucide.createIcons();
   };
   document.addEventListener("DOMContentLoaded", () => {
@@ -149,6 +185,16 @@
     document.querySelectorAll("[data-ui-pref]").forEach((el) => el.addEventListener("change", savePrefs));
     document.querySelectorAll("[data-open-profile-overview]").forEach((button) => button.addEventListener("click", () => activateTab("overview")));
     document.querySelectorAll("[data-profile-tab]").forEach((tab) => tab.addEventListener("click", () => activateTab(tab.dataset.profileTab)));
+    document.addEventListener("click", (event) => {
+      const open = event.target.closest("[data-open-saved-report]");
+      if (open) { window.civicOpenIssue?.(open.dataset.openSavedReport); return; }
+      const remove = event.target.closest("[data-unsave-report]");
+      if (!remove) return;
+      const id = String(remove.dataset.unsaveReport || "");
+      const ids = getLocalSavedReportIds().filter((value) => value !== id);
+      try { localStorage.setItem("civic-os-saved-report-ids", JSON.stringify(ids)); } catch {}
+      renderSavedReports();
+    });
     $("profileEditButton")?.addEventListener("click", () => {
       activateTab("overview");
       $("civicProfileForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
