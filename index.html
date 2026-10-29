@@ -247,6 +247,36 @@ a:focus-visible { outline: 3px solid #6dbd91; outline-offset: 4px; }
   .how-step { transition: none !important; }
 }
 
+
+/* Landing page finish — calm contrast, clear calls to action and tactile cards. */
+body { background: radial-gradient(ellipse at 12% 0%, #f8fbf8 0, transparent 40%), #e7e9e6; color: #14231b; }
+.frame { border: 1px solid rgba(20,65,42,.08); box-shadow: 0 20px 65px rgba(20,48,31,.08); }
+.brand { letter-spacing: -.045em; }
+.links a,.signin,.launch { min-height: 42px; }
+.links a { display: inline-flex; align-items: center; border-radius: 10px; padding: 9px 12px; }
+.links a:hover { background: #f0f7f2; }
+.launch,.signin { border-radius: 12px; font-weight: 700; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+.launch:hover,.signin:hover { box-shadow: 0 8px 20px rgba(20,83,52,.12); }
+.hero h1 { line-height: 1.02; letter-spacing: -.055em; }
+.hero p { line-height: 1.75; }
+.graphic { border-radius: 24px; box-shadow: 0 18px 42px rgba(20,48,31,.10); }
+.how-step { border: 1px solid rgba(20,65,42,.09); box-shadow: 0 7px 22px rgba(20,48,31,.04); }
+.how-step h3 { line-height: 1.4; }
+.how-step p { line-height: 1.75; }
+a:focus-visible { outline: 3px solid #16865a; outline-offset: 3px; }
+@media (max-width: 620px) {
+  body { padding: 10px; }
+  .frame { min-height: calc(100vh - 20px); padding: 18px 16px 17px; border-radius: 20px; }
+  .hero h1 { letter-spacing: -.045em; }
+  .graphic { border-radius: 18px; }
+  .actions { gap: 9px; }
+  .actions > .launch { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .launch,.signin,.how-step { transition: none !important; }
+  .launch:hover,.signin:hover { transform: none; }
+}
+
 </style></head><body><main class="frame"><header class="nav"><a class="brand" href="./index.html">◉ Civic OS</a><nav class="links"><a href="#how">How it works</a><a href="#about">About</a></nav><div class="actions"><a class="signin" href="./portals.html">Sign in</a><a class="launch" href="./portals.html">Launch Civic OS ↗</a></div></header><section class="hero" id="about"><div class="graphic" aria-hidden="true"><div class="line"></div><div class="node a">♧</div><div class="node b">♧</div><div class="node c">ϟ</div><div class="node d">◎</div><div class="node e">⌂</div><div class="node f">✓</div><div class="core">✓</div></div><h1>Civic action,<br>all in one place.</h1><p>Report local issues, track progress, and see your community move forward.</p><a class="launch" href="./portals.html">Launch Civic OS →</a></section><!-- Civic OS landing: simple three-step overview -->
 <section class="how" id="how" aria-labelledby="how-title">
   <div class="how-head">
