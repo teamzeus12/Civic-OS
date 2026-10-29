@@ -102,3 +102,22 @@ body { font-family: var(--civic-font-body); }
   .feature-side { display:none; }
   .auth-layout .auth-side h1 { font-size:clamp(32px,9vw,40px); letter-spacing:-.045em; }
 }
+
+
+/* Phase 2: readable authentication copy and compact-screen comfort. */
+.intro,
+.form-description,
+.feature-copy,
+.security-note {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.form-footnote { font-size: 13px; line-height: 1.65; }
+.form-panel label { line-height: 1.5; }
+.mode-button { min-height: 56px; }
+@media (max-width: 380px) {
+  .auth-shell { padding-inline: 12px; }
+  .form-panel { padding-inline: 15px; }
+  .form-heading { gap: 10px; }
+  .secure-label { font-size: 11px; }
+}
