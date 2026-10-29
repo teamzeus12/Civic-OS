@@ -1445,10 +1445,13 @@ function issuePhotoGallery(issue) {
     return `<div class="sheet-no-photo" role="note"><i data-lucide="image-off" aria-hidden="true"></i><span>No photo was attached to this report.</span></div>`;
   }
   return `
-    <div class="sheet-photo-gallery" aria-label="Submitted report photos">
-      ${photos.map((url, index) => `
-        <img class="sheet-photo" src="${escapeHtml(url)}" alt="Submitted evidence photo ${index + 1} for ${escapeHtml(issue.title)}" loading="lazy" decoding="async" />
-      `).join("")}
+    <div class="sheet-photo-gallery-wrap" aria-label="Submitted report photos">
+      <div class="sheet-photo-gallery" role="group" aria-label="Swipe through submitted photos">
+        ${photos.map((url, index) => `
+          <img class="sheet-photo" data-photo-index="${index}" src="${escapeHtml(url)}" alt="Submitted evidence photo ${index + 1} for ${escapeHtml(issue.title)}" loading="lazy" decoding="async" />
+        `).join("")}
+      </div>
+      ${photos.length > 1 ? `<div class="sheet-photo-dots" role="group" aria-label="Choose a report photo">${photos.map((_, index) => `<button type="button" class="sheet-photo-dot ${index === 0 ? "is-active" : ""}" data-photo-slide="${index}" aria-label="Show photo ${index + 1}" aria-pressed="${index === 0}"></button>`).join("")}</div>` : ""}
     </div>
   `;
 }
@@ -3621,6 +3624,8 @@ function renderIssueSheet(issue) {
       issue.id
     );
 
+  const saved = civicSavedReportIds().includes(String(issue.id));
+
   const helpers =
     matchedHelpers(issue);
 
@@ -3700,7 +3705,7 @@ function renderIssueSheet(issue) {
 
           return `
             <li class="report-status-step ${reached ? "is-complete" : "is-pending"} ${current ? "is-current" : ""}" ${current ? 'aria-current="step"' : ""}>
-              <span class="report-status-marker" aria-hidden="true">${reached ? "✓" : "×"}</span>
+              <span class="report-status-marker" aria-hidden="true">${reached ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'}</span>
               <div class="report-status-copy">
                 <div class="report-status-heading">
                   ${escapeHtml(status)}
@@ -3858,6 +3863,12 @@ function renderIssueSheet(issue) {
 
       </div>
 
+    </div>
+
+    <div class="report-detail-action-bar" role="group" aria-label="Report actions">
+      <button type="button" class="btn btn-ghost btn-sm" data-action="jump-comments" data-id="${escapeHtml(issue.id)}"><i data-lucide="message-circle"></i>Comment</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="share-report" data-id="${escapeHtml(issue.id)}"><i data-lucide="share-2"></i>Share</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="toggle-save-report" data-id="${escapeHtml(issue.id)}" aria-pressed="${saved}"><i data-lucide="${saved ? "bookmark-check" : "bookmark"}"></i>${saved ? "Saved" : "Save report"}</button>
     </div>
 
     <div class="sheet-section report-community-section">
@@ -8657,3 +8668,82 @@ window.addEventListener("focus", refreshCivicReportsOnReturn);
     if(event.key==="ArrowLeft"){event.preventDefault();moveStory(-1);}
   });
 })();
+
+
+/* Local report bookmarks and share actions for the report detail sheet. */
+function civicSavedReportIds() {
+  try {
+    const value = JSON.parse(window.localStorage.getItem("civic-os-saved-report-ids") || "[]");
+    return Array.isArray(value) ? value.map(String) : [];
+  } catch (error) {
+    return [];
+  }
+}
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-action='toggle-save-report'],[data-action='share-report'],[data-action='jump-comments']");
+  if (!button) return;
+  const issue = getIssue(button.dataset.id);
+  if (!issue) return;
+
+  if (button.dataset.action === "toggle-save-report") {
+    event.preventDefault();
+    const ids = civicSavedReportIds();
+    const id = String(issue.id);
+    const wasSaved = ids.includes(id);
+    const next = wasSaved ? ids.filter((value) => value !== id) : [...ids, id];
+    try {
+      window.localStorage.setItem("civic-os-saved-report-ids", JSON.stringify(next));
+    } catch (error) {
+      toast("This browser could not save the report on this device.", "triangle-alert");
+      return;
+    }
+    renderIssueSheet(issue);
+    toast(wasSaved ? "Report removed from saved items." : "Report saved on this device.", wasSaved ? "bookmark" : "bookmark-check");
+    return;
+  }
+
+  if (button.dataset.action === "jump-comments") {
+    event.preventDefault();
+    document.querySelector(".sheet-inner .report-community-section")?.scrollIntoView({behavior:"smooth",block:"start"});
+    document.querySelector(".sheet-inner .report-comment-form textarea")?.focus({preventScroll:true});
+    return;
+  }
+
+  if (button.dataset.action === "share-report") {
+    event.preventDefault();
+    const reportUrl = new URL(window.location.href);
+    reportUrl.hash = "issues";
+    const shareData = {
+      title: issue.title || "Civic OS report",
+      text: [issue.title, issue.location, "Track this civic report on Civic OS."].filter(Boolean).join(" · "),
+      url: reportUrl.toString()
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareData.text + "\n" + shareData.url);
+        toast("Report link copied.");
+      } else {
+        toast("Sharing is not available in this browser.", "info");
+      }
+    } catch (error) {
+      if (error?.name !== "AbortError") toast("The report could not be shared. Please try again.", "triangle-alert");
+    }
+  }
+});
+document.addEventListener("click", (event) => {
+  const dot = event.target.closest("[data-photo-slide]");
+  if (!dot) return;
+  const wrap = dot.closest(".sheet-photo-gallery-wrap");
+  const gallery = wrap?.querySelector(".sheet-photo-gallery");
+  const image = gallery?.querySelector(`[data-photo-index="${dot.dataset.photoSlide}"]`);
+  if (!gallery || !image) return;
+  const left = image.getBoundingClientRect().left - gallery.getBoundingClientRect().left + gallery.scrollLeft;
+  gallery.scrollTo({left,behavior:"smooth"});
+  wrap.querySelectorAll("[data-photo-slide]").forEach((item) => {
+    const active = item === dot;
+    item.classList.toggle("is-active",active);
+    item.setAttribute("aria-pressed",String(active));
+  });
+});
