@@ -8554,3 +8554,106 @@ async function refreshCivicReportsOnReturn() {
 }
 document.addEventListener("visibilitychange", refreshCivicReportsOnReturn);
 window.addEventListener("focus", refreshCivicReportsOnReturn);
+
+
+/* Home discovery and data-backed story viewer. All story content comes from live reports/notices. */
+(() => {
+  const storyLabels = { notices: "Official notices", resolved: "Resolved reports", trending: "Trending reports" };
+  let storyType = "notices";
+  let storyItems = [];
+  let storyIndex = 0;
+  const storyDialog = () => document.getElementById("civicStoryViewer");
+  const storyEscape = (value) => typeof escapeHtml === "function" ? escapeHtml(value == null ? "" : String(value)) : String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+  function buildStoryItems(type) {
+    if (type === "notices") return (Array.isArray(officialPublicNotices) ? officialPublicNotices : []).slice(0, 10).map((notice) => ({
+      kind:"notice", title:notice.title || "Official notice", body:String(notice.summary || notice.body || "").trim(),
+      meta:[notice.issuing_department,officialNoticeDate(notice.published_at || notice.issued_at)].filter(Boolean).join(" · "), id:null
+    }));
+    if (type === "resolved") return issues.filter((issue) => issue && issue.status === "Resolved")
+      .sort((a,b)=>(Number(b.reportedAt)||0)-(Number(a.reportedAt)||0)).slice(0,10).map((issue)=>({
+        kind:"report",id:issue.id,title:issue.title || "Resolved civic report",body:String(issue.summary || issue.description || "").trim(),
+        meta:[issue.location || issue.area || "Location not provided",issue.reportedAt ? timeAgo(issue.reportedAt) : ""].filter(Boolean).join(" · "),
+        category:(CATEGORIES[issue.category] || CATEGORIES.other).label,status:issue.status
+      }));
+    return issues.filter((issue)=>issue && Number(issue.supporters)>0)
+      .sort((a,b)=>(Number(b.supporters)||0)-(Number(a.supporters)||0)).slice(0,10).map((issue)=>({
+        kind:"report",id:issue.id,title:issue.title || "Civic report",body:String(issue.summary || issue.description || "").trim(),
+        meta:[issue.location || issue.area || "Location not provided",`${Number(issue.supporters)||0} people support this report`].join(" · "),
+        category:(CATEGORIES[issue.category] || CATEGORIES.other).label,status:issue.status
+      }));
+  }
+  function renderStory() {
+    const dialog=storyDialog(),title=document.getElementById("civicStoryTitle"),eyebrow=document.getElementById("civicStoryEyebrow"),
+      progress=document.getElementById("civicStoryProgress"),slide=document.getElementById("civicStorySlide"),
+      counter=document.getElementById("civicStoryCounter"),previous=document.getElementById("civicStoryPrevious"),next=document.getElementById("civicStoryNext");
+    if(!dialog||!title||!progress||!slide||!counter)return;
+    title.textContent=storyLabels[storyType] || "Community highlights";
+    if(eyebrow)eyebrow.textContent="Community highlights";
+    const total=storyItems.length,segments=Math.max(total,1);
+    progress.innerHTML=Array.from({length:segments},(_,index)=>`<span class="civic-story-progress-segment ${index<storyIndex?"is-seen":index===storyIndex&&total?"is-current":""}"></span>`).join("");
+    if(!total){
+      const copy=storyType==="notices"?"Official announcements will appear here after an authorised department publishes them.":storyType==="resolved"?"Resolved reports will appear here when real reports have reached Resolved status.":"Reports will appear here when citizens have added support.";
+      slide.innerHTML=`<div class="civic-story-empty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg><h3>Nothing to show yet</h3><p>${storyEscape(copy)}</p></div>`;
+      counter.textContent="No items yet";
+    } else {
+      const item=storyItems[storyIndex],body=item.body || "No additional description is available.";
+      const category=item.category?`<span class="civic-story-slide-eyebrow">${storyEscape(item.category)}</span>`:item.kind==="notice"?'<span class="civic-story-slide-eyebrow">Official notice</span>':"";
+      const status=item.status&&typeof statusPill==="function"?statusPill(item.status):"";
+      const action=item.kind==="notice"?'<button type="button" class="btn btn-primary" data-story-action="open-notices">Read full notice</button>':`<button type="button" class="btn btn-primary" data-story-action="open-report" data-story-id="${storyEscape(item.id)}">Open report</button>`;
+      slide.innerHTML=`${category}<h3>${storyEscape(item.title)}</h3><p>${storyEscape(body)}</p><div class="civic-story-slide-meta">${storyEscape(item.meta || "")}</div>${status}<div>${action}</div>`;
+      counter.textContent=`${storyIndex+1} of ${total}`;
+    }
+    if(previous)previous.disabled=total<=1;
+    if(next)next.disabled=total<=1;
+  }
+  async function openStory(type) {
+    const dialog=storyDialog();if(!dialog)return;
+    storyType=Object.prototype.hasOwnProperty.call(storyLabels,type)?type:"notices";
+    if(storyType==="notices") await loadOfficialPublicNotices();
+    else await loadPersistentCivicReports();
+    storyItems=buildStoryItems(storyType);storyIndex=0;renderStory();
+    if(!dialog.open)dialog.showModal();
+  }
+  function moveStory(direction) {
+    if(!storyItems.length)return;
+    storyIndex=(storyIndex+direction+storyItems.length)%storyItems.length;renderStory();
+  }
+  document.addEventListener("click",(event)=>{
+    const openButton=event.target.closest("[data-story-open]");
+    if(openButton){openStory(openButton.dataset.storyOpen);return;}
+    if(event.target.closest("#civicStoryClose")){storyDialog()?.close();return;}
+    if(event.target.closest("#civicStoryPrevious")){moveStory(-1);return;}
+    if(event.target.closest("#civicStoryNext")){moveStory(1);return;}
+    const storyAction=event.target.closest("[data-story-action]");
+    if(storyAction){
+      const item=storyItems[storyIndex];storyDialog()?.close();
+      if(storyAction.dataset.storyAction==="open-report"&&item?.id)openIssue(item.id);
+      if(storyAction.dataset.storyAction==="open-notices")showScreen("communityScreen");
+      return;
+    }
+    const categoryButton=event.target.closest("[data-home-category]");
+    if(categoryButton){state.filters={status:"All",category:categoryButton.dataset.homeCategory,sort:"newest",query:""};showScreen("issuesScreen");return;}
+    const feedButton=event.target.closest("[data-home-feed]");
+    if(feedButton){
+      const feed=feedButton.dataset.homeFeed;
+      state.filters={status:feed==="resolved"?"Resolved":"All",category:"all",sort:feed==="supported"?"supported":"newest",query:""};
+      document.querySelectorAll("[data-home-feed]").forEach((button)=>button.setAttribute("aria-pressed",String(button===feedButton)));
+      showScreen("issuesScreen");return;
+    }
+  });
+  const searchForm=document.getElementById("homeDiscoverySearch");
+  if(searchForm)searchForm.addEventListener("submit",(event)=>{
+    event.preventDefault();const input=document.getElementById("homeDiscoveryQuery");
+    state.filters={status:"All",category:"all",sort:"newest",query:input?input.value.trim():""};
+    showScreen("issuesScreen");
+  });
+  document.addEventListener("click",(event)=>{
+    if(event.target.closest("[data-goto]")&&storyDialog()?.open)storyDialog().close();
+    if(event.target===storyDialog())storyDialog().close();
+  },true);
+  document.addEventListener("keydown",(event)=>{
+    if(!storyDialog()?.open)return;
+    if(event.key==="ArrowRight"){event.preventDefault();moveStory(1);}
+    if(event.key==="ArrowLeft"){event.preventDefault();moveStory(-1);}
+  });
+})();
