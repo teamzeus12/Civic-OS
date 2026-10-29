@@ -3,18 +3,18 @@
 
   // Development preview: report data is fetched only from Supabase after authorization.
   const departments = [
-    { id: "pwd", name: "Public Works Department", short: "PWD", icon: "⌁", description: "Roads, bridges, drainage and public infrastructure.", categories: ["roads", "drainage", "infrastructure"] },
-    { id: "mahud", name: "MAHUD", short: "MAHUD", icon: "⌂", description: "Municipal administration, urban services and sanitation.", categories: ["garbage", "sanitation", "urban services"] },
-    { id: "electricity", name: "Electricity Department", short: "Electricity", icon: "ϟ", description: "Power supply, street lighting and electrical infrastructure.", categories: ["electricity", "streetlights"] },
-    { id: "forest", name: "Forest Department", short: "Forest", icon: "♧", description: "Forests, trees, biodiversity and wildlife concerns.", categories: ["forest", "environment", "wildlife"] },
-    { id: "education", name: "Education Department", short: "Education", icon: "▤", description: "Public schools, learning facilities and education resources.", categories: ["education", "school facilities"] },
-    { id: "agriculture", name: "Agriculture Department", short: "Agriculture", icon: "❋", description: "Agricultural support, irrigation and farming concerns.", categories: ["agriculture", "irrigation"] },
-    { id: "transport", name: "Transport Department", short: "Transport", icon: "↔", description: "Traffic, public transport and transport infrastructure.", categories: ["transport", "traffic"] },
-    { id: "health", name: "Health Department", short: "Health", icon: "+", description: "Public health services and health facility concerns.", categories: ["health", "public health"] },
-    { id: "water", name: "Water Resources", short: "Water", icon: "≈", description: "Water supply, flooding, drainage and water resources.", categories: ["water", "flooding", "drainage"] },
-    { id: "animal", name: "Animal Welfare", short: "Animal Welfare", icon: "♡", description: "Animal welfare and related community reports.", categories: ["animals", "animal welfare"] },
-    { id: "sports", name: "Sports Department", short: "Sports", icon: "◎", description: "Public sports facilities and community recreation spaces.", categories: ["sports", "recreation"] },
-    { id: "other", name: "Other Civic Services", short: "Other", icon: "＋", description: "Reports that need review and routing by an authorized official.", categories: ["other"] }
+    { id: "pwd", name: "Public Works Department", short: "PWD", icon: "road", description: "Roads, bridges, drainage and public infrastructure.", categories: ["roads", "drainage", "infrastructure"] },
+    { id: "mahud", name: "MAHUD", short: "MAHUD", icon: "building-2", description: "Municipal administration, urban services and sanitation.", categories: ["garbage", "sanitation", "urban services"] },
+    { id: "electricity", name: "Electricity Department", short: "Electricity", icon: "zap", description: "Power supply, street lighting and electrical infrastructure.", categories: ["electricity", "streetlights"] },
+    { id: "forest", name: "Forest Department", short: "Forest", icon: "trees", description: "Forests, trees, biodiversity and wildlife concerns.", categories: ["forest", "environment", "wildlife"] },
+    { id: "education", name: "Education Department", short: "Education", icon: "graduation-cap", description: "Public schools, learning facilities and education resources.", categories: ["education", "school facilities"] },
+    { id: "agriculture", name: "Agriculture Department", short: "Agriculture", icon: "sprout", description: "Agricultural support, irrigation and farming concerns.", categories: ["agriculture", "irrigation"] },
+    { id: "transport", name: "Transport Department", short: "Transport", icon: "bus", description: "Traffic, public transport and transport infrastructure.", categories: ["transport", "traffic"] },
+    { id: "health", name: "Health Department", short: "Health", icon: "heart-pulse", description: "Public health services and health facility concerns.", categories: ["health", "public health"] },
+    { id: "water", name: "Water Resources", short: "Water", icon: "droplet", description: "Water supply, flooding, drainage and water resources.", categories: ["water", "flooding", "drainage"] },
+    { id: "animal", name: "Animal Welfare", short: "Animal Welfare", icon: "heart-handshake", description: "Animal welfare and related community reports.", categories: ["animals", "animal welfare"] },
+    { id: "sports", name: "Sports Department", short: "Sports", icon: "trophy", description: "Public sports facilities and community recreation spaces.", categories: ["sports", "recreation"] },
+    { id: "other", name: "Other Civic Services", short: "Other", icon: "circle-help", description: "Reports that need review and routing by an authorized official.", categories: ["other"] }
   ];
 
   // Real records only; populated after authorized Supabase access.
@@ -36,6 +36,43 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+
+  const govIconPaths = {
+    "road": '<path d="M8 3 5 21M16 3l3 18M12 5v3m0 4v3m0 4v2"/>',
+    "building-2": '<path d="M4 21V5a2 2 0 0 1 2-2h8v18"/><path d="M14 9h4a2 2 0 0 1 2 2v10M8 7h2m-2 4h2m-2 4h2M2 21h20"/>',
+    "zap": '<path d="m13 2-3 8h6l-5 12 2-9H7z"/>',
+    "trees": '<path d="M12 21v-8"/><path d="M12 13C5 13 4 8 4 5c5 0 8 3 8 8ZM12 17c0-5 3-8 8-8 0 4-2 8-8 8Z"/>',
+    "graduation-cap": '<path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11v5c4 3 8 3 12 0v-5M22 9v7"/>',
+    "sprout": '<path d="M12 21v-9"/><path d="M12 12C5 12 4 7 4 4c5 0 8 3 8 8ZM12 16c0-5 3-8 8-8 0 4-2 8-8 8Z"/>',
+    "bus": '<rect x="4" y="3" width="16" height="15" rx="3"/><path d="M4 11h16M8 18l-2 3m10-3 2 3M8 7h.01M16 7h.01"/>',
+    "heart-pulse": '<path d="M20.8 8.8c0 4.3-8.8 10-8.8 10S3.2 13.1 3.2 8.8A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 8.8 1.4Z"/><path d="M4 12h4l2-3 3 6 2-3h5"/>',
+    "droplet": '<path d="M12 3s7 7.2 7 12a7 7 0 0 1-14 0c0-4.8 7-12 7-12Z"/><path d="M9 16a3 3 0 0 0 3 3"/>',
+    "heart-handshake": '<path d="M20.8 8.8c0 4.3-8.8 10-8.8 10S3.2 13.1 3.2 8.8A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 8.8 1.4Z"/><path d="m8 12 2-1 2 2 2-2 2 1"/>',
+    "trophy": '<path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v3a4 4 0 0 0 4 4M17 6h3v3a4 4 0 0 1-4 4"/>',
+    "circle-help": '<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1.2 1.1-1.9 1.5-1.9 3M12 17h.01"/>',
+    "clipboard-list": '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6V7H9zM9 11h6M9 15h6"/>',
+    "clock": '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    "refresh-cw": '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/>',
+    "check-circle": '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/>',
+    "image-off": '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 2-2 7 6M3 3l18 18"/>',
+    "map-pin": '<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+    "arrow-right": '<path d="M5 12h14M12 5l7 7-7 7"/>',
+    "arrow-left": '<path d="M19 12H5M12 5l-7 7 7 7"/>',
+    "arrow-up-right": '<path d="M7 17 17 7M7 7h10v10"/>',
+    "plus": '<path d="M12 5v14M5 12h14"/>',
+    "shield-check": '<path d="M12 3 19 6v5c0 4.5-2.9 7.8-7 10-4.1-2.2-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/>',
+    "info": '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    "megaphone": '<path d="M4 11V7l13-3v16L4 17v-6Z"/><path d="M4 11h13M7 18l2 3h3l-2-4"/>',
+    "calendar": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+    "file-text": '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 12h6M9 16h6"/>',
+    "users": '<circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5.5a3 3 0 0 1 0 5.8M18 14a5 5 0 0 1 3 4.6v1"/>',
+    "bell": '<path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+    "chart": '<path d="M4 20V4M4 20h17"/><path d="M8 16v-4M12 16V8M16 16v-7"/>'
+  };
+  function govIcon(name) {
+    return '<svg class="gov-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (govIconPaths[name] || govIconPaths["circle-help"]) + '</svg>';
+  }
+
   const deptById = (id) => departments.find((dept) => dept.id === id);
   const countStatus = (status) => reports.filter((report) => report.status === status).length;
   const countDepartment = (id) => reports.filter((report) => report.department === id).length;
@@ -60,7 +97,7 @@
   function getReportLocationUrl(report) {
     const coords = getReportCoordinates(report);
     const query = coords ? coords.latitude + "," + coords.longitude : String(report?.location || "").trim();
-    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query || "Manipur");
+    return query ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query) : "";
   }
 
   function navigate(page) {
@@ -71,12 +108,12 @@
   }
 
   function statsMarkup(items) {
-    return items.map((item) => `<article class="stat-card"><div class="stat-top"><span>${escapeHtml(item.label)}</span><span class="stat-icon">${item.icon}</span></div><strong>${item.value}</strong><small>${escapeHtml(item.note)}</small></article>`).join("");
+    return items.map((item) => `<article class="stat-card"><div class="stat-top"><span>${escapeHtml(item.label)}</span><span class="stat-icon">${govIcon(item.icon)}</span></div><strong>${item.value}</strong><small>${escapeHtml(item.note)}</small></article>`).join("");
   }
 
   function departmentCard(dept) {
     const count = countDepartment(dept.id);
-    return `<button type="button" class="department-card" data-department="${dept.id}"><span class="dept-icon">${dept.icon}</span><strong>${escapeHtml(dept.name)}</strong><small>${escapeHtml(dept.description)}</small><span class="card-arrow">↗</span><span class="pill">${count} ${count === 1 ? "report" : "reports"}</span></button>`;
+    return `<button type="button" class="department-card" data-department="${dept.id}"><span class="dept-icon">${govIcon(dept.icon)}</span><strong>${escapeHtml(dept.name)}</strong><small>${escapeHtml(dept.description)}</small><span class="card-arrow">${govIcon("arrow-up-right")}</span><span class="pill">${count} ${count === 1 ? "report" : "reports"}</span></button>`;
   }
 
   function statusClass(status) {
@@ -89,18 +126,18 @@
     const photos = Array.isArray(report.photos) ? report.photos : [];
     const photoMarkup = photos.length
       ? `<img class="gov-report-photo" src="${escapeHtml(photos[0].url)}" alt="Submitted photo for ${escapeHtml(report.title)}" loading="lazy" decoding="async" />`
-      : `<span class="gov-report-photo-placeholder"><span aria-hidden="true">▧</span><span>No photo</span></span>`;
-    return `<article class="report-card"><div class="gov-report-copy"><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">⌖ ${escapeHtml(report.location)}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">Department →</button>`}<button class="btn btn-primary" data-action-report="${escapeHtml(report.id)}" type="button">Action &amp; Resolution</button></div></div><div class="gov-report-media" aria-label="${photos.length ? photos.length + " submitted photo(s)" : "No photo submitted"}">${photoMarkup}</div></article>`;
+      : `<span class="gov-report-photo-placeholder">${govIcon("image-off")}<span>No photo</span></span>`;
+    return `<article class="report-card"><div class="gov-report-copy"><span class="report-id">${escapeHtml(report.id)} · ${escapeHtml(report.category)}</span><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.description)}</p><div class="report-meta"><span class="pill">${escapeHtml(dept?.short || "Other")}</span><span class="pill">${govIcon("map-pin")}${escapeHtml(report.location || "Location not provided")}</span><span class="pill status ${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><div class="report-actions">${statusControl || `<button class="btn" data-open-department="${report.department}" type="button">${govIcon("arrow-right")}Department</button>`}<button class="btn btn-primary" data-action-report="${escapeHtml(report.id)}" type="button">Action &amp; Resolution</button></div></div><div class="gov-report-media" aria-label="${photos.length ? photos.length + " submitted photo(s)" : "No photo submitted"}">${photoMarkup}</div></article>`;
   }
 
   function renderStats(targetId) {
     const target = $("#" + targetId);
     if (!target) return;
     target.innerHTML = statsMarkup([
-      { label: "Total reports", value: reports.length, note: liveMode ? "Live database records" : "Waiting for authorized sign-in", icon: "▤" },
-      { label: "Awaiting review", value: countStatus("Reported"), note: "Reported status", icon: "◷" },
-      { label: "In progress", value: countStatus("In Progress"), note: "Work underway", icon: "↻" },
-      { label: "Resolved", value: countStatus("Resolved"), note: "Marked resolved", icon: "✓" }
+      { label: "Total reports", value: reports.length, note: liveMode ? "Live database records" : "Waiting for authorized sign-in", icon: "clipboard-list" },
+      { label: "Awaiting review", value: countStatus("Reported"), note: "Reported status", icon: "clock" },
+      { label: "In progress", value: countStatus("In Progress"), note: "Work underway", icon: "refresh-cw" },
+      { label: "Resolved", value: countStatus("Resolved"), note: "Marked resolved", icon: "check-circle" }
     ]);
   }
 
@@ -124,15 +161,15 @@
     selectedDepartment = id;
     $("#departmentTitle").textContent = dept.name;
     $("#departmentDescription").textContent = dept.description;
-    $("#departmentHeroIcon").textContent = dept.icon;
+    $("#departmentHeroIcon").innerHTML = govIcon(dept.icon);
     $("#departmentHeroTitle").textContent = dept.name;
     $("#departmentHeroDescription").textContent = dept.description;
     const list = reports.filter((report) => report.department === id);
     $("#departmentStats").innerHTML = statsMarkup([
-      { label: "Department reports", value: list.length, note: "Database records", icon: "▤" },
-      { label: "Reported", value: list.filter((r) => r.status === "Reported").length, note: "Awaiting review", icon: "◷" },
-      { label: "In progress", value: list.filter((r) => r.status === "In Progress").length, note: "Currently active", icon: "↻" },
-      { label: "Resolved", value: list.filter((r) => r.status === "Resolved").length, note: "Completed reports", icon: "✓" }
+      { label: "Department reports", value: list.length, note: "Database records", icon: "clipboard-list" },
+      { label: "Reported", value: list.filter((r) => r.status === "Reported").length, note: "Awaiting review", icon: "clock" },
+      { label: "In progress", value: list.filter((r) => r.status === "In Progress").length, note: "Currently active", icon: "refresh-cw" },
+      { label: "Resolved", value: list.filter((r) => r.status === "Resolved").length, note: "Completed reports", icon: "check-circle" }
     ]);
     renderDepartmentReports();
     navigate("department");
@@ -165,12 +202,13 @@
     if (!panel || !report) return;
     const coords = getReportCoordinates(report);
     const dept = deptById(report.department);
+    const locationUrl = getReportLocationUrl(report);
     panel.innerHTML = `<div class="map-report-top"><span>${escapeHtml(report.publicId || report.id)}</span><span>${escapeHtml(report.status)}</span></div>
       <h3>${escapeHtml(report.title)}</h3>
       <div class="map-report-meta"><span class="pill">${escapeHtml(dept?.short || report.department || "Other")}</span><span class="pill">${escapeHtml(report.category || "General")}</span></div>
       <p>${escapeHtml(report.description || "No description supplied.")}</p>
-      <div class="map-location"><strong>Location</strong><br>${escapeHtml(report.location || "Location not provided")}<br><span>${coords ? "Coordinates: " + coords.latitude.toFixed(5) + ", " + coords.longitude.toFixed(5) : "No usable GPS coordinates recorded"}</span></div>
-      <a class="map-open-link" href="${escapeHtml(getReportLocationUrl(report))}" target="_blank" rel="noopener noreferrer">Open location ↗</a>`;
+      <div class="map-location"><strong>Location</strong><br>${escapeHtml(report.location || "Location not provided")}<br><span>${coords ? "Coordinates: " + coords.latitude.toFixed(5) + ", " + coords.longitude.toFixed(5) : "No usable coordinates recorded"}</span></div>
+      ${locationUrl ? `<a class="map-open-link" href="${escapeHtml(locationUrl)}" target="_blank" rel="noopener noreferrer">Open location ${govIcon("arrow-up-right")}</a>` : `<span class="map-open-link is-disabled" aria-disabled="true">Location unavailable</span>`}`;
     governmentMapMarkers.forEach((entry, id) => entry.marker.setStyle({ radius: id === report.id ? 10 : 7, weight: id === report.id ? 4 : 2 }));
   }
 
@@ -206,7 +244,7 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
     }).addTo(governmentMap);
 
-    const statusColors = { "Reported": "#64748b", "Verified": "#2563eb", "In Progress": "#b86c08", "Resolved": "#0f9f78" };
+    const statusColors = { "Reported": "#B45309", "Verified": "#1D4ED8", "In Progress": "#6D28D9", "Resolved": "#047857" };
     const points = [];
     mapped.forEach(({ report, coords }) => {
       const color = statusColors[report.status] || "#0f766e";
@@ -591,14 +629,14 @@
         if (!panel.hidden) {
           panel.hidden = true;
           resetNoticeForm();
-          toggle.textContent = "＋ Create notice";
+          toggle.innerHTML = govIcon("plus") + "Create notice";
         } else openNoticeForm();
       });
     }
     $("#cancelNoticeForm")?.addEventListener("click", () => {
       $("#noticeFormPanel").hidden = true;
       resetNoticeForm();
-      if (toggle) toggle.textContent = "＋ Create notice";
+      if (toggle) toggle.innerHTML = govIcon("plus") + "Create notice";
     });
     const previewButton = $("#previewNoticeButton");
     if (previewButton && previewButton.dataset.bound !== "true") {
@@ -651,17 +689,29 @@
 
 
   const govPrefsKey = "civicOS.governmentProfilePreferences.v1";
+  function applyGovernmentTheme(theme = "system") {
+    const mode = ["system","light","dark"].includes(theme) ? theme : "system";
+    const effective = mode === "system" ? (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : mode;
+    document.body.dataset.civicTheme = effective;
+    const selector = document.querySelector("#govThemePreference");
+    if (selector) selector.value = mode;
+  }
   function loadGovernmentProfilePreferences() {
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem(govPrefsKey) || "{}"); } catch (error) {}
     document.querySelectorAll("[data-gov-pref]").forEach(function(input) {
       if (Object.prototype.hasOwnProperty.call(saved, input.dataset.govPref)) input.checked = Boolean(saved[input.dataset.govPref]);
     });
+    applyGovernmentTheme(saved.theme || "system");
   }
   function saveGovernmentProfilePreferences() {
-    const saved = {};
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(govPrefsKey) || "{}"); } catch (error) {}
     document.querySelectorAll("[data-gov-pref]").forEach(function(input) { saved[input.dataset.govPref] = input.checked; });
+    const selector = document.querySelector("#govThemePreference");
+    saved.theme = selector ? selector.value : (saved.theme || "system");
     try { localStorage.setItem(govPrefsKey, JSON.stringify(saved)); } catch (error) {}
+    applyGovernmentTheme(saved.theme);
     const message = document.querySelector("#govProfilePrefMessage");
     if (message) message.textContent = "Preferences saved on this device.";
   }
@@ -872,6 +922,10 @@
   });
 
   document.querySelectorAll("[data-gov-pref]").forEach(function(input) { input.addEventListener("change", saveGovernmentProfilePreferences); });
+  document.querySelector("#govThemePreference")?.addEventListener("change", saveGovernmentProfilePreferences);
+  const govSystemThemeQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  if (govSystemThemeQuery) govSystemThemeQuery.addEventListener("change", function() { try { const prefs = JSON.parse(localStorage.getItem(govPrefsKey) || "{}"); if (!prefs.theme || prefs.theme === "system") applyGovernmentTheme("system"); } catch (error) { applyGovernmentTheme("system"); } });
+  loadGovernmentProfilePreferences();
   document.querySelector("#govProfileResetPassword")?.addEventListener("click", async () => {
     const message = document.querySelector("#govProfileSecurityMessage");
     const session = supabaseClient ? await supabaseClient.auth.getSession() : null;
