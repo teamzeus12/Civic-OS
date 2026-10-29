@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="./design-tokens.css?v=20261029-design2">
   <style>
-    :root{color-scheme:light;--ink:#17241e;--muted:#718078;--line:#e2ebe5;--green:#16865a;--green-dark:#0d6542;--paper:#f6faf8;font-family:"Geist",system-ui,-apple-system,sans-serif}
+    :root{--ink:var(--civic-ink);--muted:var(--civic-muted);--line:var(--civic-line);--green:var(--civic-brand);--green-dark:#055a43;--paper:var(--civic-bg);font-family:var(--civic-font-body)}
     *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 7% 0%,#e2f5e9 0,transparent 35%),var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}.shell{width:min(970px,100% - 34px);margin:0 auto;padding:24px 0 22px}.brand{display:inline-flex;align-items:center;gap:11px;font-size:19px;font-weight:800;letter-spacing:-.7px}.mark{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#3ee08f;color:#082718;font-size:25px}.brand small{display:block;margin-top:3px;color:#849188;font:9px "Geist Mono",monospace;letter-spacing:1.2px}.back{display:inline-block;margin-top:24px;color:#708078;font-size:11px}.back:hover{color:var(--green)}.intro{text-align:center;max-width:590px;margin:42px auto 30px}.eyebrow{color:var(--green);font:600 10px "Geist Mono",monospace;letter-spacing:1.7px}.intro h1{margin:13px 0;font-size:clamp(34px,5vw,48px);line-height:1.08;letter-spacing:-2px}.intro h1 span{color:var(--green)}.intro p{color:var(--muted);font-size:13px;line-height:1.8;margin:0}.cards{display:grid;grid-template-columns:1fr 1fr;gap:17px;max-width:790px;margin:0 auto}.card{display:flex;flex-direction:column;min-height:280px;padding:25px;border:1px solid var(--line);border-radius:21px;background:#ffffffd9;box-shadow:0 12px 35px #234a3210;transition:transform .18s,border-color .18s,box-shadow .18s}.card:hover{transform:translateY(-3px);border-color:#a9d7ba;box-shadow:0 18px 38px #234a3218}.icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;font-size:19px;font-weight:800}.people .icon{background:#dff4e7;color:#14784e}.government .icon{background:#e9eefc;color:#405a9e}.card h2{font-size:20px;letter-spacing:-.6px;margin:21px 0 9px}.card p{margin:0;color:var(--muted);font-size:12px;line-height:1.75}.card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:25px;color:var(--green-dark);font-size:12px;font-weight:700}.arrow{font-size:22px}.notice{max-width:790px;margin:17px auto 0;padding:12px 14px;border:1px solid #e2e8f7;border-radius:12px;background:#f3f6ff;color:#64729a;font-size:10px;line-height:1.65}.footer{display:flex;justify-content:space-between;gap:12px;margin-top:38px;padding-top:16px;border-top:1px solid var(--line);color:#8b9890;font-size:10px}
     @media(max-width:620px){.shell{padding-top:17px}.intro{text-align:left;margin:35px 0 23px}.cards{grid-template-columns:1fr;gap:12px}.card{min-height:225px;padding:21px}.card h2{margin-top:15px}.card-foot{padding-top:18px}.footer{font-size:9px;flex-wrap:wrap}}
   .demo-link{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;margin-top:13px;padding:10px 12px;border:1px solid #dce9e0;border-radius:10px;color:#276447;font-size:11px;font-weight:700;background:#f7fbf8}.demo-link:hover{background:#edf7f0;border-color:#b8d9c3}
@@ -138,12 +138,40 @@
 /* Shared design-system type scale. */
 body { font-family: var(--civic-font-body); color: var(--civic-ink); }
 :where(h1,h2,h3,h4,h5,h6) { font-family: var(--civic-font-heading); }
+
+/* Portal selection: canonical type, consistent SVG icons, and device-aware dark theme. */
+:where(.brand,.intro h1,.card h2) { font-family: var(--civic-font-heading); }
+.brand { color: var(--civic-ink); letter-spacing: -.04em; }
+.brand small { font-family: var(--civic-font-body); color: var(--civic-muted); }
+.mark { background: var(--civic-brand); color: #fff; }
+.eyebrow { font: 700 12px/1.4 var(--civic-font-body); letter-spacing: .1em; }
+.ui-icon { display: inline-block; width: 20px; height: 20px; flex: 0 0 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+.arrow-icon { width: 21px; height: 21px; }
+.card .icon { display: grid; place-items: center; }
+.card-foot { min-height: 48px; }
+:where(.brand,.back,.card,.card-foot,.demo-link):focus-visible { outline: 3px solid var(--civic-brand-2); outline-offset: 3px; }
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; }
+  body { background: radial-gradient(ellipse at 7% 0%,rgba(18,181,166,.1),transparent 35%),var(--civic-bg); color: var(--civic-ink); }
+  .shell { background: rgba(18,31,26,.72); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 24px 70px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04); -webkit-backdrop-filter: blur(18px) saturate(120%); backdrop-filter: blur(18px) saturate(120%); }
+  .brand small,.back,.card p,.footer { color: var(--civic-muted); }
+  .card { background: linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025)); border-color: rgba(255,255,255,.12); box-shadow: 0 14px 36px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06); }
+  .card:hover { border-color: rgba(66,205,164,.4); box-shadow: 0 20px 42px rgba(0,0,0,.24); }
+  .card h2,.card-foot { color: var(--civic-ink); }
+  .people .icon { background: rgba(66,205,164,.14); color: #6EE7B7; }
+  .government .icon { background: rgba(147,197,253,.14); color: #93C5FD; }
+  .notice { background: rgba(147,197,253,.08); border-color: rgba(147,197,253,.18); color: #C5D5F2; }
+  .demo-link { background: rgba(66,205,164,.1); border-color: rgba(66,205,164,.24); color: #A7F3D0; }
+  .demo-link:hover { background: rgba(66,205,164,.16); }
+  .footer { border-color: var(--civic-line); }
+}
+
 </style>
 </head>
 <body>
   <main class="shell">
-    <a class="brand" href="./index.html" aria-label="Civic OS landing page"><span class="mark" aria-hidden="true">C</span><span>Civic OS<small>REPORT. CONNECT. RESOLVE.</small></span></a>
-    <a class="back" href="./index.html">← Back to landing page</a>
+    <a class="brand" href="./index.html" aria-label="Civic OS landing page"><span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" width="28" height="28" fill="none"><path d="M22.8 9.2A10.2 10.2 0 1 0 22.8 22.8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="23" cy="16" r="2.3" fill="currentColor"/></svg></span><span>Civic OS<small>REPORT. CONNECT. RESOLVE.</small></span></a>
+    <a class="back" href="./index.html"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>Back to landing page</a>
     <section class="intro">
       <p class="eyebrow">WELCOME TO CIVIC OS</p>
       <h1>Choose your <span>portal.</span></h1>
@@ -151,17 +179,17 @@ body { font-family: var(--civic-font-body); color: var(--civic-ink); }
     </section>
     <section class="cards" aria-label="Choose a portal">
       <a class="card people" href="./auth.html?portal=people">
-        <span class="icon" aria-hidden="true">P</span>
+        <span class="icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1"/><path d="M16 5.5a3 3 0 0 1 0 5.8"/><path d="M18 14a5 5 0 0 1 3 4.6v1"/></svg></span>
         <h2>People’s Portal</h2>
         <p>For citizens and community members. Create an account or sign in to submit reports and follow their progress.</p>
-        <span class="card-foot">Continue to citizen sign-in <span class="arrow" aria-hidden="true">→</span></span>
+        <span class="card-foot">Continue to citizen sign-in <svg class="ui-icon arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
       </a>
       <section class="card government">
-        <span class="icon" aria-hidden="true">G</span>
+        <span class="icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="m3 9 9-6 9 6"/><path d="M5 10h14"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M3 21h18M4 18h16"/></svg></span>
         <h2>Government Portal</h2>
         <p>For authorised officials. Government accounts must already be approved by the Civic OS administrator.</p>
         <a class="card-foot" href="./auth.html?portal=government">Continue to official sign-in <span class="arrow" aria-hidden="true">→</span></a>
-        <a class="demo-link" href="./government-preview.html">Explore demo dashboard <span aria-hidden="true">↗</span></a>
+        <a class="demo-link" href="./government-preview.html">Explore demo dashboard <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></a>
       </section>
     </section>
     <p class="notice">Security note: choosing a portal does not grant access. Government access remains restricted to authorised accounts.</p>
