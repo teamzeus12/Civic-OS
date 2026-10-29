@@ -227,3 +227,167 @@ body[data-civic-theme="dark"] {
     background: linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
   }
 }
+
+
+
+/* =========================================================
+   Civic OS premium system — shared tokens and safe primitives
+   Loaded by every portal. Keep behaviour in existing scripts.
+   ========================================================= */
+:root {
+  color-scheme: light;
+  --civic-bg: #F6FAF8;
+  --civic-bg-elevated: #EEF5F1;
+  --civic-surface: #FFFFFF;
+  --civic-surface-2: #F8FBF9;
+  --civic-ink: #0B1F1A;
+  --civic-ink-2: #3F544D;
+  --civic-muted: #5B6F68;
+  --civic-line: #E3ECE8;
+  --civic-line-strong: #C8D9D1;
+  --civic-brand: #077A5C;
+  --civic-brand-2: #12B5A6;
+  --civic-sky: #38BDF8;
+  --civic-gradient: linear-gradient(135deg, #077A5C, #12B5A6 60%, #38BDF8);
+  --civic-reported: #B45309;
+  --civic-reported-tint: #FEF3C7;
+  --civic-verified: #1D4ED8;
+  --civic-verified-tint: #DBEAFE;
+  --civic-progress: #6D28D9;
+  --civic-progress-tint: #EDE9FE;
+  --civic-resolved: #047857;
+  --civic-resolved-tint: #D1FAE5;
+  --civic-danger: #B42318;
+  --civic-danger-tint: #FEE4E2;
+  --civic-font-heading: "Plus Jakarta Sans", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --civic-font-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --civic-space-1: 4px;
+  --civic-space-2: 8px;
+  --civic-space-3: 12px;
+  --civic-space-4: 16px;
+  --civic-space-5: 24px;
+  --civic-space-6: 32px;
+  --civic-space-7: 48px;
+  --civic-space-8: 64px;
+  --civic-space-9: 96px;
+  --civic-radius-input: 12px;
+  --civic-radius-card: 20px;
+  --civic-radius-pill: 999px;
+  --civic-shadow-soft: 0 1px 2px rgba(11,31,26,.06), 0 8px 24px rgba(11,31,26,.08);
+  --civic-shadow-raised: 0 12px 32px rgba(11,31,26,.12);
+  --civic-motion-fast: 150ms ease-out;
+  --civic-motion: 200ms ease-out;
+  --civic-motion-slow: 250ms ease-out;
+  --civic-focus: 0 0 0 3px rgba(18,181,166,.32);
+  /* Compatibility aliases for older portal CSS. */
+  --bg: var(--civic-bg);
+  --paper: var(--civic-bg);
+  --white: var(--civic-surface);
+  --ink: var(--civic-ink);
+  --muted: var(--civic-muted);
+  --line: var(--civic-line);
+  --green: var(--civic-brand);
+  --green-dark: #055A43;
+  --blue: var(--civic-verified);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-civic-theme]) {
+    color-scheme: dark;
+    --civic-bg: #0B1512;
+    --civic-bg-elevated: #101C17;
+    --civic-surface: #121F1A;
+    --civic-surface-2: #172720;
+    --civic-ink: #F0F7F3;
+    --civic-ink-2: #D0DED6;
+    --civic-muted: #A8BBB1;
+    --civic-line: #2B4036;
+    --civic-line-strong: #405A4D;
+    --civic-brand: #42CDA4;
+    --civic-brand-2: #39D4C4;
+    --civic-reported: #FCD34D;
+    --civic-reported-tint: #422D0A;
+    --civic-verified: #93C5FD;
+    --civic-verified-tint: #172F52;
+    --civic-progress: #C4B5FD;
+    --civic-progress-tint: #33234F;
+    --civic-resolved: #6EE7B7;
+    --civic-resolved-tint: #123D30;
+    --civic-danger: #FDA29B;
+    --civic-danger-tint: #4A1F1C;
+    --civic-shadow-soft: 0 1px 2px rgba(0,0,0,.16), 0 8px 24px rgba(0,0,0,.18);
+    --civic-shadow-raised: 0 12px 32px rgba(0,0,0,.26);
+    --bg: var(--civic-bg);
+    --paper: var(--civic-bg);
+    --white: var(--civic-surface);
+    --ink: var(--civic-ink);
+    --muted: var(--civic-muted);
+    --line: var(--civic-line);
+    --green: var(--civic-brand);
+    --green-dark: #42CDA4;
+    --blue: var(--civic-verified);
+  }
+}
+body[data-civic-theme="light"] {
+  color-scheme: light;
+  --civic-bg:#F6FAF8; --civic-bg-elevated:#EEF5F1; --civic-surface:#FFFFFF;
+  --civic-surface-2:#F8FBF9; --civic-ink:#0B1F1A; --civic-ink-2:#3F544D;
+  --civic-muted:#5B6F68; --civic-line:#E3ECE8; --civic-line-strong:#C8D9D1;
+  --civic-brand:#077A5C; --civic-brand-2:#12B5A6;
+  --bg:var(--civic-bg); --paper:var(--civic-bg); --white:var(--civic-surface);
+  --ink:var(--civic-ink); --muted:var(--civic-muted); --line:var(--civic-line);
+  --green:var(--civic-brand); --green-dark:#055A43; --blue:var(--civic-verified);
+}
+body[data-civic-theme="dark"] {
+  color-scheme: dark;
+  --civic-bg:#0B1512; --civic-bg-elevated:#101C17; --civic-surface:#121F1A;
+  --civic-surface-2:#172720; --civic-ink:#F0F7F3; --civic-ink-2:#D0DED6;
+  --civic-muted:#A8BBB1; --civic-line:#2B4036; --civic-line-strong:#405A4D;
+  --civic-brand:#42CDA4; --civic-brand-2:#39D4C4;
+  --bg:var(--civic-bg); --paper:var(--civic-bg); --white:var(--civic-surface);
+  --ink:var(--civic-ink); --muted:var(--civic-muted); --line:var(--civic-line);
+  --green:var(--civic-brand); --green-dark:#42CDA4; --blue:var(--civic-verified);
+}
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { font-family: var(--civic-font-body); line-height: 1.5; background: var(--civic-bg); color: var(--civic-ink); }
+h1,h2,h3,h4,.brand,.page-title { font-family: var(--civic-font-heading); letter-spacing: -.02em; }
+button,input,select,textarea { font: inherit; }
+button,a,input,select,textarea,[role="button"],[tabindex]:not([tabindex="-1"]) { -webkit-tap-highlight-color: transparent; }
+:where(button,a,input,select,textarea,[role="button"],[tabindex]:not([tabindex="-1"])):focus-visible { outline: 3px solid var(--civic-brand-2); outline-offset: 3px; box-shadow: var(--civic-focus); }
+:where(button,a,[role="button"]) { transition: transform var(--civic-motion-fast), box-shadow var(--civic-motion), background-color var(--civic-motion), border-color var(--civic-motion), color var(--civic-motion); }
+:where(button,a,[role="button"]):active { transform: scale(.98); }
+:where(button,a,[role="button"]):disabled, :where(button,a,[role="button"])[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+:where(input,select,textarea) { min-height: 48px; border-radius: var(--civic-radius-input); }
+:where(button,a,[role="button"],summary) { touch-action: manipulation; }
+.civic-button, .btn-primary, .button-primary {
+  min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; border: 1px solid transparent; border-radius: var(--civic-radius-pill);
+  background: var(--civic-gradient); color: #fff; font-weight: 700; text-decoration: none;
+  box-shadow: 0 4px 12px rgba(7,122,92,.16); cursor: pointer;
+}
+.civic-button:hover, .btn-primary:hover, .button-primary:hover { transform: translateY(-2px); box-shadow: var(--civic-shadow-soft); }
+.civic-button:active, .btn-primary:active, .button-primary:active { transform: scale(.98); }
+.civic-button-secondary, .btn-secondary, .button-secondary {
+  min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; border: 1px solid var(--civic-line-strong); border-radius: var(--civic-radius-pill);
+  background: var(--civic-surface); color: var(--civic-ink); font-weight: 650; cursor: pointer;
+}
+.civic-button-ghost, .btn-ghost, .button-ghost { min-height:48px; padding:12px 16px; border:1px solid transparent; border-radius:var(--civic-radius-pill); background:transparent; color:var(--civic-ink-2); cursor:pointer; }
+.civic-card, .portal-card, .report-card, .auth-card {
+  border-radius: var(--civic-radius-card);
+  border-color: var(--civic-line);
+}
+.civic-card { background: var(--civic-surface); border: 1px solid var(--civic-line); box-shadow: var(--civic-shadow-soft); }
+.civic-chip, .filter-chip, .status-pill {
+  border-radius: var(--civic-radius-pill);
+}
+.civic-status-reported { color:var(--civic-reported); background:var(--civic-reported-tint); }
+.civic-status-verified { color:var(--civic-verified); background:var(--civic-verified-tint); }
+.civic-status-progress { color:var(--civic-progress); background:var(--civic-progress-tint); }
+.civic-status-resolved { color:var(--civic-resolved); background:var(--civic-resolved-tint); }
+.civic-skeleton { border-radius: 12px; background: linear-gradient(90deg,var(--civic-surface-2),var(--civic-line),var(--civic-surface-2)); background-size: 200% 100%; animation: civic-skeleton 1.2s ease-in-out infinite; }
+@keyframes civic-skeleton { to { background-position: -200% 0; } }
+.civic-toast { position:fixed; z-index:9999; inset:auto 16px max(16px,env(safe-area-inset-bottom)) 16px; margin:auto; width:max-content; max-width:calc(100vw - 32px); padding:12px 16px; border:1px solid var(--civic-line); border-radius:14px; background:var(--civic-surface); color:var(--civic-ink); box-shadow:var(--civic-shadow-raised); }
+img { max-width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+}
