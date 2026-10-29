@@ -9958,3 +9958,12 @@ body {
   .dashboard-map-panel-head { align-items:flex-start; flex-direction:column; }
   .dashboard-map-count { min-height:40px; }
 }
+
+
+/* Phase 3: preserve report-title readability on narrow phones. */
+@media (max-width: 560px) {
+  .issue-title {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+}
