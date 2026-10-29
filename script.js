@@ -786,9 +786,11 @@ function renderDashboardMapIssue(issue) {
   const categoryLabel = CATEGORIES[issue.category]?.label || "Other";
   const locationNote = issue.locationPrecision === "approximate" && coords
     ? "Approximate location · area-level pin"
-    : coords
+    : coords && issue.locationPrecision === "gps"
       ? `GPS pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
-      : "Address text only · exact map pin unavailable";
+      : coords
+        ? `Map pin · ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`
+        : "Address text only · exact map pin unavailable";
 
   panel.innerHTML = `
     <div class="dashboard-map-detail-top">
@@ -902,10 +904,10 @@ function initDashboardMap() {
   }).addTo(dashboardMapInstance);
 
   const statusColors = {
-    Reported: "#64748b",
-    Verified: "#2563eb",
-    "In Progress": "#b86c08",
-    Resolved: "#0f9f78"
+    Reported: "#B45309",
+    Verified: "#1D4ED8",
+    "In Progress": "#6D28D9",
+    Resolved: "#047857"
   };
 
   const points = [];
@@ -4341,7 +4343,7 @@ function renderDashboard() {
         </span>
 
         <span class="kpi-sub">
-          Teams on site
+          Status set to in progress
         </span>
       </button>
 
