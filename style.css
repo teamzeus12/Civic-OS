@@ -9559,3 +9559,59 @@ textarea::placeholder {
   #reportScreen .report-form .chip-btn { transition: none !important; }
   #reportScreen .report-form .dropzone:hover { transform: none; }
 }
+
+/* Civic OS visual system — shared hierarchy, media cards and readable controls. */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible {
+  outline: 2px solid var(--accent, #3ee08f);
+  outline-offset: 3px;
+}
+:where(.btn,.chip-btn,.link-btn,.nav-item,.tab-btn) {
+  -webkit-tap-highlight-color: transparent;
+}
+:where(.btn,.chip-btn,.link-btn) { line-height: 1.45; }
+:where(.field-hint,.form-help,.form-field small,.field-foot,.form-error) { line-height: 1.65; }
+.issue-card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border-radius: 17px;
+  background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+  box-shadow: 0 7px 22px rgba(0,0,0,.10);
+  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.issue-card:hover {
+  border-color: var(--border-strong, rgba(255,255,255,.2));
+  background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  box-shadow: 0 12px 28px rgba(0,0,0,.15);
+}
+.issue-card:focus-visible { outline-offset: 3px; }
+.issue-photo-wrap {
+  flex: 0 0 clamp(96px, 22%, 164px);
+  width: clamp(96px, 22%, 164px);
+  min-height: 108px;
+  max-height: 144px;
+  border-radius: 13px;
+  background: #17221c;
+}
+.issue-photo,.issue-photo-placeholder { min-height: 108px; max-height: 144px; }
+.issue-photo { object-position: center; transition: transform .25s ease; }
+.issue-card:hover .issue-photo { transform: scale(1.025); }
+.issue-main { min-width: 0; }
+.issue-title { font-size: 14px; font-weight: 700; letter-spacing: -.01em; }
+.issue-meta { line-height: 1.65; }
+.issue-meta > span { min-width: 0; }
+.issue-chevron { opacity: .72; transition: opacity .18s ease, transform .18s ease; }
+.issue-card:hover .issue-chevron { opacity: 1; transform: translateX(2px); }
+:where(.kpi,.stat,.metric-card,.action-card,.mission-card,.people-card,.organisation-card) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .issue-card { gap: 11px; padding: 12px; border-radius: 14px; }
+  .issue-photo-wrap { flex-basis: 92px; width: 92px; min-height: 100px; max-height: 124px; }
+  .issue-photo,.issue-photo-placeholder { min-height: 100px; max-height: 124px; }
+  .issue-title { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .issue-card,.issue-photo,.issue-chevron { transition: none !important; }
+  .issue-card:hover .issue-photo,.issue-card:hover .issue-chevron { transform: none; }
+}
