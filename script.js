@@ -8749,3 +8749,7 @@ document.addEventListener("click", (event) => {
     item.setAttribute("aria-pressed",String(active));
   });
 });
+
+window.civicGetIssue = (id) => getIssue(id);
+window.civicOpenIssue = (id) => openIssue(id);
+window.civicLoadReports = () => loadPersistentCivicReports();
