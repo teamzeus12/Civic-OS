@@ -719,11 +719,14 @@
     loadGovernmentProfilePreferences();
     const badge = document.querySelector("#govProfileAccessBadge");
     const signInCard = document.querySelector("#govProfileSignInCard");
+    const metrics = document.querySelector(".gov-profile-metrics");
+    if (metrics) metrics.hidden = true;
     if (!supabaseClient) { if (badge) badge.textContent = "Sign-in required"; if (signInCard) signInCard.hidden = false; return; }
     const sessionResult = await supabaseClient.auth.getSession();
     const user = sessionResult.data && sessionResult.data.session ? sessionResult.data.session.user : null;
     if (!user || !liveMode || !officialProfile) { if (badge) badge.textContent = "Access not verified"; if (signInCard) signInCard.hidden = false; return; }
     if (signInCard) signInCard.hidden = true;
+    if (metrics) metrics.hidden = false;
     const profile = officialProfile;
     const name = profile.full_name || (user.user_metadata && user.user_metadata.full_name) || "Government official";
     const role = profile.role === "admin" ? "Administrator" : "Department official";
